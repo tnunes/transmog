@@ -1,0 +1,264 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.biosemantics.disambiguation</groupId>
+	<artifactId>disambiguation</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>disambiguation</name>
+	<description>Disambiguation project set</description>
+	<inceptionYear>2010</inceptionYear>
+	<organization>
+		<name>Department of Medical informatics, Erasmus Medical Centre</name>
+		<url>http://www.erasmusmc.nl/med_informatica/</url>
+	</organization>
+
+	<licenses>
+		<license>
+			<name>AGPLv3 License</name>
+			<url>http://www.gnu.org/licenses/agpl.html</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>Bharat Singh</name>
+			<email>b.simgh@erasmusmc.nl</email>
+			<url>http://www.biosemantics.org/index.php?page=bharat-singh</url>
+			<organization>Erasmus MC</organization>
+			<organizationUrl>http://www.erasmusmc.nl/med_informatica/</organizationUrl>
+			<roles>
+				<role>architect</role>
+				<role>developer</role>
+			</roles>
+		</developer>
+		<developer>
+			<name>Erik m van Mulligan</name>
+			<email>e.vanmulligen@erasmusmc.nl</email>
+			<url>http://www.biosemantics.org/index.php?page=erik-van-mulligen
+			</url>
+			<organization>Erasmus MC</organization>
+			<organizationUrl>http://www.erasmusmc.nl/med_informatica/</organizationUrl>
+			<roles>
+				<role>architect</role>
+			</roles>
+		</developer>
+	</developers>
+
+	<properties>
+		<tomcat.server.url>http://bios5:8080</tomcat.server.url>
+		<nexus.server.url>http://bios5:8080/nexus/content/repositories</nexus.server.url>
+		<hudson.server.url>http://bios5:8080/hudson</hudson.server.url>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<commons.lang.version>2.4</commons.lang.version>
+		<org.slf.version>1.6.0</org.slf.version>
+		<ch.qos.logback.version>0.9.21</ch.qos.logback.version>
+		<org.springframework.version>3.0.3.RELEASE</org.springframework.version>
+		<junit.version>4.8.1</junit.version>
+		<org.jmock.version>2.5.1</org.jmock.version>
+	</properties>
+
+	<ciManagement>
+		<system>hudson</system>
+		<url>${hudson.server.url}</url>
+	</ciManagement>
+
+	<distributionManagement>
+		<repository>
+			<id>nexus-server-id</id>
+			<url>${nexus.server.url}/releases</url>
+		</repository>
+		<snapshotRepository>
+			<id>nexus-server-id</id>
+			<url>${nexus.server.url}/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<repositories>
+		<repository>
+			<id>nexus-server-id</id>
+			<url>${nexus.server.url}/public</url>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>nexus-server-id</id>
+			<url>${nexus.server.url}/public</url>
+		</pluginRepository>
+	</pluginRepositories>
+
+
+	<profiles>
+		<!-- Activate this profile in case when your local maven repository is 
+			not proxying the repositories below: -->
+		<profile>
+			<id>noproxy</id>
+
+			<repositories>
+				<repository>
+					<id>db4o-snapshot-repository</id>
+					<name>db4o open source - maven snapshot releases</name>
+					<url>https://source.db4o.com/maven/</url>
+				</repository>
+				<repository>
+					<id>neo4j-public-repository</id>
+					<name>neo4j open source - maven releases</name>
+					<url>http://m2.neo4j.org</url>
+				</repository>
+				<repository>
+					<id>opencsv-public-repository</id>
+					<name>opencsv open source - maven releases</name>
+					<url>http://oss.sonatype.org/content/groups/sourceforge/</url>
+				</repository>
+			</repositories>
+
+		</profile>
+	</profiles>
+
+
+	<dependencyManagement>
+		<dependencies>
+			<!-- Apache commons -->
+			<dependency>
+				<groupId>commons-lang</groupId>
+				<artifactId>commons-lang</artifactId>
+				<version>${commons.lang.version}</version>
+			</dependency>
+			<!-- Logging framework and implementation -->
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>${org.slf.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+				<version>${ch.qos.logback.version}</version>
+			</dependency>
+			<!-- unit testing -->
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>${junit.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.jmock</groupId>
+				<artifactId>jmock-junit4</artifactId>
+				<version>${org.jmock.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<!-- Spring dependencies we might not need all of these -->
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-core</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-web</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-beans</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-aop</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context-support</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-tx</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-orm</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-jdbc</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-test</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+
+	<build>
+		<!-- <sourceDirectory>src</sourceDirectory> <testSourceDirectory>test</testSourceDirectory> -->
+		<pluginManagement>
+			<plugins>
+				<!-- maven-war-plugin v2.1-alpha-1 does not support correctly "attachClasses" 
+					plugin option -->
+				<!-- maven-war-plugin v2.1-beta-1 has this issue: http://jira.codehaus.org/browse/MWAR-187 -->
+				<plugin>
+					<artifactId>maven-war-plugin</artifactId>
+					<version>2.1-beta-1</version>
+					<configuration>
+						<useCache>false</useCache>
+					</configuration>
+				</plugin>
+				<!-- Build everything: mvn -o clean install package mvn dependency:tree -->
+				<!-- Global settings for maven-compiler-plugin: -->
+				<plugin>
+					<inherited>true</inherited>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<configuration>
+						<source>1.6</source>
+						<target>1.6</target>
+					</configuration>
+				</plugin>
+				<!-- Run it in offline mode: mvn -o eclipse:eclipse mvn eclipse:eclipse 
+					-DdownloadSources=true -DdownloadJavadocs=true -->
+				<plugin>
+					<artifactId>maven-eclipse-plugin</artifactId>
+					<configuration>
+						<buildOutputDirectory>bin</buildOutputDirectory>
+					</configuration>
+				</plugin>
+				<!-- mvn -Dmaven.test.skip=true install mvn -Dtest=TestCircle test -->
+				<plugin>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<configuration>
+						<argLine>-enableassertions</argLine>
+						<!-- To make all tests, which depend on timezone, consistent: -->
+						<argLine>-Duser.timezone=CET</argLine>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<configuration>
+						<tagBase>svn+ssh://root@mi-biosemantiek1.erasmusmc.nl/home/svn/biosemantic/tags/susie</tagBase>
+						<tag>${project.rel.org.biosemantics:susie}</tag>
+						<preparationGoals>clean install</preparationGoals>
+						<releaseProfiles />
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+	<modules>
+		<module>knowledgebase</module>
+	</modules>
+</project>
