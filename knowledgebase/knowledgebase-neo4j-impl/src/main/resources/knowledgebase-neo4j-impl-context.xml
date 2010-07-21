@@ -31,14 +31,14 @@
 		</constructor-arg>
 		<constructor-arg>
 			<map>
-				<entry key="neostore.nodestore.db.mapped_memory" value="90M" />
+				<entry key="neostore.nodestore.db.mapped_memory" value="${neostore.nodestore.db.mapped_memory}" />
 				<entry key="neostore.relationshipstore.db.mapped_memory"
-					value="3G" />
-				<entry key="neostore.propertystore.db.mapped_memory" value="50M" />
+					value="${neostore.relationshipstore.db.mapped_memory}" />
+				<entry key="neostore.propertystore.db.mapped_memory" value="${neostore.propertystore.db.mapped_memory}" />
 				<entry key="neostore.propertystore.db.strings.mapped_memory"
-					value="100M" />
+					value="${neostore.propertystore.db.strings.mapped_memory}" />
 				<entry key="neostore.relationshipstore.db.mapped_memory"
-					value="0M" />
+					value="${neostore.relationshipstore.db.mapped_memory}" />
 			</map>
 		</constructor-arg>
 	</bean>
