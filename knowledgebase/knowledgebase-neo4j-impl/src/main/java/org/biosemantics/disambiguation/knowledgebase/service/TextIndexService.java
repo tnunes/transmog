@@ -2,16 +2,21 @@ package org.biosemantics.disambiguation.knowledgebase.service;
 
 import java.util.Collection;
 
-
 public interface TextIndexService {
-	
-	void indexLabelText(Label label);
-	
+
+	void indexLabel(Label label);
+
+	void indexConcept(Concept concept);
+
+	void indexNotation(Notation notation);
+
 	Collection<Label> getLabelsByText(String text);
 
 	Label getLabelById(String id);
 
-	void indexNotation(Notation notation);
+	Collection<Notation> getNotationByCode(String code);
+
+	Concept getConceptById(String id);
 	
-	void indexConcept(Concept concept);
+	Collection<Concept> fullTextSearch(String text, int maxResults);
 }

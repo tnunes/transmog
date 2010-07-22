@@ -44,27 +44,42 @@ public class NotationFactoryImpl implements NotationFactory {
 	}
 
 	public void setNotationInputValidator(NotationInputValidator notationInputValidator) {
-		if(notationInputValidator == null)
+		if (notationInputValidator == null)
 			throw new NullArgumentException("notationInputValidator");
 		this.notationInputValidator = notationInputValidator;
 	}
 
 	public void setTextIndexService(TextIndexService textIndexService) {
-		if(textIndexService == null)
+		if (textIndexService == null)
 			throw new NullArgumentException("textIndexService");
 		this.textIndexService = textIndexService;
 	}
 
 	@Override
 	@Transactional
-	public Notation createNotation(Domain domain, String text) {
+	public Notation createNotation(Domain domain, String code) {
 		notationInputValidator.validateDomain(domain);
-		notationInputValidator.validateText(text);
-		Node node = graphDb.createNode();
-		notationFactoryNode.createRelationshipTo(node, KnowledgebaseRelationshipType.NOTATION);
-		NotationImpl notationImpl = new  NotationImpl(node).withDomain(domain).withText(text);
-		textIndexService.indexNotation(notationImpl);
-		return notationImpl;
+		notationInputValidator.validateCode(code);
+		Iterable<Notation> notations = textIndexService.getNotationByCode(code);
+		Notation found = null;
+		if (notations != null) {
+			for (Notation notation : notations) {
+				if (notation.getCode().equals(code) && notation.getDomain().equals(domain)) {
+					found = notation;
+					break;
+				}
+			}
+		}
+		if (found == null) {
+			// create new node if none exists
+			Node node = graphDb.createNode();
+			notationFactoryNode.createRelationshipTo(node, KnowledgebaseRelationshipType.NOTATION);
+			found = new NotationImpl(node).withDomain(domain).withCode(code);
+			// index new nodes only
+			textIndexService.indexNotation(found);
+		}
+		return found;
+
 	}
 
 }

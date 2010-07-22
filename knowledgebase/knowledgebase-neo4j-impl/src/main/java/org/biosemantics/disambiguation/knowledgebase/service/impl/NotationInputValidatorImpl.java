@@ -17,9 +17,9 @@ public class NotationInputValidatorImpl  implements NotationInputValidator{
 	}
 
 	@Override
-	public void validateText(String text) {
-		if (StringUtils.isEmpty(text))
-			throw new IllegalArgumentException("text cannot be blank");
+	public void validateCode(String code) {
+		if (StringUtils.isEmpty(code))
+			throw new IllegalArgumentException("code cannot be blank");
 	}
 
 	@Override
@@ -27,7 +27,7 @@ public class NotationInputValidatorImpl  implements NotationInputValidator{
 		if(notation == null)
 			throw new NullArgumentException("notation");
 		validateDomain(notation.getDomain());
-		validateText(notation.getText());
+		validateCode(notation.getCode());
 	}
 
 	@Override

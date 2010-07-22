@@ -1,5 +1,5 @@
 package org.biosemantics.disambiguation.knowledgebase.service;
 
 public interface NotationFactory {
-	Notation createNotation(Domain domain, String text);
+	Notation createNotation(Domain domain, String code);
 }

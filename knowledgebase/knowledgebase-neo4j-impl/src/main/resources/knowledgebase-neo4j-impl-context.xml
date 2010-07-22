@@ -107,4 +107,11 @@
 		</property>
 	</bean>
 
+	<bean id="ambiguousLabelLocator"
+		class="org.biosemantics.disambiguation.knowledgebase.tools.impl.AmbiguousLabelLocatorFileImpl">
+		<constructor-arg>
+			<ref local="graphDb" />
+		</constructor-arg>
+		<constructor-arg value="CSV" />
+	</bean>
 </beans>

@@ -7,7 +7,7 @@ import org.neo4j.graphdb.Node;
 
 public class NotationImpl implements Notation  {
 private static final String DOMAIN_PROPERTY = "domain";
-private static final String TEXT_PROPERTY = "text";
+private static final String CODE_PROPERTY = "code";
 	
 	private Node underlyingNode;
 
@@ -27,14 +27,14 @@ private static final String TEXT_PROPERTY = "text";
 	}
 
 	@Override
-	public String getText() {
-		return (String) underlyingNode.getProperty(TEXT_PROPERTY);
+	public String getCode() {
+		return (String) underlyingNode.getProperty(CODE_PROPERTY);
 	}
 	
-	public void setText(String text){
-		if( text == null)
-			throw new NullArgumentException("text");
-		underlyingNode.setProperty(TEXT_PROPERTY, text);
+	public void setCode(String code){
+		if( code == null)
+			throw new NullArgumentException("code");
+		underlyingNode.setProperty(CODE_PROPERTY, code);
 	}
 	
 	@Override
@@ -55,8 +55,8 @@ private static final String TEXT_PROPERTY = "text";
 		return this;
 	}
 	
-	public NotationImpl withText(String text){
-		setText(text);
+	public NotationImpl withCode(String code){
+		setCode(code);
 		return this;
 	}
 

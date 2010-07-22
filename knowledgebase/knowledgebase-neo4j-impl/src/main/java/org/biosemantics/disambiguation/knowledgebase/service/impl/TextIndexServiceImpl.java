@@ -21,10 +21,11 @@ public class TextIndexServiceImpl implements TextIndexService {
 	private final GraphDatabaseService graphDb;
 	private final IndexService indexService;
 	private final IndexService fullTextIndexService;
-	private static final String CONCEPT_FULL_TXT_INDEX_NAME = "concept_full_text";
-	private static final String LABEL_TXT_INDEX_NAME = "label_text";
-	private static final String LABEL_ID_INDEX_NAME = "label_id";
-	private static final String NOTATION_TXT_INDEX_NAME = "notation_text";
+	private static final String CONCEPT_FULL_TXT_INDEX = "concept_full_text";
+	private static final String LABEL_TXT_INDEX = "label_text";
+	private static final String LABEL_ID_INDEX = "label_id";
+	private static final String NOTATION_CODE_INDEX = "notation_code";
+	private static final String CONCEPT_ID_INDEX = "concept_id";
 
 	private static final String FULL_TEXT_SEPARATOR = " ";
 
@@ -40,7 +41,7 @@ public class TextIndexServiceImpl implements TextIndexService {
 	@Override
 	@Transactional
 	public Collection<Label> getLabelsByText(final String text) {
-		Iterable<Node> nodes = indexService.getNodes(LABEL_TXT_INDEX_NAME, text);
+		Iterable<Node> nodes = indexService.getNodes(LABEL_TXT_INDEX, text);
 		List<Label> labels = new ArrayList<Label>();
 		if (labels != null) {
 			for (Node node : nodes) {
@@ -53,7 +54,7 @@ public class TextIndexServiceImpl implements TextIndexService {
 	@Override
 	@Transactional
 	public Label getLabelById(final String id) {
-		Node node = indexService.getSingleNode(LABEL_ID_INDEX_NAME, id);
+		Node node = indexService.getSingleNode(LABEL_ID_INDEX, id);
 		Label label = null;
 		if (node != null) {
 			label = new LabelImpl(node);
@@ -63,15 +64,15 @@ public class TextIndexServiceImpl implements TextIndexService {
 
 	@Override
 	@Transactional
-	public void indexLabelText(Label label) {
-		indexService.index(((LabelImpl) label).getUnderlyingNode(), LABEL_TXT_INDEX_NAME, label.getText());
-		indexService.index(((LabelImpl) label).getUnderlyingNode(), LABEL_ID_INDEX_NAME, label.getText());
+	public void indexLabel(Label label) {
+		indexService.index(((LabelImpl) label).getUnderlyingNode(), LABEL_TXT_INDEX, label.getText());
+		indexService.index(((LabelImpl) label).getUnderlyingNode(), LABEL_ID_INDEX, label.getId());
 	}
 
 	@Override
 	@Transactional
 	public void indexNotation(Notation notation) {
-		indexService.index(((NotationImpl) notation).getUnderlyingNode(), NOTATION_TXT_INDEX_NAME, notation.getText());
+		indexService.index(((NotationImpl) notation).getUnderlyingNode(), NOTATION_CODE_INDEX, notation.getCode());
 
 	}
 
@@ -83,10 +84,53 @@ public class TextIndexServiceImpl implements TextIndexService {
 			fullText.append(label.getText()).append(FULL_TEXT_SEPARATOR);
 		}
 		for (Notation notation : concept.getNotations()) {
-			fullText.append(notation.getText()).append(FULL_TEXT_SEPARATOR);
+			fullText.append(notation.getCode()).append(FULL_TEXT_SEPARATOR);
 		}
 		ConceptImpl conceptImpl = (ConceptImpl) concept;
-		fullTextIndexService.index(conceptImpl.getUnderlyingNode(), CONCEPT_FULL_TXT_INDEX_NAME, fullText.toString());
+		fullTextIndexService.index(conceptImpl.getUnderlyingNode(), CONCEPT_FULL_TXT_INDEX, fullText.toString());
+		indexService.index(conceptImpl.getUnderlyingNode(), CONCEPT_ID_INDEX, conceptImpl.getId());
+	}
+
+	@Override
+	@Transactional
+	public Collection<Notation> getNotationByCode(String code) {
+		Iterable<Node> nodes = indexService.getNodes(NOTATION_CODE_INDEX, code);
+		List<Notation> notations = new ArrayList<Notation>();
+		if (notations != null) {
+			for (Node node : nodes) {
+				notations.add(new NotationImpl(node));
+			}
+		}
+		return notations;
+	}
+
+	@Override
+	@Transactional
+	public Concept getConceptById(String id) {
+		Node node = indexService.getSingleNode(CONCEPT_ID_INDEX, id);
+		ConceptImpl conceptImpl = null;
+		if (node != null) {
+			conceptImpl = new ConceptImpl(node);
+		}
+		return conceptImpl;
+	}
+
+	@Override
+	@Transactional
+	public Collection<Concept> fullTextSearch(String text, int maxResults) {
+		Iterable<Node> nodes = fullTextIndexService.getNodes(CONCEPT_FULL_TXT_INDEX, text);
+		List<Concept> concepts = new ArrayList<Concept>();
+		if (nodes != null) {
+			int ctr = 0;
+			for (Node node : nodes) {
+				if (++ctr > maxResults) {
+					break;
+				} else {
+					concepts.add(new ConceptImpl(node));
+				}
+			}
+		}
+		return concepts;
 	}
 
 }

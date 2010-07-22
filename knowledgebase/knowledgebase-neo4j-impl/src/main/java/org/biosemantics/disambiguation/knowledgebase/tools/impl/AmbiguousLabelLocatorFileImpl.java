@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.NullArgumentException;
+import org.apache.commons.lang.StringUtils;
 import org.biosemantics.disambiguation.knowledgebase.service.Concept;
 import org.biosemantics.disambiguation.knowledgebase.service.Label;
 import org.biosemantics.disambiguation.knowledgebase.service.impl.ConceptImpl;
@@ -22,13 +23,14 @@ import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
 public class AmbiguousLabelLocatorFileImpl implements AmbiguousLabelLocator {
 
 	public enum FileType {
-		CSV(',', "csv"), TSV('\t', "tsv");
+		CSV(',', ".csv"), TSV('\t', ".tsv");
 		private char fileSeparator;
 		private String fileExtension;
 
@@ -42,7 +44,8 @@ public class AmbiguousLabelLocatorFileImpl implements AmbiguousLabelLocator {
 	private final GraphDatabaseService graphDb;
 	private final FileType fileType;
 	private File outputFile;
-	private int logInterval = 1000;
+	private String outputFolder;
+	private int logInterval = 10000;
 
 	public AmbiguousLabelLocatorFileImpl(GraphDatabaseService graphDatabaseService, FileType fileType)
 			throws IOException {
@@ -58,7 +61,12 @@ public class AmbiguousLabelLocatorFileImpl implements AmbiguousLabelLocator {
 		this.logInterval = logInterval;
 	}
 
+	public void setOutputFolder(String outputFolder) {
+		this.outputFolder = outputFolder;
+	}
+
 	@Override
+	@Transactional
 	public void locateAmbiguousLabels() {
 		CSVWriter writer = null;
 		try {
@@ -74,9 +82,14 @@ public class AmbiguousLabelLocatorFileImpl implements AmbiguousLabelLocator {
 				Traverser labelNodes = labelFactoryNode
 						.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
 								KnowledgebaseRelationshipType.LABEL, Direction.OUTGOING);
-				outputFile = File.createTempFile(String.valueOf(System.currentTimeMillis()), fileType.fileExtension);
+				if (StringUtils.isBlank(outputFolder)) {
+					outputFile = File
+							.createTempFile(String.valueOf(System.currentTimeMillis()), fileType.fileExtension);
+				} else {
+					outputFile = new File(outputFolder, System.currentTimeMillis() + fileType.fileExtension);
+				}
+				logger.info("output file path \"{}\"", outputFile.getAbsolutePath());
 				writer = new CSVWriter(new FileWriter(outputFile), fileType.fileSeparator);
-				logger.info("absolute path for output file is {}", outputFile.getAbsolutePath());
 				long labelNodeCounter = 0;
 				logger.info("{} root node found, ambiguous label search starts", KnowledgebaseRelationshipType.LABELS);
 				for (Node labelNode : labelNodes) {
@@ -100,12 +113,13 @@ public class AmbiguousLabelLocatorFileImpl implements AmbiguousLabelLocator {
 						// write line to file
 						writer.writeNext(columns.toArray(new String[columns.size()]));
 						writer.flush();
-						labelNodeCounter++;
-						if (labelNodeCounter % logInterval == 0) {
-							logger.info("completed iterating {} label nodes in {} (ms)", new Object[] {
-									labelNodeCounter, (System.currentTimeMillis() - startTime) });
-							startTime = System.currentTimeMillis();
-						}
+					}
+					labelNodeCounter++;
+					if (labelNodeCounter % logInterval == 0) {
+						long endTime = System.currentTimeMillis();
+						logger.info("completed iterating {} label nodes in {} (ms)", new Object[] { labelNodeCounter,
+								(endTime - startTime) });
+						startTime = endTime;
 					}
 				}
 				logger.info("ambiguous label search ends. See output file for results.");

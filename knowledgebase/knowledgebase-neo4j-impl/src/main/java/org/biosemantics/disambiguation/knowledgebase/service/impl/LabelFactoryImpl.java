@@ -99,7 +99,8 @@ public class LabelFactoryImpl implements LabelFactory {
 			String id = idGenerator.generateRandomId();
 			found = new LabelImpl(node).withId(id).withLabelType(labelType).withLanguage(language).withText(text);
 			// index the new node (old nodes are already indexed)
-			textIndexService.indexLabelText(found);
+			
+			textIndexService.indexLabel(found);
 		}
 		return found;
 	}
