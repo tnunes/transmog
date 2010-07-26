@@ -113,5 +113,6 @@
 			<ref local="graphDb" />
 		</constructor-arg>
 		<constructor-arg value="CSV" />
+		<property name="outputFolder" value="${tools.output.folder}"></property>
 	</bean>
 </beans>
