@@ -48,7 +48,7 @@ public class ConceptFactoryUnitTest {
 		List<Label> labels  = new ArrayList<Label>();
 		labels.add(prefLabel);
 		labels.add(altLabel);
-		Notation umlsNotation = notationFactory.createNotation(Domain.UMLS, "C00345678");
+		Notation umlsNotation = notationFactory.createNotation(Domain.MTH, "C00345678");
 		List<Notation> notations  = new ArrayList<Notation>();
 		notations.add(umlsNotation);
 		conceptFactory.createConcept(labels, notations);

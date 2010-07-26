@@ -26,7 +26,7 @@ public class NotationFactoryTest {
 	
 	@Test(expected=IllegalArgumentException.class)
 	public void testNullCode(){
-		notationFactory.createNotation(Domain.UMLS, null);
+		notationFactory.createNotation(Domain.MTH, null);
 		
 	}
 	
@@ -37,15 +37,15 @@ public class NotationFactoryTest {
 	
 	@Test
 	public void testCreateNotation(){
-		Notation notation =  notationFactory.createNotation(Domain.UMLS, C0012345);
+		Notation notation =  notationFactory.createNotation(Domain.MTH, C0012345);
 		Assert.assertNotNull(notation);
 	}
 	
 	@Test
 	public void testCreateNotationEquals(){
-		Notation notationFirst = notationFactory.createNotation(Domain.UMLS, C54321);
-		Notation notationSecond = notationFactory.createNotation(Domain.UMLS, C54321);
-		Notation notationThird = notationFactory.createNotation(Domain.UMLS, C0012345);
+		Notation notationFirst = notationFactory.createNotation(Domain.MTH, C54321);
+		Notation notationSecond = notationFactory.createNotation(Domain.MTH, C54321);
+		Notation notationThird = notationFactory.createNotation(Domain.MTH, C0012345);
 		Assert.assertEquals(notationFirst, notationSecond);
 		Assert.assertNotSame(notationFirst, notationThird);
 	}
