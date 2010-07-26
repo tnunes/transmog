@@ -101,17 +101,20 @@ public class AmbiguousLabelLocatorFileImpl implements AmbiguousLabelLocator {
 					for (Node conceptNode : conceptNodes) {
 						conceptNodeList.add(conceptNode);
 					}
+					logger.debug("{} concepts found for label {}",
+							new Object[] { conceptNodeList.size(), labelNode.getProperty("id") });
 					if (conceptNodeList.size() > 1) {
 						Label label = new LabelImpl(labelNode);
-						List<String> columns = new ArrayList<String>();
-						columns.add(label.getId());
-						columns.add(String.valueOf(conceptNodeList.size()));
+						// csv columns like "lableId","10", "conceptid"...
+						List<String> csvColumns = new ArrayList<String>();
+						csvColumns.add(label.getId());
+						csvColumns.add(String.valueOf(conceptNodeList.size()));
 						for (Node node : conceptNodeList) {
 							Concept concept = new ConceptImpl(node);
-							columns.add(concept.getId());
+							csvColumns.add(concept.getId());
 						}
 						// write line to file
-						writer.writeNext(columns.toArray(new String[columns.size()]));
+						writer.writeNext(csvColumns.toArray(new String[csvColumns.size()]));
 						writer.flush();
 					}
 					labelNodeCounter++;
