@@ -89,8 +89,8 @@ public class TextIndexServiceTest {
 	
 	@Test
 	public void testGetNotationByText(){
-		Notation n1 = notationFactory.createNotation(Domain.UMLS, "1234567890");
-		Notation n2 = notationFactory.createNotation(Domain.UMLS, "ABCDEFGH");
+		Notation n1 = notationFactory.createNotation(Domain.MTH, "1234567890");
+		Notation n2 = notationFactory.createNotation(Domain.MTH, "ABCDEFGH");
 		Label l1 = labelFactory.createPreferredLabel("Resistance is futile", Language.EN);
 		Label l2 = labelFactory.createAlternateLabel("The Federation starship enterprise", Language.EN);
 		List<Label> labels = new ArrayList<Label>();
@@ -100,12 +100,12 @@ public class TextIndexServiceTest {
 		notations.add(n1);
 		notations.add(n2);
 		conceptFactory.createConcept(labels, notations);
-		Collection<Notation> foundNotation = textIndexService.getNotationByCode("ABCDEFGH");
+		Collection<Notation> foundNotation = textIndexService.getNotationByCode(n2.getCode());
 		Assert.assertFalse(foundNotation.isEmpty());
 		Assert.assertEquals(1, foundNotation.size());
 		for (Notation found : foundNotation) {
-			Assert.assertEquals(found.getCode(), "ABCDEFGH");
-			Assert.assertEquals(found.getDomain(), Domain.UMLS);
+			Assert.assertEquals(found.getCode(), n2.getCode());
+			Assert.assertEquals(found.getDomain(), Domain.MTH);
 		}
 	}
 	
@@ -117,10 +117,11 @@ public class TextIndexServiceTest {
 		labels.add(l1);
 		labels.add(l2);
 		conceptFactory.createConcept(labels);
+		l1.getText();
 		Label foundLabel = textIndexService.getLabelById(l1.getId());
 		Assert.assertNotNull(foundLabel);
 		Assert.assertEquals(foundLabel, l1);
-		Assert.assertEquals(foundLabel.getText(), "Resistance is futile");
+		Assert.assertEquals(foundLabel.getText(), l1.getText());
 		Assert.assertEquals(foundLabel.getLabelType(), LabelType.PREFERRED);
 		Assert.assertEquals(foundLabel.getLanguage(), Language.EN);
 	}
@@ -132,8 +133,8 @@ public class TextIndexServiceTest {
 		List<Label> labels = new ArrayList<Label>();
 		labels.add(l1);
 		labels.add(l2);
-		Notation n1 = notationFactory.createNotation(Domain.UMLS, "1234567890");
-		Notation n2 = notationFactory.createNotation(Domain.UMLS, "ABCDEFGH");
+		Notation n1 = notationFactory.createNotation(Domain.MTH, "1234567890");
+		Notation n2 = notationFactory.createNotation(Domain.MTH, "ABCDEFGH");
 		List<Notation> notations  = new ArrayList<Notation>();
 		notations.add(n1);
 		notations.add(n2);
