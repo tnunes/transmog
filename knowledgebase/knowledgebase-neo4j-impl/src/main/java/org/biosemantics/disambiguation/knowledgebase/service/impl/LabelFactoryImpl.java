@@ -80,6 +80,7 @@ public class LabelFactoryImpl implements LabelFactory {
 		return createLabel(LabelType.ALTERNATE, text, language);
 	}
 
+	@Transactional
 	private Label createLabel(LabelType labelType, String text, Language language) {
 		Iterable<Label> labels = textIndexService.getLabelsByText(text);
 		Label found = null;
@@ -99,7 +100,6 @@ public class LabelFactoryImpl implements LabelFactory {
 			String id = idGenerator.generateRandomId();
 			found = new LabelImpl(node).withId(id).withLabelType(labelType).withLanguage(language).withText(text);
 			// index the new node (old nodes are already indexed)
-			
 			textIndexService.indexLabel(found);
 		}
 		return found;
