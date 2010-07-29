@@ -44,23 +44,23 @@
 	</bean>
 
 	<bean id="idGenerator"
-		class="org.biosemantics.disambiguation.knowledgebase.service.impl.IdGeneratorImpl"></bean>
+		class="org.biosemantics.disambiguation.knowledgebase.neo4j.impl.IdGeneratorImpl"></bean>
 
 	<bean id="labelInputValidator"
-		class="org.biosemantics.disambiguation.knowledgebase.service.impl.LabelInputValidatorImpl"></bean>
+		class="org.biosemantics.disambiguation.knowledgebase.neo4j.impl.LabelInputValidatorImpl"></bean>
 
 	<bean id="notationInputValidator"
-		class="org.biosemantics.disambiguation.knowledgebase.service.impl.NotationInputValidatorImpl"></bean>
+		class="org.biosemantics.disambiguation.knowledgebase.neo4j.impl.NotationInputValidatorImpl"></bean>
 
 	<bean id="textIndexService"
-		class="org.biosemantics.disambiguation.knowledgebase.service.impl.TextIndexServiceImpl">
+		class="org.biosemantics.disambiguation.knowledgebase.neo4j.impl.TextIndexServiceImpl">
 		<constructor-arg>
 			<ref local="graphDb" />
 		</constructor-arg>
 	</bean>
 
 	<bean id="labelFactory"
-		class="org.biosemantics.disambiguation.knowledgebase.service.impl.LabelFactoryImpl">
+		class="org.biosemantics.disambiguation.knowledgebase.neo4j.impl.LabelFactoryImpl">
 		<constructor-arg>
 			<ref local="graphDb" />
 		</constructor-arg>
@@ -76,7 +76,7 @@
 	</bean>
 
 	<bean id="notationFactory"
-		class="org.biosemantics.disambiguation.knowledgebase.service.impl.NotationFactoryImpl">
+		class="org.biosemantics.disambiguation.knowledgebase.neo4j.impl.NotationFactoryImpl">
 		<constructor-arg>
 			<ref local="graphDb" />
 		</constructor-arg>
@@ -89,7 +89,7 @@
 	</bean>
 
 	<bean id="conceptFactory"
-		class="org.biosemantics.disambiguation.knowledgebase.service.impl.ConceptFactoryImpl">
+		class="org.biosemantics.disambiguation.knowledgebase.neo4j.impl.ConceptFactoryImpl">
 		<constructor-arg>
 			<ref local="graphDb" />
 		</constructor-arg>

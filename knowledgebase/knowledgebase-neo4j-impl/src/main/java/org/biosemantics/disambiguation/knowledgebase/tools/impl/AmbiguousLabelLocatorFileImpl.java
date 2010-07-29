@@ -8,11 +8,11 @@ import java.util.List;
 
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
-import org.biosemantics.disambiguation.knowledgebase.service.Concept;
-import org.biosemantics.disambiguation.knowledgebase.service.Label;
-import org.biosemantics.disambiguation.knowledgebase.service.impl.ConceptImpl;
-import org.biosemantics.disambiguation.knowledgebase.service.impl.KnowledgebaseRelationshipType;
-import org.biosemantics.disambiguation.knowledgebase.service.impl.LabelImpl;
+import org.biosemantics.disambiguation.knowledgebase.api.Concept;
+import org.biosemantics.disambiguation.knowledgebase.api.Label;
+import org.biosemantics.disambiguation.knowledgebase.neo4j.impl.ConceptImpl;
+import org.biosemantics.disambiguation.knowledgebase.neo4j.impl.KnowledgebaseRelationshipType;
+import org.biosemantics.disambiguation.knowledgebase.neo4j.impl.LabelImpl;
 import org.biosemantics.disambiguation.knowledgebase.tools.AmbiguousLabelLocator;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
