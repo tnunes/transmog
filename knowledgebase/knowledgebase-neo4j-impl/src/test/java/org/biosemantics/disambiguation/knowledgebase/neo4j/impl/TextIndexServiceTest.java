@@ -6,16 +6,16 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.biosemantics.disambiguation.knowledgebase.api.Concept;
-import org.biosemantics.disambiguation.knowledgebase.api.ConceptFactory;
-import org.biosemantics.disambiguation.knowledgebase.api.Domain;
-import org.biosemantics.disambiguation.knowledgebase.api.Label;
-import org.biosemantics.disambiguation.knowledgebase.api.LabelFactory;
-import org.biosemantics.disambiguation.knowledgebase.api.Language;
-import org.biosemantics.disambiguation.knowledgebase.api.Notation;
-import org.biosemantics.disambiguation.knowledgebase.api.NotationFactory;
-import org.biosemantics.disambiguation.knowledgebase.api.TextIndexService;
-import org.biosemantics.disambiguation.knowledgebase.api.Label.LabelType;
+import org.biosemantics.disambiguation.knowledgebase.service.Concept;
+import org.biosemantics.disambiguation.knowledgebase.service.ConceptService;
+import org.biosemantics.disambiguation.knowledgebase.service.Domain;
+import org.biosemantics.disambiguation.knowledgebase.service.Label;
+import org.biosemantics.disambiguation.knowledgebase.service.Label.LabelType;
+import org.biosemantics.disambiguation.knowledgebase.service.LabelService;
+import org.biosemantics.disambiguation.knowledgebase.service.Language;
+import org.biosemantics.disambiguation.knowledgebase.service.Notation;
+import org.biosemantics.disambiguation.knowledgebase.service.NotationService;
+import org.biosemantics.disambiguation.knowledgebase.service.impl.TextIndexService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,11 +30,11 @@ public class TextIndexServiceTest {
 	@Autowired
 	private TextIndexService textIndexService;
 	@Autowired
-	private LabelFactory labelFactory;
+	private LabelService labelFactory;
 	@Autowired
-	private NotationFactory notationFactory;
+	private NotationService notationFactory;
 	@Autowired
-	private ConceptFactory conceptFactory;
+	private ConceptService conceptFactory;
 
 	@Test
 	public void testGetLabelsByText(){
@@ -109,7 +109,7 @@ public class TextIndexServiceTest {
 		notations.add(n1);
 		notations.add(n2);
 		conceptFactory.createConcept(labels, notations);
-		Collection<Notation> foundNotation = textIndexService.getNotationByCode(n2.getCode());
+		Collection<Notation> foundNotation = textIndexService.getNotationsByCode(n2.getCode());
 		Assert.assertFalse(foundNotation.isEmpty());
 		Assert.assertEquals(1, foundNotation.size());
 		for (Notation found : foundNotation) {

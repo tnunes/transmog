@@ -2,9 +2,9 @@ package org.biosemantics.disambiguation.knowledgebase.neo4j.impl;
 
 import junit.framework.Assert;
 
-import org.biosemantics.disambiguation.knowledgebase.api.Domain;
-import org.biosemantics.disambiguation.knowledgebase.api.Notation;
-import org.biosemantics.disambiguation.knowledgebase.api.NotationFactory;
+import org.biosemantics.disambiguation.knowledgebase.service.Domain;
+import org.biosemantics.disambiguation.knowledgebase.service.Notation;
+import org.biosemantics.disambiguation.knowledgebase.service.NotationService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ public class NotationFactoryTest {
 	private static final String C0012345 = "C0012345";
 
 	@Autowired
-	private NotationFactory notationFactory;
+	private NotationService notationFactory;
 
 	
 	@Test(expected=IllegalArgumentException.class)

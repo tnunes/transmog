@@ -2,9 +2,9 @@ package org.biosemantics.disambiguation.knowledgebase.neo4j.impl;
 
 import junit.framework.Assert;
 
-import org.biosemantics.disambiguation.knowledgebase.api.Label;
-import org.biosemantics.disambiguation.knowledgebase.api.LabelFactory;
-import org.biosemantics.disambiguation.knowledgebase.api.Language;
+import org.biosemantics.disambiguation.knowledgebase.service.Label;
+import org.biosemantics.disambiguation.knowledgebase.service.LabelService;
+import org.biosemantics.disambiguation.knowledgebase.service.Language;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class LabelFactoryTest {
 	
 	@Autowired
-	private LabelFactory labelFactory;
+	private LabelService labelFactory;
 	private static final String PREF_LBL = "PREF_LBL";
 	private static final String ALT_LBL = "ALT_LBL";
 

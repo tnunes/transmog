@@ -6,13 +6,13 @@ package org.biosemantics.disambiguation.knowledgebase.neo4j.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.biosemantics.disambiguation.knowledgebase.api.ConceptFactory;
-import org.biosemantics.disambiguation.knowledgebase.api.Domain;
-import org.biosemantics.disambiguation.knowledgebase.api.Label;
-import org.biosemantics.disambiguation.knowledgebase.api.LabelFactory;
-import org.biosemantics.disambiguation.knowledgebase.api.Language;
-import org.biosemantics.disambiguation.knowledgebase.api.Notation;
-import org.biosemantics.disambiguation.knowledgebase.api.NotationFactory;
+import org.biosemantics.disambiguation.knowledgebase.service.ConceptService;
+import org.biosemantics.disambiguation.knowledgebase.service.Domain;
+import org.biosemantics.disambiguation.knowledgebase.service.Label;
+import org.biosemantics.disambiguation.knowledgebase.service.LabelService;
+import org.biosemantics.disambiguation.knowledgebase.service.Language;
+import org.biosemantics.disambiguation.knowledgebase.service.Notation;
+import org.biosemantics.disambiguation.knowledgebase.service.NotationService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,15 +25,15 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class ConceptFactoryUnitTest {
 	
 	@Autowired
-	private ConceptFactory conceptFactory;
+	private ConceptService conceptFactory;
 	@Autowired
-	private LabelFactory labelFactory;
+	private LabelService labelFactory;
 	@Autowired
-	private NotationFactory notationFactory;
+	private NotationService notationFactory;
 	
 
 	/**
-	 * Test method for {@link org.biosemantics.disambiguation.knowledgebase.neo4j.impl.ConceptFactoryImpl#createConcept(java.util.Collection)}.
+	 * Test method for {@link org.biosemantics.disambiguation.knowledgebase.service.impl.ConceptServiceImpl#createConcept(java.util.Collection)}.
 	 */
 	@Test
 	public void createConceptWithLabel() {
@@ -46,7 +46,7 @@ public class ConceptFactoryUnitTest {
 	}
 
 	/**
-	 * Test method for {@link org.biosemantics.disambiguation.knowledgebase.neo4j.impl.ConceptFactoryImpl#createConcept(java.util.Collection, java.util.Collection)}.
+	 * Test method for {@link org.biosemantics.disambiguation.knowledgebase.service.impl.ConceptServiceImpl#createConcept(java.util.Collection, java.util.Collection)}.
 	 */
 	@Test
 	public void createConceptWithLabelNotation() {
