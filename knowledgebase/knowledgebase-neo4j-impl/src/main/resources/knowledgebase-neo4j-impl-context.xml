@@ -7,7 +7,6 @@
 
 	<context:property-placeholder location="classpath:knowledgebase-conf.properties" />
 
-
 	<tx:annotation-driven transaction-manager="transactionManager" />
 	<alias name="neo4jTransactionManager" alias="transactionManager" />
 
@@ -44,23 +43,23 @@
 	</bean>
 
 	<bean id="idGenerator"
-		class="org.biosemantics.disambiguation.knowledgebase.neo4j.impl.IdGeneratorImpl"></bean>
+		class="org.biosemantics.disambiguation.knowledgebase.service.impl.IdGeneratorImpl"></bean>
 
 	<bean id="labelInputValidator"
-		class="org.biosemantics.disambiguation.knowledgebase.neo4j.impl.LabelInputValidatorImpl"></bean>
+		class="org.biosemantics.disambiguation.knowledgebase.validation.impl.LabelInputValidatorImpl"></bean>
 
 	<bean id="notationInputValidator"
-		class="org.biosemantics.disambiguation.knowledgebase.neo4j.impl.NotationInputValidatorImpl"></bean>
+		class="org.biosemantics.disambiguation.knowledgebase.validation.impl.NotationInputValidatorImpl"></bean>
 
 	<bean id="textIndexService"
-		class="org.biosemantics.disambiguation.knowledgebase.neo4j.impl.TextIndexServiceImpl">
+		class="org.biosemantics.disambiguation.knowledgebase.service.impl.TextIndexServiceImpl">
 		<constructor-arg>
 			<ref local="graphDb" />
 		</constructor-arg>
 	</bean>
 
 	<bean id="labelFactory"
-		class="org.biosemantics.disambiguation.knowledgebase.neo4j.impl.LabelFactoryImpl">
+		class="org.biosemantics.disambiguation.knowledgebase.service.impl.LabelServiceImpl">
 		<constructor-arg>
 			<ref local="graphDb" />
 		</constructor-arg>
@@ -76,7 +75,7 @@
 	</bean>
 
 	<bean id="notationFactory"
-		class="org.biosemantics.disambiguation.knowledgebase.neo4j.impl.NotationFactoryImpl">
+		class="org.biosemantics.disambiguation.knowledgebase.service.impl.NotationServiceImpl">
 		<constructor-arg>
 			<ref local="graphDb" />
 		</constructor-arg>
@@ -89,7 +88,7 @@
 	</bean>
 
 	<bean id="conceptFactory"
-		class="org.biosemantics.disambiguation.knowledgebase.neo4j.impl.ConceptFactoryImpl">
+		class="org.biosemantics.disambiguation.knowledgebase.service.impl.ConceptServiceImpl">
 		<constructor-arg>
 			<ref local="graphDb" />
 		</constructor-arg>
