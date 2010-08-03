@@ -1,0 +1,9 @@
+package org.biosemantics.disambiguation.knowledgebase.validation;
+
+import org.biosemantics.disambiguation.knowledgebase.service.ConceptRelationshipType;
+import org.biosemantics.disambiguation.knowledgebase.service.RelationshipSourceType;
+
+public interface ConceptRelationInputValidator {
+	void validateConceptRelationshipType(ConceptRelationshipType conceptRelationshipType);
+	void validateRelationshipSourceType(RelationshipSourceType relationshipSourceType);
+}
