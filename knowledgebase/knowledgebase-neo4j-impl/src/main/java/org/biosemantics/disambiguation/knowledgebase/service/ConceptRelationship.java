@@ -2,16 +2,20 @@ package org.biosemantics.disambiguation.knowledgebase.service;
 
 public interface ConceptRelationship {
 
-	ConceptRelationshipType getConceptRelationshipType();
-	
-	RelationshipSourceType getRelationshipSourceType();
-
 	String getId();
 
-	String getDescription();
+	int getScore();
 
-	int getFrequency();
+	void setScore(int score);
 
-	void setFrequency(int frequency);
+	Concept getSource();
+
+	Concept getTarget();
+
+	String getPredicateConceptId();
+
+	ConceptRelationshipType getConceptRelationshipType();
+
+	RelationshipCategory getRelationshipCategory();
 
 }

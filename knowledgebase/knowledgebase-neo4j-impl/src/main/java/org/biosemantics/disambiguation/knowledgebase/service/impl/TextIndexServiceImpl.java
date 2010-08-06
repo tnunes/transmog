@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.commons.lang.NullArgumentException;
 import org.biosemantics.disambiguation.knowledgebase.service.Concept;
+import org.biosemantics.disambiguation.knowledgebase.service.Domain;
 import org.biosemantics.disambiguation.knowledgebase.service.Label;
 import org.biosemantics.disambiguation.knowledgebase.service.Notation;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -130,6 +131,19 @@ public class TextIndexServiceImpl implements TextIndexService {
 			}
 		}
 		return concepts;
+	}
+
+	@Override
+	public Notation getNotationsByDomainAndCode(Domain domain, String code) {
+		Notation found = null;
+		Collection<Notation> notations = getNotationsByCode(code);
+		for (Notation notation : notations) {
+			if (notation.getDomain().equals(domain)) {
+				found = notation;
+				break;
+			}
+		}
+		return found;
 	}
 
 }

@@ -22,6 +22,7 @@ public class ConceptServiceImpl implements ConceptService {
 
 	private final GraphDatabaseService graphDb;
 	private final Node conceptFactoryNode;
+	private final Node predicateFactoryNode;
 	private LabelInputValidator labelInputValidator;
 	private NotationInputValidator notationInputValidator;
 	private IdGenerator idGenerator;
@@ -33,7 +34,7 @@ public class ConceptServiceImpl implements ConceptService {
 		this.graphDb = graphDatabaseService;
 		Transaction transaction = this.graphDb.beginTx();
 		try {
-			// create the sub node if none exists
+			// create the concepts sub node if none exists
 			Relationship rel = this.graphDb.getReferenceNode().getSingleRelationship(
 					KnowledgebaseRelationshipType.CONCEPTS, Direction.OUTGOING);
 			if (rel == null) {
@@ -43,6 +44,18 @@ public class ConceptServiceImpl implements ConceptService {
 
 			} else {
 				conceptFactoryNode = rel.getEndNode();
+			}
+
+			// create the predicates sub node if none exists
+			Relationship predicates = this.graphDb.getReferenceNode().getSingleRelationship(
+					KnowledgebaseRelationshipType.PREDICATES, Direction.OUTGOING);
+			if (predicates == null) {
+				predicateFactoryNode = this.graphDb.createNode();
+				this.graphDb.getReferenceNode().createRelationshipTo(conceptFactoryNode,
+						KnowledgebaseRelationshipType.PREDICATES);
+
+			} else {
+				predicateFactoryNode = predicates.getEndNode();
 			}
 			transaction.success();
 		} finally {
@@ -67,11 +80,9 @@ public class ConceptServiceImpl implements ConceptService {
 			throw new NullArgumentException("notationInputValidator");
 		this.notationInputValidator = notationInputValidator;
 	}
-	
-	
 
 	public void setTextIndexService(TextIndexService textIndexService) {
-		if(textIndexService == null)
+		if (textIndexService == null)
 			throw new NullArgumentException("textIndexService");
 		this.textIndexService = textIndexService;
 	}
@@ -79,24 +90,46 @@ public class ConceptServiceImpl implements ConceptService {
 	@Override
 	@Transactional
 	public Concept createConcept(Collection<Label> labels) {
-		labelInputValidator.validateLabels(labels);
-		String id = idGenerator.generateRandomId();
-		Node node = graphDb.createNode();
-		conceptFactoryNode.createRelationshipTo(node, KnowledgebaseRelationshipType.CONCEPT);
-		ConceptImpl conceptImpl = new ConceptImpl(node).withId(id).withLabels(labels);
-		textIndexService.indexConcept(conceptImpl);
+		ConceptImpl conceptImpl = createConceptImpl(labels, null);
+		conceptFactoryNode.createRelationshipTo(conceptImpl.getUnderlyingNode(), KnowledgebaseRelationshipType.CONCEPT);
 		return conceptImpl;
 	}
 
 	@Override
 	@Transactional
 	public Concept createConcept(Collection<Label> labels, Collection<Notation> notations) {
+		ConceptImpl conceptImpl = createConceptImpl(labels, notations);
+		conceptFactoryNode.createRelationshipTo(conceptImpl.getUnderlyingNode(), KnowledgebaseRelationshipType.CONCEPT);
+		return conceptImpl;
+	}
+
+	@Override
+	@Transactional
+	public Concept createPredicate(Collection<Label> labels) {
+		ConceptImpl conceptImpl = createConceptImpl(labels, null);
+		predicateFactoryNode.createRelationshipTo(conceptImpl.getUnderlyingNode(),
+				KnowledgebaseRelationshipType.PREDICATE);
+		return conceptImpl;
+	}
+
+	@Override
+	@Transactional
+	public Concept createPredicate(Collection<Label> labels, Collection<Notation> notations) {
+		ConceptImpl conceptImpl = createConceptImpl(labels, notations);
+		predicateFactoryNode.createRelationshipTo(conceptImpl.getUnderlyingNode(),
+				KnowledgebaseRelationshipType.PREDICATE);
+		return conceptImpl;
+	}
+
+	private ConceptImpl createConceptImpl(Collection<Label> labels, Collection<Notation> notations) {
 		labelInputValidator.validateLabels(labels);
 		String id = idGenerator.generateRandomId();
-		notationInputValidator.validateNotations(notations);
 		Node node = graphDb.createNode();
-		conceptFactoryNode.createRelationshipTo(node, KnowledgebaseRelationshipType.CONCEPT);
-		ConceptImpl conceptImpl = new ConceptImpl(node).withId(id).withLabels(labels).withNotations(notations);
+		ConceptImpl conceptImpl = new ConceptImpl(node).withId(id).withLabels(labels);
+		if (notations != null) {
+			notationInputValidator.validateNotations(notations);
+			conceptImpl.setNotations(notations);
+		}
 		textIndexService.indexConcept(conceptImpl);
 		return conceptImpl;
 	}

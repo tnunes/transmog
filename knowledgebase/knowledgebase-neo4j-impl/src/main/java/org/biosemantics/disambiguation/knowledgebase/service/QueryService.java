@@ -1,5 +1,8 @@
 package org.biosemantics.disambiguation.knowledgebase.service;
 
+import java.util.Collection;
+
 public interface QueryService {
-	Iterable<Label> getLabels(String text);
+	Collection<Concept> getConceptsByNotation(Domain domain, String code);
+	
 }

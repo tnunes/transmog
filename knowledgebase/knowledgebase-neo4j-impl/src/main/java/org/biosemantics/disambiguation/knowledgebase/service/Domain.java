@@ -1,14 +1,15 @@
 package org.biosemantics.disambiguation.knowledgebase.service;
 
 /**
- * All "." and "-" converted to "_" in domain names.
+ * All "." and "-" converted to "_" in domain names as they are illegal characters.
  * 
  */
 public enum Domain {
-	AIR("AI/RHEUM, 1993"), ALT("Alternative Billing Concepts, 2009"), AOD("	Alcohol and Other Drug Thesaurus, 2000"), AOT(
-			"Authorized Osteopathic Thesaurus, 2003"), BI("Beth Israel Vocabulary, 1.0"), CCPSS(
-			"Canonical Clinical Problem Statement System, 1999"), CCS("	Clinical Classifications Software, 2005"), COSTAR(
-			"COSTAR, 1989-1995"), CPM("Medical Entities Dictionary, 2003"), CPT("Current Procedural Terminology, 2010"), CPTSP(
+	UMLS("UMLS 2010 aa release"), AIR("AI/RHEUM, 1993"), ALT("Alternative Billing Concepts, 2009"), AOD(
+			"	Alcohol and Other Drug Thesaurus, 2000"), AOT("Authorized Osteopathic Thesaurus, 2003"), BI(
+			"Beth Israel Vocabulary, 1.0"), CCPSS("Canonical Clinical Problem Statement System, 1999"), CCS(
+			"	Clinical Classifications Software, 2005"), COSTAR("COSTAR, 1989-1995"), CPM(
+			"Medical Entities Dictionary, 2003"), CPT("Current Procedural Terminology, 2010"), CPTSP(
 			"Physicians' Current Procedural Terminology, Spanish Translation, 2001"), CSP("CRISP Thesaurus, 2006"), CST(
 			"	COSTART, 1995"), DDB("Diseases Database, 2000"), DMDICD10("German translation of ICD10, 1995"), DMDUMD(
 			"German translation of UMDNS, 1996"), DSM3R("DSM-III-R, 1987"), DSM4("DSM-IV, 1994"), DXP("DXplain, 1994"), FMA(

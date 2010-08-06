@@ -1,18 +1,19 @@
 package org.biosemantics.disambiguation.knowledgebase.service.impl;
 
 import org.apache.commons.lang.NullArgumentException;
+import org.biosemantics.disambiguation.knowledgebase.service.Concept;
 import org.biosemantics.disambiguation.knowledgebase.service.ConceptRelationship;
 import org.biosemantics.disambiguation.knowledgebase.service.ConceptRelationshipType;
-import org.biosemantics.disambiguation.knowledgebase.service.RelationshipSourceType;
+import org.biosemantics.disambiguation.knowledgebase.service.RelationshipCategory;
 import org.neo4j.graphdb.Relationship;
 
 public class ConceptRelationshipImpl implements ConceptRelationship {
 
 	protected Relationship underlyingRelationship;
 	private static final String ID_PROPERTY = "id";
-	private static final String FREQUENCY_PROPERTY = "frequency";
-	private static final String DESCRIPTION_PROPERTY = "description";
+	private static final String SCORE_PROPERTY = "score";
 	private static final String RLSP_SOURCE_TYPE_PROPERTY = "relationshipSourceType";
+	private static final String PREDICATE_CONCEPT_ID_PROPERTY = "predicateConceptId";
 
 	public ConceptRelationshipImpl(Relationship relationship) {
 		this.underlyingRelationship = relationship;
@@ -35,34 +36,43 @@ public class ConceptRelationshipImpl implements ConceptRelationship {
 	}
 
 	@Override
-	public String getDescription() {
-		return (String) underlyingRelationship.getProperty(DESCRIPTION_PROPERTY);
-	}
-
-	public void setDescription(String description) {
-		if (description == null)
-			throw new NullArgumentException("description");
-		underlyingRelationship.setProperty(DESCRIPTION_PROPERTY, description);
+	public int getScore() {
+		return Integer.valueOf((String) underlyingRelationship.getProperty(SCORE_PROPERTY));
 	}
 
 	@Override
-	public int getFrequency() {
-		return Integer.valueOf((String) underlyingRelationship.getProperty(FREQUENCY_PROPERTY));
+	public void setScore(int score) {
+		underlyingRelationship.setProperty(SCORE_PROPERTY, score);
 	}
 
 	@Override
-	public void setFrequency(int frequency) {
-		underlyingRelationship.setProperty(FREQUENCY_PROPERTY, frequency);
+	public RelationshipCategory getRelationshipCategory() {
+		return RelationshipCategory.valueOf((String) underlyingRelationship.getProperty(RLSP_SOURCE_TYPE_PROPERTY));
 	}
 
-	@Override
-	public RelationshipSourceType getRelationshipSourceType() {
-		return RelationshipSourceType.valueOf((String) underlyingRelationship.getProperty(RLSP_SOURCE_TYPE_PROPERTY));
-	}
-
-	public void setRelationshipSourceType(RelationshipSourceType relationshipSourceType) {
+	public void setRelationshipCategory(RelationshipCategory relationshipSourceType) {
 		if (relationshipSourceType == null)
 			throw new NullArgumentException("relationshipSourceType");
-		underlyingRelationship.setProperty(RLSP_SOURCE_TYPE_PROPERTY, relationshipSourceType);
+		underlyingRelationship.setProperty(RLSP_SOURCE_TYPE_PROPERTY, relationshipSourceType.name());
 	}
+
+	@Override
+	public Concept getSource() {
+		return new ConceptImpl(underlyingRelationship.getStartNode());
+	}
+
+	@Override
+	public Concept getTarget() {
+		return new ConceptImpl(underlyingRelationship.getEndNode());
+	}
+
+	@Override
+	public String getPredicateConceptId() {
+		return (String) underlyingRelationship.getProperty(PREDICATE_CONCEPT_ID_PROPERTY);
+	}
+
+	public void setPredicateConceptId(String predicateConceptId) {
+		underlyingRelationship.setProperty(PREDICATE_CONCEPT_ID_PROPERTY, predicateConceptId);
+	}
+
 }
