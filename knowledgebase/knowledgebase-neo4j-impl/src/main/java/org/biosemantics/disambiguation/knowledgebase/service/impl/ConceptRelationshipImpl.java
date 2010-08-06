@@ -12,7 +12,7 @@ public class ConceptRelationshipImpl implements ConceptRelationship {
 	protected Relationship underlyingRelationship;
 	private static final String ID_PROPERTY = "id";
 	private static final String SCORE_PROPERTY = "score";
-	private static final String RLSP_SOURCE_TYPE_PROPERTY = "relationshipSourceType";
+	private static final String RELATIONSHIP_CATEGORY_PROPERTY = "relationshipCategory";
 	private static final String PREDICATE_CONCEPT_ID_PROPERTY = "predicateConceptId";
 
 	public ConceptRelationshipImpl(Relationship relationship) {
@@ -47,13 +47,13 @@ public class ConceptRelationshipImpl implements ConceptRelationship {
 
 	@Override
 	public RelationshipCategory getRelationshipCategory() {
-		return RelationshipCategory.valueOf((String) underlyingRelationship.getProperty(RLSP_SOURCE_TYPE_PROPERTY));
+		return RelationshipCategory.valueOf((String) underlyingRelationship.getProperty(RELATIONSHIP_CATEGORY_PROPERTY));
 	}
 
 	public void setRelationshipCategory(RelationshipCategory relationshipSourceType) {
 		if (relationshipSourceType == null)
 			throw new NullArgumentException("relationshipSourceType");
-		underlyingRelationship.setProperty(RLSP_SOURCE_TYPE_PROPERTY, relationshipSourceType.name());
+		underlyingRelationship.setProperty(RELATIONSHIP_CATEGORY_PROPERTY, relationshipSourceType.name());
 	}
 
 	@Override
