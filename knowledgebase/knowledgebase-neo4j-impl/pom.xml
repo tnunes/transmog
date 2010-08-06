@@ -7,9 +7,9 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 	<groupId>org.biosemantics.disambiguation</groupId>
-	<artifactId>knowledgebase-neo4j-impl</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>knowledgebase-neo4j-impl</name>
+	<artifactId>impl-graph</artifactId>
+	<name>impl-graph</name>
 	<description>neo4j based implementation of the knowledgebase</description>
 	<dependencies>
 		<!-- testing -->
@@ -31,12 +31,12 @@
 		<dependency>
 			<groupId>org.neo4j</groupId>
 			<artifactId>neo4j-kernel</artifactId>
-			<version>1.0</version>
+			<version>1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.neo4j</groupId>
 			<artifactId>neo4j-index</artifactId>
-			<version>1.0</version>
+			<version>1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-lang</groupId>

@@ -14,6 +14,6 @@
 	<description>knowledgebase for the disambiguation project</description>
 	
 	<modules>
-		<module>knowledgebase-neo4j-impl</module>
+		<module>impl-graph</module>
 	</modules>
 </project>
