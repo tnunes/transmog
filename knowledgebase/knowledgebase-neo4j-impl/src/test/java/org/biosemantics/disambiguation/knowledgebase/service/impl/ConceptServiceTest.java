@@ -21,15 +21,15 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 //ApplicationContext will be loaded from files in the root of the classpath
-@ContextConfiguration( { "/knowledgebase-neo4j-impl-context.xml" })
+@ContextConfiguration( { "/knowledgebase-test-context.xml" })
 public class ConceptServiceTest {
 	
 	@Autowired
-	private ConceptService conceptFactory;
+	private ConceptService conceptService;
 	@Autowired
-	private LabelService labelFactory;
+	private LabelService labelService;
 	@Autowired
-	private NotationService notationFactory;
+	private NotationService notationService;
 	
 
 	/**
@@ -37,12 +37,12 @@ public class ConceptServiceTest {
 	 */
 	@Test
 	public void createConceptWithLabel() {
-		Label prefLabel = labelFactory.createPreferredLabel("PREF_LABEl", Language.EN);
-		Label altLabel = labelFactory.createAlternateLabel("ALT_LABEL", Language.EN);
+		Label prefLabel = labelService.createPreferredLabel("PREF_LABEl", Language.EN);
+		Label altLabel = labelService.createAlternateLabel("ALT_LABEL", Language.EN);
 		List<Label> labels  = new ArrayList<Label>();
 		labels.add(prefLabel);
 		labels.add(altLabel);
-		conceptFactory.createConcept(labels);
+		conceptService.createConcept(labels);
 	}
 
 	/**
@@ -50,15 +50,15 @@ public class ConceptServiceTest {
 	 */
 	@Test
 	public void createConceptWithLabelNotation() {
-		Label prefLabel = labelFactory.createPreferredLabel("PREF_LABEl", Language.EN);
-		Label altLabel = labelFactory.createAlternateLabel("ALT_LABEL", Language.EN);
+		Label prefLabel = labelService.createPreferredLabel("PREF_LABEl", Language.EN);
+		Label altLabel = labelService.createAlternateLabel("ALT_LABEL", Language.EN);
 		List<Label> labels  = new ArrayList<Label>();
 		labels.add(prefLabel);
 		labels.add(altLabel);
-		Notation umlsNotation = notationFactory.createNotation(Domain.MTH, "C00345678");
+		Notation umlsNotation = notationService.createNotation(Domain.MTH, "C00345678");
 		List<Notation> notations  = new ArrayList<Notation>();
 		notations.add(umlsNotation);
-		conceptFactory.createConcept(labels, notations);
+		conceptService.createConcept(labels, notations);
 	}
 
 }

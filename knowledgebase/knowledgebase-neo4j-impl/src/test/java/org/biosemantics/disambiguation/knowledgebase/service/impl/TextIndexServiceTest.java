@@ -24,27 +24,27 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 //ApplicationContext will be loaded from files in the root of the classpath
-@ContextConfiguration({ "/knowledgebase-neo4j-impl-context.xml" })
+@ContextConfiguration({ "/knowledgebase-test-context.xml" })
 public class TextIndexServiceTest {
 	
 	@Autowired
 	private TextIndexService textIndexService;
 	@Autowired
-	private LabelService labelFactory;
+	private LabelService labelService;
 	@Autowired
-	private NotationService notationFactory;
+	private NotationService notationService;
 	@Autowired
-	private ConceptService conceptFactory;
+	private ConceptService conceptService;
 
 	@Test
 	public void testGetLabelsByText(){
-		Label l1 = labelFactory.createPreferredLabel("l1", Language.EN);
-		Label l2 = labelFactory.createAlternateLabel("l2", Language.EN);
+		Label l1 = labelService.createPreferredLabel("l1", Language.EN);
+		Label l2 = labelService.createAlternateLabel("l2", Language.EN);
 		
 		List<Label> labels = new ArrayList<Label>();
 		labels.add(l1);
 		labels.add(l2);
-		conceptFactory.createConcept(labels);
+		conceptService.createConcept(labels);
 		Collection<Label> foundLabels = textIndexService.getLabelsByText("l2");
 		Assert.assertFalse(foundLabels.isEmpty());
 		Assert.assertEquals(1, foundLabels.size());
@@ -58,13 +58,13 @@ public class TextIndexServiceTest {
 	
 	@Test
 	public void testMultiWordLabels(){
-		Label l1 = labelFactory.createPreferredLabel("The Borg", Language.EN);
-		Label l2 = labelFactory.createAlternateLabel("The Federation", Language.EN);
+		Label l1 = labelService.createPreferredLabel("The Borg", Language.EN);
+		Label l2 = labelService.createAlternateLabel("The Federation", Language.EN);
 		
 		List<Label> labels = new ArrayList<Label>();
 		labels.add(l1);
 		labels.add(l2);
-		conceptFactory.createConcept(labels);
+		conceptService.createConcept(labels);
 		Collection<Label> foundLabels = textIndexService.getLabelsByText("The Federation");
 		Assert.assertFalse(foundLabels.isEmpty());
 		Assert.assertEquals(1, foundLabels.size());
@@ -78,13 +78,13 @@ public class TextIndexServiceTest {
 	
 	@Test
 	public void testUnicodeLabels(){
-		Label l1 = labelFactory.createPreferredLabel("Resistance is futile", Language.EN);
-		Label l2 = labelFactory.createAlternateLabel("The Federation starship enterprise", Language.EN);
+		Label l1 = labelService.createPreferredLabel("Resistance is futile", Language.EN);
+		Label l2 = labelService.createAlternateLabel("The Federation starship enterprise", Language.EN);
 		
 		List<Label> labels = new ArrayList<Label>();
 		labels.add(l1);
 		labels.add(l2);
-		conceptFactory.createConcept(labels);
+		conceptService.createConcept(labels);
 		Collection<Label> foundLabels = textIndexService.getLabelsByText("The Federation starship enterprise");
 		Assert.assertFalse(foundLabels.isEmpty());
 		Assert.assertEquals(1, foundLabels.size());
@@ -98,17 +98,17 @@ public class TextIndexServiceTest {
 	
 	@Test
 	public void testGetNotationByText(){
-		Notation n1 = notationFactory.createNotation(Domain.MTH, "1234567890");
-		Notation n2 = notationFactory.createNotation(Domain.MTH, "ABCDEFGH");
-		Label l1 = labelFactory.createPreferredLabel("Resistance is futile", Language.EN);
-		Label l2 = labelFactory.createAlternateLabel("The Federation starship enterprise", Language.EN);
+		Notation n1 = notationService.createNotation(Domain.MTH, "1234567890");
+		Notation n2 = notationService.createNotation(Domain.MTH, "ABCDEFGH");
+		Label l1 = labelService.createPreferredLabel("Resistance is futile", Language.EN);
+		Label l2 = labelService.createAlternateLabel("The Federation starship enterprise", Language.EN);
 		List<Label> labels = new ArrayList<Label>();
 		labels.add(l1);
 		labels.add(l2);
 		List<Notation> notations  = new ArrayList<Notation>();
 		notations.add(n1);
 		notations.add(n2);
-		conceptFactory.createConcept(labels, notations);
+		conceptService.createConcept(labels, notations);
 		Collection<Notation> foundNotation = textIndexService.getNotationsByCode(n2.getCode());
 		Assert.assertFalse(foundNotation.isEmpty());
 		Assert.assertEquals(1, foundNotation.size());
@@ -120,12 +120,12 @@ public class TextIndexServiceTest {
 	
 	@Test
 	public void testGetLabelById(){
-		Label l1 = labelFactory.createPreferredLabel("Resistance is futile", Language.EN);
-		Label l2 = labelFactory.createAlternateLabel("The Federation starship enterprise", Language.EN);
+		Label l1 = labelService.createPreferredLabel("Resistance is futile", Language.EN);
+		Label l2 = labelService.createAlternateLabel("The Federation starship enterprise", Language.EN);
 		List<Label> labels = new ArrayList<Label>();
 		labels.add(l1);
 		labels.add(l2);
-		conceptFactory.createConcept(labels);
+		conceptService.createConcept(labels);
 		l1.getText();
 		Label foundLabel = textIndexService.getLabelById(l1.getId());
 		Assert.assertNotNull(foundLabel);
@@ -137,17 +137,17 @@ public class TextIndexServiceTest {
 	
 	@Test
 	public void testGetConceptById(){
-		Label l1 = labelFactory.createPreferredLabel("Resistance is futile", Language.EN);
-		Label l2 = labelFactory.createAlternateLabel("The Federation starship enterprise", Language.EN);
+		Label l1 = labelService.createPreferredLabel("Resistance is futile", Language.EN);
+		Label l2 = labelService.createAlternateLabel("The Federation starship enterprise", Language.EN);
 		List<Label> labels = new ArrayList<Label>();
 		labels.add(l1);
 		labels.add(l2);
-		Notation n1 = notationFactory.createNotation(Domain.MTH, "1234567890");
-		Notation n2 = notationFactory.createNotation(Domain.MTH, "ABCDEFGH");
+		Notation n1 = notationService.createNotation(Domain.MTH, "1234567890");
+		Notation n2 = notationService.createNotation(Domain.MTH, "ABCDEFGH");
 		List<Notation> notations  = new ArrayList<Notation>();
 		notations.add(n1);
 		notations.add(n2);
-		Concept concept = conceptFactory.createConcept(labels, notations);
+		Concept concept = conceptService.createConcept(labels, notations);
 		Concept foundConcept = textIndexService.getConceptById(concept.getId());
 		Assert.assertEquals(foundConcept, concept);
 	}

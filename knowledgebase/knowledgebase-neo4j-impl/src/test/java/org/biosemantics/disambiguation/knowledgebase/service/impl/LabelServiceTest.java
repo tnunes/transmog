@@ -13,58 +13,58 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 //ApplicationContext will be loaded from files in the root of the classpath
-@ContextConfiguration({ "/knowledgebase-neo4j-impl-context.xml" })
+@ContextConfiguration({ "/knowledgebase-test-context.xml" })
 public class LabelServiceTest {
 	
 	@Autowired
-	private LabelService labelFactory;
+	private LabelService labelService;
 	private static final String PREF_LBL = "PREF_LBL";
 	private static final String ALT_LBL = "ALT_LBL";
 
 	@Test(expected=IllegalArgumentException.class)
 	public void testNullLanguage(){
-		labelFactory.createPreferredLabel(PREF_LBL, null);
+		labelService.createPreferredLabel(PREF_LBL, null);
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
 	public void testNullText(){
-		labelFactory.createPreferredLabel(null, Language.EN);
+		labelService.createPreferredLabel(null, Language.EN);
 		
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
 	public void testAllNullInput(){
-		labelFactory.createPreferredLabel(null, null);
+		labelService.createPreferredLabel(null, null);
 	}
 	
 	
 	@Test(expected=IllegalArgumentException.class)
 	public void testNullLanguageAlt(){
-		labelFactory.createAlternateLabel(ALT_LBL, null);
+		labelService.createAlternateLabel(ALT_LBL, null);
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
 	public void testNullTextAlt(){
-		labelFactory.createAlternateLabel(null, Language.EN);
+		labelService.createAlternateLabel(null, Language.EN);
 		
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
 	public void testAllNullInputAlt(){
-		labelFactory.createAlternateLabel(null, null);
+		labelService.createAlternateLabel(null, null);
 	}
 	
 	@Test
 	public void testCreateLabel(){
-		Label Label =  labelFactory.createPreferredLabel(PREF_LBL, Language.EN);
+		Label Label =  labelService.createPreferredLabel(PREF_LBL, Language.EN);
 		Assert.assertNotNull(Label);
 	}
 	
 	@Test
 	public void testCreateLabelEquals(){
-		Label labelFirst = labelFactory.createPreferredLabel(PREF_LBL, Language.EN);
-		Label labelSecond = labelFactory.createPreferredLabel(PREF_LBL, Language.EN);
-		Label labelThird = labelFactory.createPreferredLabel(ALT_LBL, Language.EN);
+		Label labelFirst = labelService.createPreferredLabel(PREF_LBL, Language.EN);
+		Label labelSecond = labelService.createPreferredLabel(PREF_LBL, Language.EN);
+		Label labelThird = labelService.createPreferredLabel(ALT_LBL, Language.EN);
 		Assert.assertEquals(labelFirst, labelSecond);
 		Assert.assertNotSame(labelFirst, labelThird);
 	}
