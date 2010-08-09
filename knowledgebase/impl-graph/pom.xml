@@ -9,7 +9,7 @@
 	<groupId>org.biosemantics.disambiguation</groupId>
 	<version>0.0.1-SNAPSHOT</version>
 	<artifactId>impl-graph</artifactId>
-	<name>impl-graph</name>
+	<name>knowledgebase-impl-graph</name>
 	<description>neo4j based implementation of the knowledgebase</description>
 	<dependencies>
 		<!-- testing -->
