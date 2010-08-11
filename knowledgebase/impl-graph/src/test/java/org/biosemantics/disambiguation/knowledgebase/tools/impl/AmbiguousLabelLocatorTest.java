@@ -9,7 +9,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 //ApplicationContext will be loaded from files in the root of the classpath
-@ContextConfiguration({ "/knowledgebase-neo4j-impl-context.xml" })
+@ContextConfiguration({ "/knowledgebase-test-context.xml" })
 public class AmbiguousLabelLocatorTest {
 	
 	@Autowired
