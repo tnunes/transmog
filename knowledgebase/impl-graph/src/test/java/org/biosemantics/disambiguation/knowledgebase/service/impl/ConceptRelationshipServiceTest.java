@@ -5,16 +5,17 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.biosemantics.disambiguation.knowledgebase.AbstractTransactionalDataSource;
 import org.biosemantics.disambiguation.knowledgebase.service.Concept;
 import org.biosemantics.disambiguation.knowledgebase.service.ConceptRelationship;
 import org.biosemantics.disambiguation.knowledgebase.service.ConceptRelationshipInput;
-import org.biosemantics.disambiguation.knowledgebase.service.RelationshipService;
 import org.biosemantics.disambiguation.knowledgebase.service.ConceptRelationshipType;
 import org.biosemantics.disambiguation.knowledgebase.service.ConceptService;
 import org.biosemantics.disambiguation.knowledgebase.service.Label;
 import org.biosemantics.disambiguation.knowledgebase.service.LabelService;
 import org.biosemantics.disambiguation.knowledgebase.service.Language;
 import org.biosemantics.disambiguation.knowledgebase.service.RelationshipCategory;
+import org.biosemantics.disambiguation.knowledgebase.service.RelationshipService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 // ApplicationContext will be loaded from files in the root of the classpath
 @ContextConfiguration({ "/knowledgebase-test-context.xml" })
-public class ConceptRelationshipServiceTest {
+public class ConceptRelationshipServiceTest extends AbstractTransactionalDataSource {
 
 	@Autowired
 	private ConceptService conceptService;

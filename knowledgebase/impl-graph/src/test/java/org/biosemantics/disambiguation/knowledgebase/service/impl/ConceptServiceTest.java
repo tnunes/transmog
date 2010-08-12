@@ -6,6 +6,7 @@ package org.biosemantics.disambiguation.knowledgebase.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.biosemantics.disambiguation.knowledgebase.AbstractTransactionalDataSource;
 import org.biosemantics.disambiguation.knowledgebase.service.ConceptService;
 import org.biosemantics.disambiguation.knowledgebase.service.Domain;
 import org.biosemantics.disambiguation.knowledgebase.service.Label;
@@ -22,7 +23,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 //ApplicationContext will be loaded from files in the root of the classpath
 @ContextConfiguration( { "/knowledgebase-test-context.xml" })
-public class ConceptServiceTest {
+public class ConceptServiceTest extends AbstractTransactionalDataSource {
 	
 	@Autowired
 	private ConceptService conceptService;

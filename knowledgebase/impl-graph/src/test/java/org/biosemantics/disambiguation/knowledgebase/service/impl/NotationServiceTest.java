@@ -2,6 +2,7 @@ package org.biosemantics.disambiguation.knowledgebase.service.impl;
 
 import junit.framework.Assert;
 
+import org.biosemantics.disambiguation.knowledgebase.AbstractTransactionalDataSource;
 import org.biosemantics.disambiguation.knowledgebase.service.Domain;
 import org.biosemantics.disambiguation.knowledgebase.service.Notation;
 import org.biosemantics.disambiguation.knowledgebase.service.NotationService;
@@ -14,7 +15,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 // ApplicationContext will be loaded from files in the root of the classpath
 @ContextConfiguration({ "/knowledgebase-test-context.xml" })
-public class NotationServiceTest {
+public class NotationServiceTest extends AbstractTransactionalDataSource{
 	private static final String C54321 = "C54321";
 	private static final String C0012345 = "C0012345";
 

@@ -1,4 +1,4 @@
-package org.biosemantics.disambiguation.knowledgebase.service.impl;
+package org.biosemantics.disambiguation.knowledgebase.service.local.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -6,6 +6,7 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.biosemantics.disambiguation.knowledgebase.AbstractTransactionalDataSource;
 import org.biosemantics.disambiguation.knowledgebase.service.Concept;
 import org.biosemantics.disambiguation.knowledgebase.service.ConceptService;
 import org.biosemantics.disambiguation.knowledgebase.service.Domain;
@@ -15,7 +16,7 @@ import org.biosemantics.disambiguation.knowledgebase.service.LabelService;
 import org.biosemantics.disambiguation.knowledgebase.service.Language;
 import org.biosemantics.disambiguation.knowledgebase.service.Notation;
 import org.biosemantics.disambiguation.knowledgebase.service.NotationService;
-import org.biosemantics.disambiguation.knowledgebase.service.impl.TextIndexService;
+import org.biosemantics.disambiguation.knowledgebase.service.local.TextIndexService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 //ApplicationContext will be loaded from files in the root of the classpath
 @ContextConfiguration({ "/knowledgebase-test-context.xml" })
-public class TextIndexServiceTest {
+public class TextIndexServiceTest extends AbstractTransactionalDataSource {
 	
 	@Autowired
 	private TextIndexService textIndexService;
