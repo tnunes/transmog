@@ -1,8 +1,8 @@
-package org.biosemantics.disambiguation.knowledgebase.service.impl;
+package org.biosemantics.disambiguation.knowledgebase.service.local.impl;
 
 import java.util.UUID;
 
-import org.biosemantics.disambiguation.knowledgebase.validation.IdGenerator;
+import org.biosemantics.disambiguation.knowledgebase.service.local.IdGenerator;
 
 
 public class IdGeneratorImpl implements IdGenerator {

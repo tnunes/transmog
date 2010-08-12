@@ -8,6 +8,7 @@ import org.biosemantics.disambiguation.knowledgebase.service.Concept;
 import org.biosemantics.disambiguation.knowledgebase.service.Domain;
 import org.biosemantics.disambiguation.knowledgebase.service.KnowledgebaseRelationshipType;
 import org.biosemantics.disambiguation.knowledgebase.service.QueryService;
+import org.biosemantics.disambiguation.knowledgebase.service.local.TextIndexService;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.ReturnableEvaluator;

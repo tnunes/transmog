@@ -1,4 +1,4 @@
-package org.biosemantics.disambiguation.knowledgebase.service.impl;
+package org.biosemantics.disambiguation.knowledgebase.service.local.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,6 +9,10 @@ import org.biosemantics.disambiguation.knowledgebase.service.Concept;
 import org.biosemantics.disambiguation.knowledgebase.service.Domain;
 import org.biosemantics.disambiguation.knowledgebase.service.Label;
 import org.biosemantics.disambiguation.knowledgebase.service.Notation;
+import org.biosemantics.disambiguation.knowledgebase.service.impl.ConceptImpl;
+import org.biosemantics.disambiguation.knowledgebase.service.impl.LabelImpl;
+import org.biosemantics.disambiguation.knowledgebase.service.impl.NotationImpl;
+import org.biosemantics.disambiguation.knowledgebase.service.local.TextIndexService;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.index.IndexService;

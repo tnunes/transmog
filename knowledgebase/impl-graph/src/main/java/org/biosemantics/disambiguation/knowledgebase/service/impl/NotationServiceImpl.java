@@ -5,6 +5,7 @@ import org.biosemantics.disambiguation.knowledgebase.service.Domain;
 import org.biosemantics.disambiguation.knowledgebase.service.KnowledgebaseRelationshipType;
 import org.biosemantics.disambiguation.knowledgebase.service.Notation;
 import org.biosemantics.disambiguation.knowledgebase.service.NotationService;
+import org.biosemantics.disambiguation.knowledgebase.service.local.TextIndexService;
 import org.biosemantics.disambiguation.knowledgebase.validation.NotationInputValidator;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;

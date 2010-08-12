@@ -5,8 +5,8 @@ import org.biosemantics.disambiguation.knowledgebase.service.ConceptRelationship
 import org.biosemantics.disambiguation.knowledgebase.service.ConceptRelationshipInput;
 import org.biosemantics.disambiguation.knowledgebase.service.RelationshipService;
 import org.biosemantics.disambiguation.knowledgebase.service.ConceptRelationshipType;
+import org.biosemantics.disambiguation.knowledgebase.service.local.IdGenerator;
 import org.biosemantics.disambiguation.knowledgebase.validation.ConceptRelationInputValidator;
-import org.biosemantics.disambiguation.knowledgebase.validation.IdGenerator;
 import org.neo4j.graphdb.Relationship;
 import org.springframework.transaction.annotation.Transactional;
 

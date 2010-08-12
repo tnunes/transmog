@@ -1,4 +1,4 @@
-package org.biosemantics.disambiguation.knowledgebase.service.impl;
+package org.biosemantics.disambiguation.knowledgebase.service.local;
 
 import java.util.Collection;
 

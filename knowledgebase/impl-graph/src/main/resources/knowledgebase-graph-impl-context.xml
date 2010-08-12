@@ -45,7 +45,7 @@
 	</bean>
 
 	<bean id="idGenerator"
-		class="org.biosemantics.disambiguation.knowledgebase.service.impl.IdGeneratorImpl"></bean>
+		class="org.biosemantics.disambiguation.knowledgebase.service.local.impl.IdGeneratorImpl"></bean>
 
 	<bean id="labelInputValidator"
 		class="org.biosemantics.disambiguation.knowledgebase.validation.impl.LabelInputValidatorImpl"></bean>
@@ -54,7 +54,7 @@
 		class="org.biosemantics.disambiguation.knowledgebase.validation.impl.NotationInputValidatorImpl"></bean>
 
 	<bean id="textIndexService"
-		class="org.biosemantics.disambiguation.knowledgebase.service.impl.TextIndexServiceImpl">
+		class="org.biosemantics.disambiguation.knowledgebase.service.local.impl.TextIndexServiceImpl">
 		<constructor-arg>
 			<ref local="graphDb" />
 		</constructor-arg>
