@@ -75,7 +75,10 @@ public class RelationshipServiceImpl implements RelationshipService {
 				conceptRelationshipInput.getTarget(), conceptRelationshipInput.getConceptRelationshipType());
 		conceptRelationshipImpl.setId(idGenerator.generateRandomId());
 		conceptRelationshipImpl.setScore(conceptRelationshipInput.getScore());
-		conceptRelationshipImpl.setPredicateConceptId(conceptRelationshipInput.getPredicate().getId());
+		//FIXME: study do we allow this? null predicates?
+		if(conceptRelationshipInput.getPredicate() != null){
+			conceptRelationshipImpl.setPredicateConceptId(conceptRelationshipInput.getPredicate().getId());
+		}
 		conceptRelationshipImpl.setRelationshipCategory(conceptRelationshipInput.getRelationshipCategory());
 		return conceptRelationshipImpl;
 	}

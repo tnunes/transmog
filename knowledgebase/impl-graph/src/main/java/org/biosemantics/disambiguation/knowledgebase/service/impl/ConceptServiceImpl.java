@@ -91,6 +91,7 @@ public class ConceptServiceImpl implements ConceptService {
 	@Override
 	@Transactional
 	public Concept createConcept(Collection<Label> labels) {
+		labelInputValidator.validateLabels(labels);
 		ConceptImpl conceptImpl = createConceptImpl(labels, null);
 		conceptFactoryNode.createRelationshipTo(conceptImpl.getUnderlyingNode(), KnowledgebaseRelationshipType.CONCEPT);
 		return conceptImpl;
@@ -99,6 +100,8 @@ public class ConceptServiceImpl implements ConceptService {
 	@Override
 	@Transactional
 	public Concept createConcept(Collection<Label> labels, Collection<Notation> notations) {
+		labelInputValidator.validateLabels(labels);
+		notationInputValidator.validateNotations(notations);
 		ConceptImpl conceptImpl = createConceptImpl(labels, notations);
 		conceptFactoryNode.createRelationshipTo(conceptImpl.getUnderlyingNode(), KnowledgebaseRelationshipType.CONCEPT);
 		return conceptImpl;
@@ -107,6 +110,7 @@ public class ConceptServiceImpl implements ConceptService {
 	@Override
 	@Transactional
 	public Concept createPredicate(Collection<Label> labels) {
+		labelInputValidator.validateLabels(labels);
 		ConceptImpl conceptImpl = createConceptImpl(labels, null);
 		predicateFactoryNode.createRelationshipTo(conceptImpl.getUnderlyingNode(),
 				KnowledgebaseRelationshipType.PREDICATE);
@@ -116,6 +120,8 @@ public class ConceptServiceImpl implements ConceptService {
 	@Override
 	@Transactional
 	public Concept createPredicate(Collection<Label> labels, Collection<Notation> notations) {
+		labelInputValidator.validateLabels(labels);
+		notationInputValidator.validateNotations(notations);
 		ConceptImpl conceptImpl = createConceptImpl(labels, notations);
 		predicateFactoryNode.createRelationshipTo(conceptImpl.getUnderlyingNode(),
 				KnowledgebaseRelationshipType.PREDICATE);
@@ -123,12 +129,10 @@ public class ConceptServiceImpl implements ConceptService {
 	}
 
 	private ConceptImpl createConceptImpl(Collection<Label> labels, Collection<Notation> notations) {
-		labelInputValidator.validateLabels(labels);
 		String id = idGenerator.generateRandomId();
 		Node node = graphDb.createNode();
 		ConceptImpl conceptImpl = new ConceptImpl(node).withId(id).withLabels(labels);
-		if (notations != null) {
-			notationInputValidator.validateNotations(notations);
+		if(notations != null){
 			conceptImpl.setNotations(notations);
 		}
 		textIndexService.indexConcept(conceptImpl);

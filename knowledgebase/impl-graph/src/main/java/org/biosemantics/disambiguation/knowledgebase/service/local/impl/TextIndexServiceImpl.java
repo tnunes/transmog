@@ -87,8 +87,10 @@ public class TextIndexServiceImpl implements TextIndexService {
 		for (Label label : concept.getLabels()) {
 			fullText.append(label.getText()).append(FULL_TEXT_SEPARATOR);
 		}
-		for (Notation notation : concept.getNotations()) {
-			fullText.append(notation.getCode()).append(FULL_TEXT_SEPARATOR);
+		if (concept.getNotations() != null) {
+			for (Notation notation : concept.getNotations()) {
+				fullText.append(notation.getCode()).append(FULL_TEXT_SEPARATOR);
+			}
 		}
 		ConceptImpl conceptImpl = (ConceptImpl) concept;
 		fullTextIndexService.index(conceptImpl.getUnderlyingNode(), CONCEPT_FULL_TXT_INDEX, fullText.toString());
