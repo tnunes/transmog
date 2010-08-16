@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -111,9 +112,11 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 	private GraphDatabaseService graphDatabaseService;
 	private int batchSize = 10000;
 	// private static final String GET_ALL_SEMANTIC_TYPES = "Select STY_RL FROM STY WHERE RT='STY'";
-	private static final String GET_ALL_CONCEPTS = "select CUI, TS, ISPREF, STT, LAT, SUI,  STR, SAB, CODE from MRCONSO order by CUI";
-	private static final String GET_ALL_RELATIONSHIPS = "select CUI1, CUI2, REL, RELA from MRREL order by CUI1";
-	private static final String GET_ALL_CO_OCCURANCE_RELATIONSHIPS = "select CUI1, CUI2, COF from MRCOC order by CUI1";
+	// private static final String GET_ALL_CONCEPTS =
+	// "select CUI, TS, ISPREF, STT, LAT, SUI,  STR, SAB, CODE from MRCONSO order by CUI";
+	// private static final String GET_ALL_RELATIONSHIPS = "select CUI1, CUI2, REL, RELA from MRREL order by CUI1";
+	// private static final String GET_ALL_CO_OCCURANCE_RELATIONSHIPS =
+	// "select CUI1, CUI2, COF from MRCOC order by CUI1";
 	private static final String GET_ALL_CONCEPT_SCHEME = "select STY_RL, UI from SRDEF where RT='STY'";
 	private static final String GET_ALL_CONCEPT_SCHEME_RLSP = "select distinct RL as RL from SRSTRE2";
 	private static final String GET_CONCEPT_SCHEME_RELATIONS = "select STY1, RL, STY2 from SRSTRE2 order by STY1";
@@ -131,7 +134,7 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 	public void initialize() {
 		try {
 			StopWatch stopWatch = new StopWatch();
-			logger.info("creating predicates from text file {} " + predicateFile);
+			logger.info("creating predicates from text file {} ", predicateFile);
 			stopWatch.start();
 			createPredicateConcepts();
 			stopWatch.stop();
@@ -151,7 +154,7 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 
 			logger.info("starting concept import from MRCONSO table");
 			stopWatch.start();
-			getAllConcepts();
+			getConcepts();
 			stopWatch.stop();
 			logger.info("process completed in {} ms", stopWatch.getLastTaskTimeMillis());
 
@@ -207,9 +210,11 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 				while (rs.next()) {
 					String rlsp = rs.getString("RL");
 					if (predicateMap.containsKey(rlsp)) {
-						//logger.info("found {} rlsp in predicate map ", rlsp);
+						// logger.info("found {} rlsp in predicate map ", rlsp);
 					} else {
-						logger.info("No match found for {} in the predicate map, creating new predicate concept", rlsp);
+						logger.info(
+								"No match found for predicate \"{}\" in the predicate map, creating new predicate concept",
+								rlsp);
 						labels.clear();
 						labels.add(labelService.createPreferredLabel(rlsp, Language.EN));
 						Concept predicate = conceptService.createPredicate(labels);
@@ -347,53 +352,58 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 
 	private void getFactualRelationships() throws SQLException {
 		Transaction transaction = graphDatabaseService.beginTx();
-		Statement stmt = null;
+		Statement stmt = connection.createStatement();
 		ResultSet rs = null;
 		try {
-			stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			stmt.setFetchSize(Integer.MIN_VALUE);
-			rs = stmt.executeQuery(GET_ALL_RELATIONSHIPS);
+			ResultSet countResultSet = stmt.executeQuery("select count(distinct CUI1) from MRREL");
+			if (countResultSet.next()) {
+				logger.info("{} concepts have relationships", countResultSet.getInt(1));
+			}
+			countResultSet.close();
+			PreparedStatement getRlspStatement = connection
+					.prepareStatement("select CUI1, CUI2, REL, RELA from MRREL where CUI1 = ?");
+			rs = stmt.executeQuery("select distinct CUI1 from MRREL");
+			String cui1 = rs.getString(1);
 			int ctr = 0;
-			String previousCui1 = "";
-			Collection<Concept> sourceConcepts = null;
 			while (rs.next()) {
-				String cui1 = rs.getString("CUI1");
-				String cui2 = rs.getString("CUI2");
-				String rel = rs.getString("REL");
-				String rela = rs.getString("RELA");
-				if (!previousCui1.equals(cui1)) {
-					// do not fetch source CUI till we are done with all relations for that source
-					sourceConcepts = queryService.getConceptsByNotation(Domain.UMLS, cui1);
-					previousCui1 = cui1;
-				}
-				Collection<Concept> targetConcepts = queryService.getConceptsByNotation(Domain.UMLS, cui2);
-				ConceptRelationshipType conceptRelationshipType = getConceptRelationshipType(rel);
-				Concept predicate = predicateMap.get(rela);
-				for (Concept sourceConcept : sourceConcepts) {
-					for (Concept targetConcept : targetConcepts) {
-						ConceptRelationshipInput input = new ConceptRelationshipInput().withSource(sourceConcept)
-								.withTarget(targetConcept).withConceptRelationshipType(conceptRelationshipType)
-								.withRelationshipCategory(RelationshipCategory.AUTHORITATIVE)
-								.withScore(Integer.MAX_VALUE);
-						if (predicate != null) {
-							input.setPredicate(predicate);
+				getRlspStatement.setString(1, cui1);
+				ResultSet conceptRlspResultSet = getRlspStatement.executeQuery();
+				Collection<Concept> sourceConcepts = queryService.getConceptsByNotation(Domain.UMLS, cui1);
+				while (conceptRlspResultSet.next()) {
+					String cui2 = conceptRlspResultSet.getString("CUI2");
+					String rel = conceptRlspResultSet.getString("REL");
+					String rela = conceptRlspResultSet.getString("RELA");
+					Collection<Concept> targetConcepts = queryService.getConceptsByNotation(Domain.UMLS, cui2);
+					ConceptRelationshipType conceptRelationshipType = getConceptRelationshipType(rel);
+					Concept predicate = predicateMap.get(rela);
+					for (Concept sourceConcept : sourceConcepts) {
+						for (Concept targetConcept : targetConcepts) {
+							ConceptRelationshipInput input = new ConceptRelationshipInput().withSource(sourceConcept)
+									.withTarget(targetConcept).withConceptRelationshipType(conceptRelationshipType)
+									.withRelationshipCategory(RelationshipCategory.AUTHORITATIVE)
+									.withScore(Integer.MAX_VALUE);
+							if (predicate != null) {
+								input.setPredicate(predicate);
+							}
+							relationshipService.createRelationship(input);
 						}
-						relationshipService.createRelationship(input);
 					}
 				}
+				conceptRlspResultSet.close();
 				ctr++;
 				if (ctr % batchSize == 0) {
 					transaction.success();
 					transaction.finish();
 					transaction = graphDatabaseService.beginTx();
-					logger.info("{} factual relationships added. Starting a new transaction.", ctr);
+					logger.info("{} concepts processed for factual relationship. Starting a new transaction.", ctr);
 				}
 			}
-		} finally {
 			if (transaction != null) {
 				transaction.success();
 				transaction.finish();
 			}
+
+		} finally {
 			if (rs != null) {
 				rs.close();
 			}
@@ -401,51 +411,56 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 				stmt.close();
 			}
 		}
-
 	}
 
 	private void getCooccuranceRelationships() throws SQLException {
 		Transaction transaction = graphDatabaseService.beginTx();
-		Statement stmt = null;
+		Statement stmt = connection.createStatement();
 		ResultSet rs = null;
 		try {
-			stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			stmt.setFetchSize(Integer.MIN_VALUE);
-			rs = stmt.executeQuery(GET_ALL_CO_OCCURANCE_RELATIONSHIPS);
+			ResultSet countResultSet = stmt.executeQuery("select count(distinct CUI1) from MRCOC");
+			if (countResultSet.next()) {
+				logger.info("{} concepts have relationships", countResultSet.getInt(1));
+			}
+			countResultSet.close();
+			PreparedStatement getRlspStatement = connection
+					.prepareStatement("select CUI1, CUI2, COF from MRCOC where CUI1 = ?");
+			rs = stmt.executeQuery("select distinct CUI1 from MRCOC");
+			String cui1 = rs.getString(1);
 			int ctr = 0;
-			String previousCui1 = "";
-			Collection<Concept> sourceConcepts = null;
 			while (rs.next()) {
-				String cui1 = rs.getString("CUI1");
-				String cui2 = rs.getString("CUI2");
-				int cof = rs.getInt("COF");
-				// do not fetch source CUI till we are done with all relations for that source
-				if (!previousCui1.equals(cui1)) {
-					sourceConcepts = queryService.getConceptsByNotation(Domain.UMLS, cui1);
-					previousCui1 = cui1;
-				}
-				Collection<Concept> targetConcepts = queryService.getConceptsByNotation(Domain.UMLS, cui2);
-				for (Concept sourceConcept : sourceConcepts) {
-					for (Concept targetConcept : targetConcepts) {
-						ConceptRelationshipInput input = new ConceptRelationshipInput().withSource(sourceConcept)
-								.withTarget(targetConcept).withConceptRelationshipType(ConceptRelationshipType.RELATED)
-								.withRelationshipCategory(RelationshipCategory.CO_OCCURANCE).withScore(cof);
-						relationshipService.createRelationship(input);
+				getRlspStatement.setString(1, cui1);
+				ResultSet conceptRlspResultSet = getRlspStatement.executeQuery();
+				Collection<Concept> sourceConcepts = queryService.getConceptsByNotation(Domain.UMLS, cui1);
+				while (conceptRlspResultSet.next()) {
+					String cui2 = conceptRlspResultSet.getString("CUI2");
+					int cof = conceptRlspResultSet.getInt("COF");
+					Collection<Concept> targetConcepts = queryService.getConceptsByNotation(Domain.UMLS, cui2);
+					for (Concept sourceConcept : sourceConcepts) {
+						for (Concept targetConcept : targetConcepts) {
+							ConceptRelationshipInput input = new ConceptRelationshipInput().withSource(sourceConcept)
+									.withTarget(targetConcept)
+									.withConceptRelationshipType(ConceptRelationshipType.RELATED)
+									.withRelationshipCategory(RelationshipCategory.CO_OCCURANCE).withScore(cof);
+							relationshipService.createRelationship(input);
+						}
 					}
 				}
+				conceptRlspResultSet.close();
 				ctr++;
 				if (ctr % batchSize == 0) {
 					transaction.success();
 					transaction.finish();
 					transaction = graphDatabaseService.beginTx();
-					logger.info("{} cooccurance relationships added. Starting a new transaction.", ctr);
+					logger.info("{} concepts processed for co-occurance. Starting a new transaction.", ctr);
 				}
 			}
-		} finally {
 			if (transaction != null) {
 				transaction.success();
 				transaction.finish();
 			}
+		} finally {
+
 			if (rs != null) {
 				rs.close();
 			}
@@ -453,77 +468,87 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 				stmt.close();
 			}
 		}
-
 	}
 
-	private void getAllConcepts() throws SQLException {
+	private void getConcepts() throws SQLException {
 		Transaction transaction = graphDatabaseService.beginTx();
-		Statement stmt = null;
+		Statement stmt = connection.createStatement();
 		ResultSet rs = null;
 		try {
-			stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			stmt.setFetchSize(Integer.MIN_VALUE);
-			rs = stmt.executeQuery(GET_ALL_CONCEPTS);
-			int ctr = 0;
-			// start transaction;
-			String previousCui = "";
+			ResultSet countResultSet = stmt.executeQuery("select count(distinct cui) from MRCONSO");
+			if (countResultSet.next()) {
+				logger.info("{} concepts found in MRCONSO table", countResultSet.getInt(1));
+			}
+			countResultSet.close();
+			rs = stmt.executeQuery("select distinct CUI from MRCONSO");
+			PreparedStatement getConceptStatement = connection
+					.prepareStatement("select CUI, TS, ISPREF, STT, LAT, SUI,  STR, SAB, CODE from MRCONSO where CUI = ?");
 			List<Label> labels = new ArrayList<Label>();
 			List<Notation> notations = new ArrayList<Notation>();
+			int ctr = 0;
 			while (rs.next()) {
+				if (!labels.isEmpty() && !notations.isEmpty()) {
+					conceptService.createConcept(labels, notations);
+				}
+				labels.clear();
+				notations.clear();
 				String cui = rs.getString("CUI");
-				if (ctr == 0) {
-					previousCui = cui;
-				}
-				if (!cui.equals(previousCui)) {
-					// create new concept
-					if (notations.isEmpty()) {
-						conceptService.createConcept(labels);
+				getConceptStatement.setString(1, cui);
+				ResultSet getConceptResultSet = getConceptStatement.executeQuery();
+				while (getConceptResultSet.next()) {
+					// get all data for same CUI
+					String ts = getConceptResultSet.getString("TS");
+					String isPref = getConceptResultSet.getString("ISPREF");
+					String stt = getConceptResultSet.getString("STT");// TS, ISPREF, STT
+					String str = getConceptResultSet.getString("STR");
+					String lat = getConceptResultSet.getString("LAT");
+					Language language = getLanguage(lat);
+					Label label = null;
+					if (ts.equalsIgnoreCase("P") && isPref.equalsIgnoreCase("Y") && stt.equalsIgnoreCase("PF")) {
+						// create preferred term
+						label = labelService.createPreferredLabel(str, language);
 					} else {
-						conceptService.createConcept(labels, notations);
+						label = labelService.createAlternateLabel(str, language);
 					}
-					labels.clear();
-					notations.clear();
-					previousCui = cui;
+					labels.add(label);
+					// create domain
+					String sab = getConceptResultSet.getString("SAB");
+					String code = getConceptResultSet.getString("CODE");
+					Domain domain = getDomain(sab);
+					Notation notation = notationService.createNotation(domain, code);
+					Notation umlsNotation = notationService.createNotation(Domain.UMLS, cui);
+					notations.add(notation);
+					notations.add(umlsNotation);
 				}
-				// get all data for same CUI
-				String ts = rs.getString("TS");
-				String isPref = rs.getString("ISPREF");
-				String stt = rs.getString("STT");// TS, ISPREF, STT
-				String str = rs.getString("STR");
-				String lat = rs.getString("LAT");
-				Language language = getLanguage(lat);
-				Label label = null;
-				if (ts.equalsIgnoreCase("P") && isPref.equalsIgnoreCase("Y") && stt.equalsIgnoreCase("PF")) {
-					// create preferred term
-					label = labelService.createPreferredLabel(str, language);
-				} else {
-					label = labelService.createAlternateLabel(str, language);
-				}
-				labels.add(label);
-				// create domain
-				String sab = rs.getString("SAB");
-				String code = rs.getString("CODE");
-				Domain domain = getDomain(sab);
-				Notation notation = notationService.createNotation(domain, code);
-				notations.add(notation);
 				ctr++;
+				getConceptResultSet.close();
 				if (ctr % batchSize == 0) {
 					transaction.success();
 					transaction.finish();
 					transaction = graphDatabaseService.beginTx();
-					logger.info("{} concepts added. Starting a new transaction.", ctr);
+					logger.info("{} concepts processed. Starting new tranaction");
 				}
 			}
-		} finally {
 			if (transaction != null) {
 				transaction.success();
 				transaction.finish();
 			}
+		} finally {
 			if (rs != null) {
-				rs.close();
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			if (stmt != null) {
-				stmt.close();
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 
 		}
