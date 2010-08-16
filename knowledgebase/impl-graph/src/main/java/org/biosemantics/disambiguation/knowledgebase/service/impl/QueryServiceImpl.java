@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.biosemantics.disambiguation.knowledgebase.service.Concept;
 import org.biosemantics.disambiguation.knowledgebase.service.Domain;
 import org.biosemantics.disambiguation.knowledgebase.service.KnowledgebaseRelationshipType;
@@ -37,5 +38,15 @@ public class QueryServiceImpl implements QueryService {
 			}
 		}
 		return concepts;
+	}
+
+	@Override
+	public Concept getConceptById(String id) {
+		if(StringUtils.isBlank(id))
+			throw new IllegalArgumentException("id cannot be blank");
+		Concept concept = textIndexService.getConceptById(id);
+		if(concept == null)
+			throw new IllegalArgumentException("No concept found with id " + id);
+		return concept;
 	}
 }
