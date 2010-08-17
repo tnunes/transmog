@@ -134,7 +134,7 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 	public void initialize() {
 		try {
 			StopWatch stopWatch = new StopWatch();
-			logger.info("creating predicates from text file {} ", predicateFile);
+			logger.info("creating predicates from text file located at \"{}\" ", predicateFile);
 			stopWatch.start();
 			createPredicateConcepts();
 			stopWatch.stop();
@@ -363,29 +363,33 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 			PreparedStatement getRlspStatement = connection
 					.prepareStatement("select CUI1, CUI2, REL, RELA from MRREL where CUI1 = ?");
 			rs = stmt.executeQuery("select distinct CUI1 from MRREL");
-			String cui1 = rs.getString(1);
 			int ctr = 0;
 			while (rs.next()) {
+				String cui1 = rs.getString(1);
 				getRlspStatement.setString(1, cui1);
 				ResultSet conceptRlspResultSet = getRlspStatement.executeQuery();
 				Collection<Concept> sourceConcepts = queryService.getConceptsByNotation(Domain.UMLS, cui1);
 				while (conceptRlspResultSet.next()) {
 					String cui2 = conceptRlspResultSet.getString("CUI2");
-					String rel = conceptRlspResultSet.getString("REL");
-					String rela = conceptRlspResultSet.getString("RELA");
-					Collection<Concept> targetConcepts = queryService.getConceptsByNotation(Domain.UMLS, cui2);
-					ConceptRelationshipType conceptRelationshipType = getConceptRelationshipType(rel);
-					Concept predicate = predicateMap.get(rela);
-					for (Concept sourceConcept : sourceConcepts) {
-						for (Concept targetConcept : targetConcepts) {
-							ConceptRelationshipInput input = new ConceptRelationshipInput().withSource(sourceConcept)
-									.withTarget(targetConcept).withConceptRelationshipType(conceptRelationshipType)
-									.withRelationshipCategory(RelationshipCategory.AUTHORITATIVE)
-									.withScore(Integer.MAX_VALUE);
-							if (predicate != null) {
-								input.setPredicate(predicate);
+					// we do not support self relationships (concept c1 related to concept c1)
+					if (!cui1.equals(cui2)) {
+						String rel = conceptRlspResultSet.getString("REL");
+						String rela = conceptRlspResultSet.getString("RELA");
+						Collection<Concept> targetConcepts = queryService.getConceptsByNotation(Domain.UMLS, cui2);
+						ConceptRelationshipType conceptRelationshipType = getConceptRelationshipType(rel);
+						Concept predicate = predicateMap.get(rela);
+						for (Concept sourceConcept : sourceConcepts) {
+							for (Concept targetConcept : targetConcepts) {
+								ConceptRelationshipInput input = new ConceptRelationshipInput()
+										.withSource(sourceConcept).withTarget(targetConcept)
+										.withConceptRelationshipType(conceptRelationshipType)
+										.withRelationshipCategory(RelationshipCategory.AUTHORITATIVE)
+										.withScore(Integer.MAX_VALUE);
+								if (predicate != null) {
+									input.setPredicate(predicate);
+								}
+								relationshipService.createRelationship(input);
 							}
-							relationshipService.createRelationship(input);
 						}
 					}
 				}
@@ -426,23 +430,26 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 			PreparedStatement getRlspStatement = connection
 					.prepareStatement("select CUI1, CUI2, COF from MRCOC where CUI1 = ?");
 			rs = stmt.executeQuery("select distinct CUI1 from MRCOC");
-			String cui1 = rs.getString(1);
 			int ctr = 0;
 			while (rs.next()) {
+				String cui1 = rs.getString(1);
 				getRlspStatement.setString(1, cui1);
 				ResultSet conceptRlspResultSet = getRlspStatement.executeQuery();
 				Collection<Concept> sourceConcepts = queryService.getConceptsByNotation(Domain.UMLS, cui1);
 				while (conceptRlspResultSet.next()) {
 					String cui2 = conceptRlspResultSet.getString("CUI2");
-					int cof = conceptRlspResultSet.getInt("COF");
-					Collection<Concept> targetConcepts = queryService.getConceptsByNotation(Domain.UMLS, cui2);
-					for (Concept sourceConcept : sourceConcepts) {
-						for (Concept targetConcept : targetConcepts) {
-							ConceptRelationshipInput input = new ConceptRelationshipInput().withSource(sourceConcept)
-									.withTarget(targetConcept)
-									.withConceptRelationshipType(ConceptRelationshipType.RELATED)
-									.withRelationshipCategory(RelationshipCategory.CO_OCCURANCE).withScore(cof);
-							relationshipService.createRelationship(input);
+					// we do not support self relationships (concept c1 related to concept c1)
+					if (!cui1.equals(cui2)) {
+						int cof = conceptRlspResultSet.getInt("COF");
+						Collection<Concept> targetConcepts = queryService.getConceptsByNotation(Domain.UMLS, cui2);
+						for (Concept sourceConcept : sourceConcepts) {
+							for (Concept targetConcept : targetConcepts) {
+								ConceptRelationshipInput input = new ConceptRelationshipInput()
+										.withSource(sourceConcept).withTarget(targetConcept)
+										.withConceptRelationshipType(ConceptRelationshipType.RELATED)
+										.withRelationshipCategory(RelationshipCategory.CO_OCCURANCE).withScore(cof);
+								relationshipService.createRelationship(input);
+							}
 						}
 					}
 				}
@@ -526,7 +533,7 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 					transaction.success();
 					transaction.finish();
 					transaction = graphDatabaseService.beginTx();
-					logger.info("{} concepts processed. Starting new tranaction");
+					logger.info("{} concepts processed. Starting new tranaction", ctr);
 				}
 			}
 			if (transaction != null) {
