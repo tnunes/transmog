@@ -111,15 +111,15 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 	private static final String SCR = "scr";
 	private GraphDatabaseService graphDatabaseService;
 	private int batchSize = 10000;
-	// private static final String GET_ALL_SEMANTIC_TYPES = "Select STY_RL FROM STY WHERE RT='STY'";
-	// private static final String GET_ALL_CONCEPTS =
-	// "select CUI, TS, ISPREF, STT, LAT, SUI,  STR, SAB, CODE from MRCONSO order by CUI";
-	// private static final String GET_ALL_RELATIONSHIPS = "select CUI1, CUI2, REL, RELA from MRREL order by CUI1";
-	// private static final String GET_ALL_CO_OCCURANCE_RELATIONSHIPS =
-	// "select CUI1, CUI2, COF from MRCOC order by CUI1";
 	private static final String GET_ALL_CONCEPT_SCHEME = "select STY_RL, UI from SRDEF where RT='STY'";
 	private static final String GET_ALL_CONCEPT_SCHEME_RLSP = "select distinct RL as RL from SRSTRE2";
 	private static final String GET_CONCEPT_SCHEME_RELATIONS = "select STY1, RL, STY2 from SRSTRE2 order by STY1";
+	private static final String SELECT_DISTINCT_CUI1_FROM_MRCOC = "select distinct CUI1 from MRCOC";
+	private static final String GET_CO_OCCURANCE_RLSP_FOR_CONCEPT_SQL = "select CUI1, CUI2, COF from MRCOC where CUI1 = ?";
+	private static final String CO_OCCUR_RLSP_COUNT_SQL = "select count(distinct CUI1) from MRCOC";
+	private static final String DISTINCT_CUI1_FROM_MRREL_SQL = "select distinct CUI1 from MRREL";
+	private static final String GET_FACTUAL_RLSP_FOR_CONCEPT = "select CUI1, CUI2, REL, RELA from MRREL where CUI1 = ?";
+	private static final String COUNT_FACTUAL_RLSP_SQL = "select count(distinct CUI1) from MRREL";
 
 	public void init() throws ClassNotFoundException, SQLException {
 		Class.forName("com.mysql.jdbc.Driver");
@@ -355,14 +355,13 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 		Statement stmt = connection.createStatement();
 		ResultSet rs = null;
 		try {
-			ResultSet countResultSet = stmt.executeQuery("select count(distinct CUI1) from MRREL");
+			ResultSet countResultSet = stmt.executeQuery(COUNT_FACTUAL_RLSP_SQL);
 			if (countResultSet.next()) {
 				logger.info("{} concepts have relationships", countResultSet.getInt(1));
 			}
 			countResultSet.close();
-			PreparedStatement getRlspStatement = connection
-					.prepareStatement("select CUI1, CUI2, REL, RELA from MRREL where CUI1 = ?");
-			rs = stmt.executeQuery("select distinct CUI1 from MRREL");
+			PreparedStatement getRlspStatement = connection.prepareStatement(GET_FACTUAL_RLSP_FOR_CONCEPT);
+			rs = stmt.executeQuery(DISTINCT_CUI1_FROM_MRREL_SQL);
 			int ctr = 0;
 			while (rs.next()) {
 				String cui1 = rs.getString(1);
@@ -422,14 +421,13 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 		Statement stmt = connection.createStatement();
 		ResultSet rs = null;
 		try {
-			ResultSet countResultSet = stmt.executeQuery("select count(distinct CUI1) from MRCOC");
+			ResultSet countResultSet = stmt.executeQuery(CO_OCCUR_RLSP_COUNT_SQL);
 			if (countResultSet.next()) {
 				logger.info("{} concepts have relationships", countResultSet.getInt(1));
 			}
 			countResultSet.close();
-			PreparedStatement getRlspStatement = connection
-					.prepareStatement("select CUI1, CUI2, COF from MRCOC where CUI1 = ?");
-			rs = stmt.executeQuery("select distinct CUI1 from MRCOC");
+			PreparedStatement getRlspStatement = connection.prepareStatement(GET_CO_OCCURANCE_RLSP_FOR_CONCEPT_SQL);
+			rs = stmt.executeQuery(SELECT_DISTINCT_CUI1_FROM_MRCOC);
 			int ctr = 0;
 			while (rs.next()) {
 				String cui1 = rs.getString(1);
@@ -542,20 +540,10 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 			}
 		} finally {
 			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				rs.close();
 			}
 			if (stmt != null) {
-				try {
-					stmt.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				stmt.close();
 			}
 
 		}
