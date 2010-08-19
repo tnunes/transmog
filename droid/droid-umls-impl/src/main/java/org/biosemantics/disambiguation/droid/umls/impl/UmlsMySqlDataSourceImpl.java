@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.biosemantics.disambiguation.knowledgebase.service.Concept;
 import org.biosemantics.disambiguation.knowledgebase.service.ConceptRelationshipInput;
 import org.biosemantics.disambiguation.knowledgebase.service.ConceptRelationshipType;
@@ -423,30 +424,42 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 		try {
 			ResultSet countResultSet = stmt.executeQuery(CO_OCCUR_RLSP_COUNT_SQL);
 			if (countResultSet.next()) {
-				logger.info("{} concepts have relationships", countResultSet.getInt(1));
+				logger.info("{} concepts have co occurance relationships", countResultSet.getInt(1));
 			}
 			countResultSet.close();
 			PreparedStatement getRlspStatement = connection.prepareStatement(GET_CO_OCCURANCE_RLSP_FOR_CONCEPT_SQL);
 			rs = stmt.executeQuery(SELECT_DISTINCT_CUI1_FROM_MRCOC);
 			int ctr = 0;
 			while (rs.next()) {
+				
 				String cui1 = rs.getString(1);
+				if(StringUtils.isBlank(cui1)){
+					logger.warn("No cui1 found. Ignoring");
+					continue;
+				}
 				getRlspStatement.setString(1, cui1);
 				ResultSet conceptRlspResultSet = getRlspStatement.executeQuery();
-				Collection<Concept> sourceConcepts = queryService.getConceptsByNotation(Domain.UMLS, cui1);
+				Collection<Concept> sourceConcepts  = queryService.getConceptsByNotation(Domain.UMLS, cui1);
 				while (conceptRlspResultSet.next()) {
 					String cui2 = conceptRlspResultSet.getString("CUI2");
+					if(StringUtils.isBlank(cui2)){
+						// some CUI2 are null in the database, check against such records
+						logger.warn("No cui2 found for cui1 = {}. Ignoring", cui1);
+						continue;
+					}
 					// we do not support self relationships (concept c1 related to concept c1)
 					if (!cui1.equals(cui2)) {
 						int cof = conceptRlspResultSet.getInt("COF");
 						Collection<Concept> targetConcepts = queryService.getConceptsByNotation(Domain.UMLS, cui2);
-						for (Concept sourceConcept : sourceConcepts) {
-							for (Concept targetConcept : targetConcepts) {
-								ConceptRelationshipInput input = new ConceptRelationshipInput()
-										.withSource(sourceConcept).withTarget(targetConcept)
-										.withConceptRelationshipType(ConceptRelationshipType.RELATED)
-										.withRelationshipCategory(RelationshipCategory.CO_OCCURANCE).withScore(cof);
-								relationshipService.createRelationship(input);
+						if(sourceConcepts != null && targetConcepts != null){
+							for (Concept sourceConcept : sourceConcepts) {
+								for (Concept targetConcept : targetConcepts) {
+									ConceptRelationshipInput input = new ConceptRelationshipInput()
+											.withSource(sourceConcept).withTarget(targetConcept)
+											.withConceptRelationshipType(ConceptRelationshipType.RELATED)
+											.withRelationshipCategory(RelationshipCategory.CO_OCCURANCE).withScore(cof);
+									relationshipService.createRelationship(input);
+								}
 							}
 						}
 					}
