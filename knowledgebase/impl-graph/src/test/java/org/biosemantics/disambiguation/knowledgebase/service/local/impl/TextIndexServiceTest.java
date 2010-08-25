@@ -78,6 +78,47 @@ public class TextIndexServiceTest extends AbstractTransactionalDataSource {
 	}
 	
 	@Test
+	public void testOverlapLabelText(){
+		Label l1 = labelService.createPreferredLabel("The Matrix I", Language.EN);
+		Label l2 = labelService.createAlternateLabel("The Matrix II", Language.EN);
+		Label l3 = labelService.createAlternateLabel("The Matrix III", Language.EN);
+		List<Label> labels = new ArrayList<Label>();
+		labels.add(l1);
+		labels.add(l2);
+		labels.add(l3);
+		conceptService.createConcept(labels);
+		Collection<Label> foundLabels = textIndexService.getLabelsByText("The Matrix I");
+		Assert.assertFalse(foundLabels.isEmpty());
+		Assert.assertEquals(1, foundLabels.size());
+		for (Label found : foundLabels) {
+			Assert.assertEquals(found.getLabelType(), LabelType.PREFERRED);
+			Assert.assertEquals(found.getText(), "The Matrix I");
+			Assert.assertEquals(found.getLanguage(), Language.EN);
+		}
+		
+	}
+	
+	
+	@Test
+	public void testOverlapLabelFullText(){
+		Label l1 = labelService.createPreferredLabel("The Matrix I", Language.EN);
+		Label l2 = labelService.createAlternateLabel("The Matrix II", Language.EN);
+		Label l3 = labelService.createAlternateLabel("The Matrix III", Language.EN);
+		List<Label> labels = new ArrayList<Label>();
+		labels.add(l1);
+		conceptService.createConcept(labels);
+		labels.clear();
+		labels.add(l2);
+		conceptService.createConcept(labels);
+		labels.clear();
+		labels.add(l3);
+		conceptService.createConcept(labels);
+		Collection<Concept> concepts = textIndexService.fullTextSearch("The Matrix", 100);
+		Assert.assertFalse(concepts.isEmpty());
+		Assert.assertEquals(3, concepts.size());
+	}
+	
+	@Test
 	public void testUnicodeLabels(){
 		Label l1 = labelService.createPreferredLabel("Resistance is futile", Language.EN);
 		Label l2 = labelService.createAlternateLabel("The Federation starship enterprise", Language.EN);
