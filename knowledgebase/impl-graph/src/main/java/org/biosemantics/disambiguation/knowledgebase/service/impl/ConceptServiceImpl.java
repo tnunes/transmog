@@ -8,6 +8,7 @@ import org.biosemantics.disambiguation.knowledgebase.service.ConceptService;
 import org.biosemantics.disambiguation.knowledgebase.service.KnowledgebaseRelationshipType;
 import org.biosemantics.disambiguation.knowledgebase.service.Label;
 import org.biosemantics.disambiguation.knowledgebase.service.Notation;
+import org.biosemantics.disambiguation.knowledgebase.service.Note;
 import org.biosemantics.disambiguation.knowledgebase.service.local.IdGenerator;
 import org.biosemantics.disambiguation.knowledgebase.service.local.TextIndexService;
 import org.biosemantics.disambiguation.knowledgebase.validation.LabelInputValidator;
@@ -92,7 +93,7 @@ public class ConceptServiceImpl implements ConceptService {
 	@Transactional
 	public Concept createConcept(Collection<Label> labels) {
 		labelInputValidator.validateLabels(labels);
-		ConceptImpl conceptImpl = createConceptImpl(labels, null);
+		ConceptImpl conceptImpl = createConceptImpl(labels, null, null);
 		conceptFactoryNode.createRelationshipTo(conceptImpl.getUnderlyingNode(), KnowledgebaseRelationshipType.CONCEPT);
 		return conceptImpl;
 	}
@@ -102,7 +103,7 @@ public class ConceptServiceImpl implements ConceptService {
 	public Concept createConcept(Collection<Label> labels, Collection<Notation> notations) {
 		labelInputValidator.validateLabels(labels);
 		notationInputValidator.validateNotations(notations);
-		ConceptImpl conceptImpl = createConceptImpl(labels, notations);
+		ConceptImpl conceptImpl = createConceptImpl(labels, notations, null);
 		conceptFactoryNode.createRelationshipTo(conceptImpl.getUnderlyingNode(), KnowledgebaseRelationshipType.CONCEPT);
 		return conceptImpl;
 	}
@@ -111,7 +112,7 @@ public class ConceptServiceImpl implements ConceptService {
 	@Transactional
 	public Concept createPredicate(Collection<Label> labels) {
 		labelInputValidator.validateLabels(labels);
-		ConceptImpl conceptImpl = createConceptImpl(labels, null);
+		ConceptImpl conceptImpl = createConceptImpl(labels, null, null);
 		predicateFactoryNode.createRelationshipTo(conceptImpl.getUnderlyingNode(),
 				KnowledgebaseRelationshipType.PREDICATE);
 		return conceptImpl;
@@ -122,20 +123,33 @@ public class ConceptServiceImpl implements ConceptService {
 	public Concept createPredicate(Collection<Label> labels, Collection<Notation> notations) {
 		labelInputValidator.validateLabels(labels);
 		notationInputValidator.validateNotations(notations);
-		ConceptImpl conceptImpl = createConceptImpl(labels, notations);
+		ConceptImpl conceptImpl = createConceptImpl(labels, notations, null);
 		predicateFactoryNode.createRelationshipTo(conceptImpl.getUnderlyingNode(),
 				KnowledgebaseRelationshipType.PREDICATE);
 		return conceptImpl;
 	}
 
-	private ConceptImpl createConceptImpl(Collection<Label> labels, Collection<Notation> notations) {
+	private ConceptImpl createConceptImpl(Collection<Label> labels, Collection<Notation> notations, Collection<Note> notes) {
 		String id = idGenerator.generateRandomId();
 		Node node = graphDb.createNode();
 		ConceptImpl conceptImpl = new ConceptImpl(node).withId(id).withLabels(labels);
 		if(notations != null){
 			conceptImpl.setNotations(notations);
 		}
+		if(notes != null){
+			conceptImpl.setNotes(notes);
+		}
 		textIndexService.indexConcept(conceptImpl);
+		return conceptImpl;
+	}
+
+	@Override
+	public Concept createConcept(Collection<Label> labels, Collection<Notation> notations, Collection<Note> notes) {
+		labelInputValidator.validateLabels(labels);
+		notationInputValidator.validateNotations(notations);
+		ConceptImpl conceptImpl = createConceptImpl(labels, notations, notes);
+		predicateFactoryNode.createRelationshipTo(conceptImpl.getUnderlyingNode(),
+				KnowledgebaseRelationshipType.PREDICATE);
 		return conceptImpl;
 	}
 

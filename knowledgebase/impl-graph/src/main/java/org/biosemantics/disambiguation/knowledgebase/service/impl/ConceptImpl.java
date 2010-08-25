@@ -9,6 +9,7 @@ import org.biosemantics.disambiguation.knowledgebase.service.Concept;
 import org.biosemantics.disambiguation.knowledgebase.service.KnowledgebaseRelationshipType;
 import org.biosemantics.disambiguation.knowledgebase.service.Label;
 import org.biosemantics.disambiguation.knowledgebase.service.Notation;
+import org.biosemantics.disambiguation.knowledgebase.service.Note;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -40,8 +41,9 @@ public class ConceptImpl implements Concept {
 	@Override
 	public Collection<Label> getLabels() {
 		final List<Label> labels = new ArrayList<Label>();
-		for (Relationship rel : underlyingNode.getRelationships(KnowledgebaseRelationshipType.HAS_LABEL,
-				Direction.OUTGOING)) {
+		Iterable<Relationship> relationships = underlyingNode.getRelationships(KnowledgebaseRelationshipType.HAS_LABEL,
+				Direction.OUTGOING);
+		for (Relationship rel : relationships) {
 			labels.add(new LabelImpl(rel.getEndNode()));
 		}
 		return labels;
@@ -58,8 +60,9 @@ public class ConceptImpl implements Concept {
 	@Override
 	public Collection<Notation> getNotations() {
 		final List<Notation> notations = new ArrayList<Notation>();
-		for (Relationship rel : underlyingNode.getRelationships(KnowledgebaseRelationshipType.HAS_NOTATION,
-				Direction.OUTGOING)) {
+		Iterable<Relationship> relationships = underlyingNode.getRelationships(
+				KnowledgebaseRelationshipType.HAS_NOTATION, Direction.OUTGOING);
+		for (Relationship rel : relationships) {
 			notations.add(new NotationImpl(rel.getEndNode()));
 		}
 		return notations;
@@ -71,6 +74,25 @@ public class ConceptImpl implements Concept {
 			NotationImpl notationImpl = (NotationImpl) notation;
 			underlyingNode.createRelationshipTo(notationImpl.getUnderlyingNode(),
 					KnowledgebaseRelationshipType.HAS_NOTATION);
+		}
+	}
+
+	public Collection<Note> getNotes() {
+		List<Note> notes = new ArrayList<Note>();
+		Iterable<Relationship> relationships = underlyingNode.getRelationships(KnowledgebaseRelationshipType.HAS_NOTE,
+				Direction.OUTGOING);
+		for (Relationship rel : relationships) {
+			notes.add(new NoteImpl(rel.getEndNode()));
+		}
+		return notes;
+	}
+
+	public void setNotes(Collection<Note> notes) {
+		if (notes == null)
+			throw new NullArgumentException("notes");
+		for (Note note : notes) {
+			NoteImpl noteImpl = (NoteImpl) note;
+			underlyingNode.createRelationshipTo(noteImpl.getUnderlyingNode(), KnowledgebaseRelationshipType.HAS_NOTE);
 		}
 	}
 

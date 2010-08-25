@@ -6,4 +6,5 @@ public interface Concept {
 	String getId();
 	Collection<Label> getLabels();
 	Collection<Notation> getNotations();
+	Collection<Note> getNotes();
 }

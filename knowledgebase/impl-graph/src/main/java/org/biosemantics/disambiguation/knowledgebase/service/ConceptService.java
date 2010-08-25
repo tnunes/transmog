@@ -7,6 +7,8 @@ public interface ConceptService {
 
 	Concept createConcept(Collection<Label> labels, Collection<Notation> notations);
 
+	Concept createConcept(Collection<Label> labels, Collection<Notation> notations, Collection<Note> notes);
+
 	Concept createPredicate(Collection<Label> labels);
 
 	Concept createPredicate(Collection<Label> labels, Collection<Notation> notations);
