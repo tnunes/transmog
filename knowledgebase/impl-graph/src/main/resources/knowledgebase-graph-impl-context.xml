@@ -55,6 +55,8 @@
 		<constructor-arg>
 			<ref local="graphDb" />
 		</constructor-arg>
+		<property name="cacheObjectSize" value="${indexing.cacheObjectSize}"></property>
+		<property name="lazySearchResultThreshhold" value="${indexing.lazySearchResultThreshhold}"></property>
 	</bean>
 
 	<bean id="labelService"
@@ -112,6 +114,9 @@
 		</property>
 		<property name="idGenerator">
 			<ref local="idGenerator" />
+		</property>
+		<property name="textIndexService">
+			<ref local="textIndexService" />
 		</property>
 	</bean>
 

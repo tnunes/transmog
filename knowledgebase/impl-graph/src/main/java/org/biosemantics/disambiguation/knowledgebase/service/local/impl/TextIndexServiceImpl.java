@@ -2,7 +2,9 @@ package org.biosemantics.disambiguation.knowledgebase.service.local.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang.NullArgumentException;
 import org.biosemantics.disambiguation.knowledgebase.service.Concept;
@@ -15,16 +17,17 @@ import org.biosemantics.disambiguation.knowledgebase.service.impl.NotationImpl;
 import org.biosemantics.disambiguation.knowledgebase.service.local.TextIndexService;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.index.IndexService;
 import org.neo4j.index.lucene.LuceneFulltextIndexService;
 import org.neo4j.index.lucene.LuceneIndexService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 public class TextIndexServiceImpl implements TextIndexService {
 
 	private final GraphDatabaseService graphDb;
-	private final IndexService indexService;
-	private final IndexService fullTextIndexService;
+	private final LuceneIndexService indexService;
+	private final LuceneFulltextIndexService fullTextIndexService;
 	private static final String CONCEPT_FULL_TXT_INDEX = "concept_full_text";
 	private static final String LABEL_TXT_INDEX = "label_text";
 	private static final String LABEL_ID_INDEX = "label_id";
@@ -33,6 +36,10 @@ public class TextIndexServiceImpl implements TextIndexService {
 
 	private static final String FULL_TEXT_SEPARATOR = " ";
 
+	private int cacheObjectSize = 100000;
+	private int lazySearchResultThreshhold = 10000;
+	private static final Logger logger = LoggerFactory.getLogger(TextIndexServiceImpl.class);
+
 	// private static final Logger LOGGER = LoggerFactory.getLogger(IndexDaoImpl.class);
 	public TextIndexServiceImpl(GraphDatabaseService graphDb) {
 		if (graphDb == null)
@@ -40,6 +47,29 @@ public class TextIndexServiceImpl implements TextIndexService {
 		this.graphDb = graphDb;
 		indexService = new LuceneIndexService(this.graphDb);
 		fullTextIndexService = new LuceneFulltextIndexService(this.graphDb);
+
+	}
+
+	public void setCacheObjectSize(int cacheObjectSize) {
+		if (cacheObjectSize > this.cacheObjectSize) {
+			this.cacheObjectSize = cacheObjectSize;
+		}
+	}
+
+	public void setLazySearchResultThreshhold(int lazySearchResultThreshhold) {
+		if (lazySearchResultThreshhold < 1) {
+			throw new IllegalArgumentException("lazySearchResultThreshhold cannot be negative or zero");
+		}
+		this.lazySearchResultThreshhold = lazySearchResultThreshhold;
+		logger.info("indexService lazy search result threshold is {}", indexService.getLazySearchResultThreshold());
+		indexService.setLazySearchResultThreshold(this.lazySearchResultThreshhold);
+		logger.info("resetting lazy search result threshold for indexing service to {}",
+				indexService.getLazySearchResultThreshold());
+		logger.info("fullTextIndexService lazy search result threshold is {}",
+				fullTextIndexService.getLazySearchResultThreshold());
+		fullTextIndexService.setLazySearchResultThreshold(this.lazySearchResultThreshhold);
+		logger.info("resetting lazy search result threshold for fullTextIndexService to {} ",
+				fullTextIndexService.getLazySearchResultThreshold());
 	}
 
 	@Override
@@ -125,14 +155,13 @@ public class TextIndexServiceImpl implements TextIndexService {
 	@Transactional
 	public Collection<Concept> fullTextSearch(String text, int maxResults) {
 		Iterable<Node> nodes = fullTextIndexService.getNodes(CONCEPT_FULL_TXT_INDEX, text);
-		List<Concept> concepts = new ArrayList<Concept>();
+		Set<Concept> concepts = new HashSet<Concept>();
 		if (nodes != null) {
-			int ctr = 0;
 			for (Node node : nodes) {
-				if (++ctr > maxResults) {
-					break;
-				} else {
+				if (concepts.size() < maxResults) {
 					concepts.add(new ConceptImpl(node));
+				} else {
+					break;
 				}
 			}
 		}
