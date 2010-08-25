@@ -3,28 +3,34 @@ package org.biosemantics.disambiguation.knowledgebase.validation.impl;
 import java.util.Collection;
 
 import org.apache.commons.lang.NullArgumentException;
-import org.apache.commons.lang.StringUtils;
 import org.biosemantics.disambiguation.knowledgebase.service.Domain;
 import org.biosemantics.disambiguation.knowledgebase.service.Notation;
 import org.biosemantics.disambiguation.knowledgebase.validation.NotationInputValidator;
+import org.biosemantics.disambiguation.knowledgebase.validation.ValidationUtilityService;
 
-public class NotationInputValidatorImpl  implements NotationInputValidator{
+public class NotationInputValidatorImpl implements NotationInputValidator {
+
+	private ValidationUtilityService validationUtilityService;
+
+	public void setValidationUtilityService(ValidationUtilityService validationUtilityService) {
+		this.validationUtilityService = validationUtilityService;
+	}
 
 	@Override
 	public void validateDomain(Domain domain) {
-		if(domain == null)
+		if (validationUtilityService.isNull(domain))
 			throw new NullArgumentException("domain");
 	}
 
 	@Override
 	public void validateCode(String code) {
-		if (StringUtils.isEmpty(code))
+		if (validationUtilityService.isBlankString(code))
 			throw new IllegalArgumentException("code cannot be blank");
 	}
 
 	@Override
 	public void validateNotation(Notation notation) {
-		if(notation == null)
+		if (validationUtilityService.isNull(notation))
 			throw new NullArgumentException("notation");
 		validateDomain(notation.getDomain());
 		validateCode(notation.getCode());
@@ -32,12 +38,12 @@ public class NotationInputValidatorImpl  implements NotationInputValidator{
 
 	@Override
 	public void validateNotations(Collection<Notation> notations) {
-		if(notations == null)
-			throw new NullArgumentException("notations");
+		if (validationUtilityService.isBlankCollection(notations))
+			throw new IllegalArgumentException("notations cannot be blank");
 		for (Notation notation : notations) {
 			validateNotation(notation);
 		}
-		
+
 	}
 
 }

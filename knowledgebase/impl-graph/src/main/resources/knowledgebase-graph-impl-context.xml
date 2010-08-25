@@ -1,57 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:p="http://www.springframework.org/schema/p"
-	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:mvc="http://www.springframework.org/schema/mvc"
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:aop="http://www.springframework.org/schema/aop" xmlns:mvc="http://www.springframework.org/schema/mvc"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd  http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context-3.0.xsd  http://www.springframework.org/schema/tx  http://www.springframework.org/schema/tx/spring-tx-3.0.xsd  http://www.springframework.org/schema/aop  http://www.springframework.org/schema/aop/spring-aop-3.0.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
 
+	<!-- GRAPH DATABASE AND TRANSACTION CONFIGURATION -->
 	<tx:annotation-driven transaction-manager="transactionManager" />
 	<alias name="neo4jTransactionManager" alias="transactionManager" />
 
-
-	<bean id="neo4jTransactionManagerService"
-		class="org.neo4j.kernel.impl.transaction.SpringTransactionManager">
+	<bean id="neo4jTransactionManagerService" class="org.neo4j.kernel.impl.transaction.SpringTransactionManager">
 		<constructor-arg ref="graphDb" />
 	</bean>
 	<bean id="neo4jUserTransactionService" class="org.neo4j.kernel.impl.transaction.UserTransactionImpl">
 		<constructor-arg ref="graphDb" />
 	</bean>
 
-	<bean id="neo4jTransactionManager"
-		class="org.springframework.transaction.jta.JtaTransactionManager">
+	<bean id="neo4jTransactionManager" class="org.springframework.transaction.jta.JtaTransactionManager">
 		<property name="transactionManager" ref="neo4jTransactionManagerService" />
 		<property name="userTransaction" ref="neo4jUserTransactionService" />
 	</bean>
-	<bean id="graphDb" name="graphDb" class="org.neo4j.kernel.EmbeddedGraphDatabase"
-		destroy-method="shutdown" lazy-init="false">
+	<bean id="graphDb" name="graphDb" class="org.neo4j.kernel.EmbeddedGraphDatabase" destroy-method="shutdown"
+		lazy-init="false">
 		<constructor-arg>
 			<value>${neo4j.store}</value>
 		</constructor-arg>
 		<constructor-arg>
 			<map>
 				<entry key="neostore.nodestore.db.mapped_memory" value="${neostore.nodestore.db.mapped_memory}" />
-				<entry key="neostore.relationshipstore.db.mapped_memory"
-					value="${neostore.relationshipstore.db.mapped_memory}" />
+				<entry key="neostore.relationshipstore.db.mapped_memory" value="${neostore.relationshipstore.db.mapped_memory}" />
 				<entry key="neostore.propertystore.db.mapped_memory" value="${neostore.propertystore.db.mapped_memory}" />
-				<entry key="neostore.propertystore.db.strings.mapped_memory"
-					value="${neostore.propertystore.db.strings.mapped_memory}" />
-				<entry key="neostore.relationshipstore.db.mapped_memory"
-					value="${neostore.relationshipstore.db.mapped_memory}" />
+				<entry key="neostore.propertystore.db.strings.mapped_memory" value="${neostore.propertystore.db.strings.mapped_memory}" />
+				<entry key="neostore.relationshipstore.db.mapped_memory" value="${neostore.relationshipstore.db.mapped_memory}" />
 			</map>
 		</constructor-arg>
 	</bean>
 
-	<bean id="idGenerator"
-		class="org.biosemantics.disambiguation.knowledgebase.service.local.impl.IdGeneratorImpl"></bean>
+	<!-- LOCAL SERVICES (NOT EXPOSED OUTSIDE THE PROJECT) -->
+	<bean id="idGenerator" class="org.biosemantics.disambiguation.knowledgebase.service.local.impl.IdGeneratorImpl"></bean>
 
-	<bean id="labelInputValidator"
-		class="org.biosemantics.disambiguation.knowledgebase.validation.impl.LabelInputValidatorImpl"></bean>
-
-	<bean id="notationInputValidator"
-		class="org.biosemantics.disambiguation.knowledgebase.validation.impl.NotationInputValidatorImpl"></bean>
-
-	<bean id="textIndexService"
-		class="org.biosemantics.disambiguation.knowledgebase.service.local.impl.TextIndexServiceImpl">
+	<bean id="textIndexService" class="org.biosemantics.disambiguation.knowledgebase.service.local.impl.TextIndexServiceImpl">
 		<constructor-arg>
 			<ref local="graphDb" />
 		</constructor-arg>
@@ -59,8 +46,8 @@
 		<property name="lazySearchResultThreshhold" value="${indexing.lazySearchResultThreshhold}"></property>
 	</bean>
 
-	<bean id="labelService"
-		class="org.biosemantics.disambiguation.knowledgebase.service.impl.LabelServiceImpl">
+	<!-- REMOTE SERVICES (EXPOSED OUTSIDE THE PROJECT) -->
+	<bean id="labelService" class="org.biosemantics.disambiguation.knowledgebase.service.impl.LabelServiceImpl">
 		<constructor-arg>
 			<ref local="graphDb" />
 		</constructor-arg>
@@ -75,8 +62,7 @@
 		</property>
 	</bean>
 
-	<bean id="notationService"
-		class="org.biosemantics.disambiguation.knowledgebase.service.impl.NotationServiceImpl">
+	<bean id="notationService" class="org.biosemantics.disambiguation.knowledgebase.service.impl.NotationServiceImpl">
 		<constructor-arg>
 			<ref local="graphDb" />
 		</constructor-arg>
@@ -88,47 +74,7 @@
 		</property>
 	</bean>
 
-	<bean id="conceptService"
-		class="org.biosemantics.disambiguation.knowledgebase.service.impl.ConceptServiceImpl">
-		<constructor-arg>
-			<ref local="graphDb" />
-		</constructor-arg>
-		<property name="idGenerator">
-			<ref local="idGenerator" />
-		</property>
-		<property name="labelInputValidator">
-			<ref local="labelInputValidator" />
-		</property>
-		<property name="notationInputValidator">
-			<ref local="notationInputValidator" />
-		</property>
-		<property name="textIndexService">
-			<ref local="textIndexService" />
-		</property>
-	</bean>
-
-	<bean id="relationshipService"
-		class="org.biosemantics.disambiguation.knowledgebase.service.impl.RelationshipServiceImpl">
-		<property name="conceptRelationInputValidator">
-			<ref local="conceptRelationshipInputValidator" />
-		</property>
-		<property name="idGenerator">
-			<ref local="idGenerator" />
-		</property>
-		<property name="textIndexService">
-			<ref local="textIndexService" />
-		</property>
-	</bean>
-
-	<bean id="queryService"
-		class="org.biosemantics.disambiguation.knowledgebase.service.impl.QueryServiceImpl">
-		<property name="textIndexService">
-			<ref local="textIndexService" />
-		</property>
-	</bean>
-
-	<bean id="conceptSchemeService"
-		class="org.biosemantics.disambiguation.knowledgebase.service.impl.ConceptSchemeServiceImpl">
+	<bean id="conceptService" class="org.biosemantics.disambiguation.knowledgebase.service.impl.ConceptServiceImpl">
 		<constructor-arg>
 			<ref local="graphDb" />
 		</constructor-arg>
@@ -146,11 +92,59 @@
 		</property>
 	</bean>
 
-	<bean id="conceptRelationshipInputValidator"
-		class="org.biosemantics.disambiguation.knowledgebase.validation.impl.ConceptRelationInputValidatorImpl"></bean>
+	<bean id="relationshipService" class="org.biosemantics.disambiguation.knowledgebase.service.impl.RelationshipServiceImpl">
+		<property name="validationUtilityService">
+			<ref local="validationUtilityService" />
+		</property>
+		<property name="idGenerator">
+			<ref local="idGenerator" />
+		</property>
+		<property name="textIndexService">
+			<ref local="textIndexService" />
+		</property>
+	</bean>
 
-	<bean id="ambiguousLabelLocator"
-		class="org.biosemantics.disambiguation.knowledgebase.tools.impl.AmbiguousLabelLocatorFileImpl">
+	<bean id="queryService" class="org.biosemantics.disambiguation.knowledgebase.service.impl.QueryServiceImpl">
+		<property name="textIndexService">
+			<ref local="textIndexService" />
+		</property>
+	</bean>
+
+	<bean id="conceptSchemeService" class="org.biosemantics.disambiguation.knowledgebase.service.impl.ConceptSchemeServiceImpl">
+		<constructor-arg>
+			<ref local="graphDb" />
+		</constructor-arg>
+		<property name="idGenerator">
+			<ref local="idGenerator" />
+		</property>
+		<property name="labelInputValidator">
+			<ref local="labelInputValidator" />
+		</property>
+		<property name="notationInputValidator">
+			<ref local="notationInputValidator" />
+		</property>
+		<property name="textIndexService">
+			<ref local="textIndexService" />
+		</property>
+	</bean>
+
+	<!-- VALIDATORS AND VALIDATION UTILITIES -->
+	<bean id="labelInputValidator" class="org.biosemantics.disambiguation.knowledgebase.validation.impl.LabelInputValidatorImpl">
+		<property name="validationUtilityService">
+			<ref local="validationUtilityService" />
+		</property>
+	</bean>
+
+	<bean id="notationInputValidator" class="org.biosemantics.disambiguation.knowledgebase.validation.impl.NotationInputValidatorImpl">
+		<property name="validationUtilityService">
+			<ref local="validationUtilityService" />
+		</property>
+	</bean>
+
+	<bean id="validationUtilityService" class="org.biosemantics.disambiguation.knowledgebase.validation.impl.ValidationUtilityServiceImpl"></bean>
+
+	<!-- TOOLS FOR GRAPH DATABASE -->
+	<bean id="ambiguousLabelLocator" class="org.biosemantics.disambiguation.knowledgebase.tools.impl.AmbiguousLabelLocatorFileImpl">
 		<constructor-arg>
 			<ref local="graphDb" />
 		</constructor-arg>
