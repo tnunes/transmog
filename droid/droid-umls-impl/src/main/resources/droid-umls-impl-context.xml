@@ -29,7 +29,7 @@
 	<bean id="umlsMySqlDataSource"
 		class="org.biosemantics.disambiguation.droid.umls.impl.UmlsMySqlDataSourceImpl"
 		init-method="init">
-		<property name="batchSize" value="10000"></property>
+		<property name="batchSize" value="${batchSize}"></property>
 		<property name="relationshipService" ref="relationshipService"></property>
 		<property name="conceptService" ref="conceptService"></property>
 		<property name="graphDatabaseService" ref="graphDb"></property>
