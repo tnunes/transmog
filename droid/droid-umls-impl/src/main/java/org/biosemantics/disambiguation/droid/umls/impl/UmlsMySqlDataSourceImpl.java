@@ -383,7 +383,7 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 				} else {
 					previousCUI = cui;
 					if (!labelsForConcept.isEmpty()) {
-						// so that it is added once
+						// so that this notation is added once per concept
 						Notation umlsNotation = notationService.createNotation(Domain.UMLS, cui);
 						nodeCtr++;
 						notationsForConcept.add(umlsNotation);
@@ -391,16 +391,16 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 						cuiConceptIdMap.put(cui, concept.getId());
 						nodeCtr++;
 						labelsForConcept.clear();
-						notationsForConcept.clear();
 					}
-					ctr++;
-					if (ctr % batchSize == 0) {
-						transaction.success();
-						transaction.finish();
-						transaction = graphDatabaseService.beginTx();
-						logger.info("created concepts/nodes = {} / {}", new Object[] { ctr, nodeCtr });
-						nodeCtr = 0;
-					}
+					notationsForConcept.clear();
+				}
+				ctr++;
+				if (ctr % batchSize == 0) {
+					transaction.success();
+					transaction.finish();
+					transaction = graphDatabaseService.beginTx();
+					logger.info("created concepts/nodes = {} / {}", new Object[] { ctr, nodeCtr });
+					nodeCtr = 0;
 
 				}
 			}
