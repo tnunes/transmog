@@ -92,8 +92,8 @@ public class AmbiguousLabelLocatorFileImpl implements AmbiguousLabelLocator {
 				writer = new CSVWriter(new FileWriter(outputFile), fileType.fileSeparator);
 				long labelNodeCounter = 0;
 				logger.info("{} root node found, ambiguous label search starts", KnowledgebaseRelationshipType.LABELS);
+				long startTime = System.currentTimeMillis();
 				for (Node labelNode : labelNodes) {
-					long startTime = System.currentTimeMillis();
 					Traverser conceptNodes = labelNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
 							ReturnableEvaluator.ALL_BUT_START_NODE, KnowledgebaseRelationshipType.HAS_LABEL,
 							Direction.INCOMING);
@@ -108,6 +108,7 @@ public class AmbiguousLabelLocatorFileImpl implements AmbiguousLabelLocator {
 						// csv columns like "lableId","10", "conceptid"...
 						List<String> csvColumns = new ArrayList<String>();
 						csvColumns.add(label.getId());
+						csvColumns.add(label.getText());
 						csvColumns.add(String.valueOf(conceptNodeList.size()));
 						for (Node node : conceptNodeList) {
 							Concept concept = new ConceptImpl(node);
@@ -119,13 +120,10 @@ public class AmbiguousLabelLocatorFileImpl implements AmbiguousLabelLocator {
 					}
 					labelNodeCounter++;
 					if (labelNodeCounter % logInterval == 0) {
-						long endTime = System.currentTimeMillis();
-						logger.info("completed iterating {} label nodes in {} (ms)", new Object[] { labelNodeCounter,
-								(endTime - startTime) });
-						startTime = endTime;
+						logger.info("completed traversing {} label nodes", labelNodeCounter);
 					}
 				}
-				logger.info("ambiguous label search ends. See output file for results.");
+				logger.info("ambiguous label search ends in {}(ms). See output file for results.",(System.currentTimeMillis()-startTime));
 			}
 		} catch (IOException e) {
 			logger.error("IOexception when creating log file", e);
