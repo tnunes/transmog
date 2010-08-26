@@ -8,7 +8,7 @@ public class DroidUmlsImpl {
 
 	private static String[] configFiles = new String[] { "droid-umls-impl-context.xml" };
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		ApplicationContext applicationContext = new ClassPathXmlApplicationContext(configFiles);
 		DataSourceFactory dataSourceFactoryImpl = applicationContext.getBean(DataSourceFactoryImpl.class);
 		DataSource dataSource = dataSourceFactoryImpl.getInstance(DataSourceType.MYSQL);
