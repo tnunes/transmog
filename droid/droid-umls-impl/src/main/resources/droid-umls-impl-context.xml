@@ -41,5 +41,10 @@
 		<property name="url" value="${mysql.url}"></property>
 		<property name="userName" value="${mysql.userName}"></property>
 		<property name="password" value="${mysql.password}"></property>
+		<property name="intermediateCache">
+			<ref local="intermediateCache"/>
+		</property>
 	</bean>
+	
+	<bean id="intermediateCache" class="org.biosemantics.disambiguation.droid.umls.impl.IntermediateCacheImpl"></bean>
 </beans>
