@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.biosemantics.disambiguation.knowledgebase.service.Concept;
 import org.biosemantics.disambiguation.knowledgebase.service.ConceptRelationshipInput;
@@ -47,6 +48,7 @@ import org.springframework.util.StopWatch;
 import au.com.bytecode.opencsv.CSVReader;
 
 public class UmlsMySqlDataSourceImpl implements DataSource {
+	private static final String GRAPH_FOLDER_PATH = "/home/bhsingh/Code/workspace/transmog/droid/droid-umls-impl/concept-graph";
 	private static final String GET_ALL_CONCEPT_SCHEME = "select STY_RL, UI from SRDEF where RT='STY'";
 	private static final String GET_ALL_CONCEPT_SCHEME_RLSP = "select distinct RL as RL from SRSTRE2";
 	private static final String GET_CONCEPT_SCHEME_RELATIONS = "select STY1, RL, STY2 from SRSTRE2 order by STY1";
@@ -57,7 +59,8 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 	private Map<String, Concept> predicateMap = new HashMap<String, Concept>();
 	private Map<String, Concept> conceptSchemeMap = new HashMap<String, Concept>();
 	// key=cui value=concept.getId()
-	// private Map<String, String> cuiConceptIdMap = new HashMap<String, String>();
+	// private Map<String, String> cuiConceptIdMap = new HashMap<String,
+	// String>();
 
 	private static final Logger logger = LoggerFactory.getLogger(UmlsMySqlDataSourceImpl.class);
 	private static final String SCR = "scr";
@@ -156,27 +159,35 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 	@Override
 	public void initialize() throws SQLException {
 		StopWatch stopWatch = new StopWatch();
-		// logger.info("creating predicates from text file located at \"{}\" ", predicateFile);
+		// logger.info("creating predicates from text file located at \"{}\" ",
+		// predicateFile);
 		// stopWatch.start();
 		// createPredicateConcepts();
 		// stopWatch.stop();
-		// logger.info("process completed in {} ms", stopWatch.getLastTaskTimeMillis());
+		// logger.info("process completed in {} ms",
+		// stopWatch.getLastTaskTimeMillis());
 		//
 		// logger.info("starting concept scheme import from SRDEF table");
 		// stopWatch.start();
 		// createConceptScheme();
 		// stopWatch.stop();
-		// logger.info("process completed in {} ms", stopWatch.getLastTaskTimeMillis());
+		// logger.info("process completed in {} ms",
+		// stopWatch.getLastTaskTimeMillis());
 		//
 		// logger.info("starting concept scheme relationship import from SRSTRE2 table");
 		// stopWatch.start();
 		// createConceptSchemeRelationship();
 		// stopWatch.stop();
-		// logger.info("process completed in {} ms", stopWatch.getLastTaskTimeMillis());
+		// logger.info("process completed in {} ms",
+		// stopWatch.getLastTaskTimeMillis());
 
 		logger.info("starting concept import from MRCONSO table");
 		stopWatch.start();
 		getConceptsFaster();
+		// conceptIterator();
+		// insertIteratorNoIndex();
+		// insertIteratorWithIndex();
+		// insertOnceWithIndex();
 		stopWatch.stop();
 		logger.info("process completed in {} ms", stopWatch.getLastTaskTimeMillis());
 
@@ -184,13 +195,15 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 		// stopWatch.start();
 		// getFactualRelationships();
 		// stopWatch.stop();
-		// logger.info("process completed in {} ms", stopWatch.getLastTaskTimeMillis());
+		// logger.info("process completed in {} ms",
+		// stopWatch.getLastTaskTimeMillis());
 		//
 		// logger.info("starting co-occurance relationship import from MRCOC table");
 		// stopWatch.start();
 		// getCooccuranceRelationships();
 		// stopWatch.stop();
-		// logger.info("process completed in {} ms", stopWatch.getLastTaskTimeMillis());
+		// logger.info("process completed in {} ms",
+		// stopWatch.getLastTaskTimeMillis());
 	}
 
 	private void createPredicateConcepts() {
@@ -325,9 +338,9 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 				}
 
 				/*
-				 * check against following entries in table. e.g.
-				 * Acquired Abnormality	co-occurs_with	Acquired Abnormality
-				 * We cannot have the same source and target for a relationship in neo4j
+				 * check against following entries in table. e.g. Acquired
+				 * Abnormality co-occurs_with Acquired Abnormality We cannot
+				 * have the same source and target for a relationship in neo4j
 				 */
 				if (source != null && target != null && !source.equals(target)) {
 					ConceptRelationshipType conceptRelationshipType = getRelationshipType(rl);
@@ -364,7 +377,8 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 
 	// private void getConcepts() throws SQLException {
 	// Transaction transaction = graphDatabaseService.beginTx();
-	// PreparedStatement getConceptStatement = connection.prepareStatement(GET_ALL_CONCEPTS_SQL,
+	// PreparedStatement getConceptStatement =
+	// connection.prepareStatement(GET_ALL_CONCEPTS_SQL,
 	// ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 	// getConceptStatement.setFetchSize(Integer.MIN_VALUE);
 	// int ctr = 0;
@@ -393,7 +407,8 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 	// Language language = getLanguage(lat);
 	// // create label
 	// Label label = null;
-	// if (ts.equalsIgnoreCase("P") && isPref.equalsIgnoreCase("Y") && stt.equalsIgnoreCase("PF")) {
+	// if (ts.equalsIgnoreCase("P") && isPref.equalsIgnoreCase("Y") &&
+	// stt.equalsIgnoreCase("PF")) {
 	// label = labelService.createPreferredLabel(str, language);
 	// nodeCtr++;
 	// } else {
@@ -414,7 +429,8 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 	// Notation umlsNotation = notationService.createNotation(Domain.UMLS, cui);
 	// nodeCtr++;
 	// notationsForConcept.add(umlsNotation);
-	// Concept concept = conceptService.createConcept(labelsForConcept, notationsForConcept);
+	// Concept concept = conceptService.createConcept(labelsForConcept,
+	// notationsForConcept);
 	// cuiConceptIdCache.addToCache(new CuiConceptId(cui, concept.getId()));
 	// nodeCtr++;
 	// labelsForConcept.clear();
@@ -427,7 +443,8 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 	// transaction.finish();
 	// transaction = null;
 	// transaction = graphDatabaseService.beginTx();
-	// logger.info("created concepts/nodes = {} / {}", new Object[] { ctr, nodeCtr });
+	// logger.info("created concepts/nodes = {} / {}", new Object[] { ctr,
+	// nodeCtr });
 	// nodeCtr = 0;
 	//
 	// }
@@ -445,6 +462,147 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 	// }
 	// }
 
+	private void conceptIterator() throws SQLException {
+		// Transaction transaction = graphDatabaseService.beginTx();
+		PreparedStatement getConceptStatement = connection.prepareStatement(GET_ALL_CONCEPTS_SQL,
+				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		getConceptStatement.setFetchSize(Integer.MIN_VALUE);
+		int ctr = 0;
+		ResultSet results = getConceptStatement.executeQuery();
+		long start = System.currentTimeMillis();
+		while (results.next()) {
+			ctr++;
+			if (ctr % batchSize == 0) {
+				long end = System.currentTimeMillis();
+				logger.info("iterated {} records  in {}(ms)", new Object[] { ctr, (end - start) });
+				start = System.currentTimeMillis();
+			}
+		}
+
+	}
+
+	private void insertIteratorNoIndex() {
+		// #---GRAPH DATASTORE CONFIGURATION---#
+		Map<String, String> graphProps = new HashMap<String, String>();
+		graphProps.put("neostore.nodestore.db.mapped_memory", "90M");
+		graphProps.put("neostore.relationshipstore.db.mapped_memory", "90M");
+		graphProps.put("neostore.propertystore.db.mapped_memory", "90M");
+		graphProps.put("neostore.propertystore.db.strings.mapped_memory", "512M");
+		graphProps.put("neostore.relationshipstore.db.mapped_memory", "0M");
+		BatchInserter inserter = new BatchInserterImpl(GRAPH_FOLDER_PATH, graphProps);
+		int ctr = 0;
+		long start = System.currentTimeMillis();
+		Map<String, Object> properties = new HashMap<String, Object>();
+		for (int i = 0; i < 29850000; i++) {
+			String uuid = UUID.randomUUID().toString();
+			properties.put("domain", Domain.UMLS.name());
+			properties.put("code", uuid);
+			long notationNodeId = inserter.createNode(properties);
+			ctr++;
+			properties.clear();
+			if (ctr % batchSize == 0) {
+				long end = System.currentTimeMillis();
+				logger.info("\"{}\",\"{}\"", new Object[] { ctr, end - start });
+				inserter.shutdown();
+				inserter = new BatchInserterImpl(GRAPH_FOLDER_PATH, graphProps);
+				start = System.currentTimeMillis();
+			}
+		}
+		inserter.shutdown();
+
+	}
+
+	private void insertOnceWithIndex() {
+		// #---GRAPH DATASTORE CONFIGURATION---#
+		Map<String, String> graphProps = new HashMap<String, String>();
+		graphProps.put("neostore.nodestore.db.mapped_memory", "900M");
+		graphProps.put("neostore.relationshipstore.db.mapped_memory", "3G");
+		graphProps.put("neostore.propertystore.db.mapped_memory", "900M");
+		graphProps.put("neostore.propertystore.db.strings.mapped_memory", "1G");
+		graphProps.put("neostore.relationshipstore.db.mapped_memory", "1G");
+		BatchInserter inserter = new BatchInserterImpl(GRAPH_FOLDER_PATH, graphProps);
+		LuceneIndexBatchInserter indexService = new LuceneIndexBatchInserterImpl(inserter);
+		LuceneFulltextIndexBatchInserter fulltextIndexService = new LuceneFulltextIndexBatchInserter(inserter);
+		int ctr = 0;
+		long start = System.currentTimeMillis();
+		Map<String, Object> properties = new HashMap<String, Object>();
+		for (int i = 0; i < 29850000; i++) {
+			String uuid = UUID.randomUUID().toString();
+			properties.put("domain", Domain.UMLS.name());
+			properties.put("code", uuid);
+			long notationNodeId = inserter.createNode(properties);
+			ctr++;
+			indexService.index(notationNodeId, "notation_1", UUID.randomUUID().toString());
+			indexService.index(notationNodeId, "notation_2", UUID.randomUUID().toString());
+			indexService.index(notationNodeId, "notation_3", UUID.randomUUID().toString());
+			// very long staring
+			fulltextIndexService.index(notationNodeId, "notation_full_text", UUID.randomUUID().toString() + " "
+					+ UUID.randomUUID().toString() + " " + UUID.randomUUID().toString());
+			properties.clear();
+			if (ctr % batchSize == 0) {
+				long end = System.currentTimeMillis();
+				logger.info("\"{}\",\"{}\"", new Object[] { ctr, end - start });
+				start = System.currentTimeMillis();
+			}
+		}
+		indexService.optimize();
+		fulltextIndexService.optimize();
+		indexService.shutdown();
+		fulltextIndexService.shutdown();
+		inserter.shutdown();
+	}
+
+	private void insertIteratorWithIndex() {
+		// #---GRAPH DATASTORE CONFIGURATION---#
+		Map<String, String> graphProps = new HashMap<String, String>();
+		graphProps.put("neostore.nodestore.db.mapped_memory", "90M");
+		graphProps.put("neostore.relationshipstore.db.mapped_memory", "90M");
+		graphProps.put("neostore.propertystore.db.mapped_memory", "90M");
+		graphProps.put("neostore.propertystore.db.strings.mapped_memory", "512M");
+		graphProps.put("neostore.relationshipstore.db.mapped_memory", "0M");
+		BatchInserter inserter = new BatchInserterImpl(GRAPH_FOLDER_PATH, graphProps);
+		LuceneIndexBatchInserter indexService = new LuceneIndexBatchInserterImpl(inserter);
+		LuceneFulltextIndexBatchInserter fulltextIndexService = new LuceneFulltextIndexBatchInserter(inserter);
+		int ctr = 0;
+		long start = System.currentTimeMillis();
+		Map<String, Object> properties = new HashMap<String, Object>();
+		for (int i = 0; i < 29850000; i++) {
+			String uuid = UUID.randomUUID().toString();
+			properties.put("domain", Domain.UMLS.name());
+			properties.put("code", uuid);
+			long notationNodeId = inserter.createNode(properties);
+			ctr++;
+			indexService.index(notationNodeId, "notation_1", UUID.randomUUID().toString());
+			indexService.index(notationNodeId, "notation_2", UUID.randomUUID().toString());
+			indexService.index(notationNodeId, "notation_3", UUID.randomUUID().toString());
+			// very long staring
+			fulltextIndexService.index(notationNodeId, "notation_full_text", UUID.randomUUID().toString() + " "
+					+ UUID.randomUUID().toString() + " " + UUID.randomUUID().toString());
+			properties.clear();
+			if (ctr % batchSize == 0) {
+				long end = System.currentTimeMillis();
+				logger.info("\"{}\",\"{}\"", new Object[] { ctr, end - start });
+				start = System.currentTimeMillis();
+				indexService.optimize();
+				fulltextIndexService.optimize();
+				indexService.shutdown();
+				fulltextIndexService.shutdown();
+				inserter.shutdown();
+				inserter = new BatchInserterImpl(GRAPH_FOLDER_PATH, graphProps);
+				indexService = new LuceneIndexBatchInserterImpl(inserter);
+				fulltextIndexService = new LuceneFulltextIndexBatchInserter(inserter);
+				logger.info("\"{}\"", System.currentTimeMillis() - start);
+				start = System.currentTimeMillis();
+			}
+		}
+		indexService.optimize();
+		fulltextIndexService.optimize();
+		indexService.shutdown();
+		fulltextIndexService.shutdown();
+		inserter.shutdown();
+
+	}
+
 	private void getConceptsFaster() throws SQLException {
 		// Transaction transaction = graphDatabaseService.beginTx();
 		PreparedStatement getConceptStatement = connection.prepareStatement(GET_ALL_CONCEPTS_SQL,
@@ -455,13 +613,12 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 		String previousCUI = null;
 		// #---GRAPH DATASTORE CONFIGURATION---#
 		Map<String, String> graphProps = new HashMap<String, String>();
-		graphProps.put("neostore.nodestore.db.mapped_memory", "90M");
-		graphProps.put("neostore.relationshipstore.db.mapped_memory", "90M");
-		graphProps.put("neostore.propertystore.db.mapped_memory", "90M");
-		graphProps.put("neostore.propertystore.db.strings.mapped_memory", "512M");
-		graphProps.put("neostore.relationshipstore.db.mapped_memory", "0M");
-		BatchInserter inserter = new BatchInserterImpl(
-				"/Users/bhanu/Code/workspace/transmog/droid/droid-umls-impl/test", graphProps);
+		graphProps.put("neostore.nodestore.db.mapped_memory", "900M");
+		graphProps.put("neostore.relationshipstore.db.mapped_memory", "3G");
+		graphProps.put("neostore.propertystore.db.mapped_memory", "900M");
+		graphProps.put("neostore.propertystore.db.strings.mapped_memory", "1G");
+		graphProps.put("neostore.relationshipstore.db.mapped_memory", "1G");
+		BatchInserter inserter = new BatchInserterImpl(GRAPH_FOLDER_PATH, graphProps);
 		LuceneIndexBatchInserter indexService = new LuceneIndexBatchInserterImpl(inserter);
 		LuceneFulltextIndexBatchInserter fulltextIndexService = new LuceneFulltextIndexBatchInserter(inserter);
 
@@ -487,7 +644,8 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 					previousCUI = cui;
 				}
 				if (!previousCUI.equals(cui)) {
-					// create UMLS notation (only once for a concept) use previousCUI here
+					// create UMLS notation (only once for a concept) use
+					// previousCUI here
 					properties.clear();
 					properties.put("domain", Domain.UMLS.name());
 					properties.put("code", previousCUI);
@@ -542,10 +700,10 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 				labelIds.add(labelNodeId);
 				// reuse map
 				properties.clear();
-				long notationNodeId = intermediateCache.getNotationNodeId(sab, code);
+				Domain domain = getDomain(sab);
+				long notationNodeId = intermediateCache.getNotationNodeId(domain.name(), code);
 				if (notationNodeId == 0) {
 					properties.clear();
-					Domain domain = getDomain(sab);
 					properties.put("domain", domain.name());
 					properties.put("code", code);
 					notationNodeId = inserter.createNode(properties);
@@ -558,42 +716,39 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 				notationIds.add(notationNodeId);
 				// reuse map
 				properties.clear();
-
 				ctr++;
 				if (ctr % batchSize == 0) {
 					logger.info("created concepts/nodes = {} / {}", new Object[] { ctr, nodeCtr });
 					nodeCtr = 0;
-					indexService.optimize();
-					fulltextIndexService.optimize();
-					indexService.shutdown();
-					fulltextIndexService.shutdown();
-					inserter.shutdown();
-					inserter = new BatchInserterImpl("/Users/bhanu/Code/workspace/transmog/droid/droid-umls-impl/test",
-							graphProps);
-					indexService = new LuceneIndexBatchInserterImpl(inserter);
-					fulltextIndexService = new LuceneFulltextIndexBatchInserter(inserter);
 				}
 			}
 		} finally {
+			logger.info("closing result set and statement");
 			if (results != null) {
 				results.close();
 			}
 			if (getConceptStatement != null) {
 				getConceptStatement.close();
 			}
-
+			logger.info("optimising indexes ...");
+			long start = System.currentTimeMillis();
 			indexService.optimize();
 			fulltextIndexService.optimize();
+			logger.info("indexes optimised in {} (ms)", System.currentTimeMillis() - start);
+			logger.info("shutdown store called ...");
+			start = System.currentTimeMillis();
 			indexService.shutdown();
 			fulltextIndexService.shutdown();
 			inserter.shutdown();
+			logger.info("shutdown complete in {} (ms)", System.currentTimeMillis() - start);
 
 		}
 	}
 
 	// private void getFactualRelationships() throws SQLException {
 	// Transaction transaction = graphDatabaseService.beginTx();
-	// PreparedStatement getConceptStatement = connection.prepareStatement("select CUI1, CUI2, REL, RELA from MRREL",
+	// PreparedStatement getConceptStatement =
+	// connection.prepareStatement("select CUI1, CUI2, REL, RELA from MRREL",
 	// ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 	// getConceptStatement.setFetchSize(Integer.MIN_VALUE);
 	// int ctr = 0;
@@ -607,12 +762,14 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 	// String rela = results.getString("RELA");
 	// // ignore if source or target is not found
 	// if (StringUtils.isBlank(cui1) || StringUtils.isBlank(cui2)) {
-	// logger.warn("No cui1={} cui2={} found. Ignoring", new Object[] { cui1, cui2 });
+	// logger.warn("No cui1={} cui2={} found. Ignoring", new Object[] { cui1,
+	// cui2 });
 	// continue;
 	// }
 	// // ignore if source or target are the same
 	// if (cui1.equalsIgnoreCase(cui2)) {
-	// logger.warn("self relationship found. cui1 {} == cui2 {}. Ignoring", new Object[] { cui1, cui2 });
+	// logger.warn("self relationship found. cui1 {} == cui2 {}. Ignoring", new
+	// Object[] { cui1, cui2 });
 	// continue;
 	// }
 	// String sourceConceptId = cuiConceptIdCache.getByCui(cui1).getConceptId();
@@ -636,9 +793,11 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 	// continue;
 	// }
 	// // whew! we have everything now create rlsp.
-	// ConceptRelationshipType conceptRelationshipType = getConceptRelationshipType(rel);
+	// ConceptRelationshipType conceptRelationshipType =
+	// getConceptRelationshipType(rel);
 	// Concept predicate = predicateMap.get(rela);
-	// ConceptRelationshipInput input = new ConceptRelationshipInput().withSource(sourceConcept)
+	// ConceptRelationshipInput input = new
+	// ConceptRelationshipInput().withSource(sourceConcept)
 	// .withTarget(targetConcept).withConceptRelationshipType(conceptRelationshipType)
 	// .withRelationshipCategory(RelationshipCategory.AUTHORITATIVE).withScore(Integer.MAX_VALUE);
 	// if (predicate == null) {
@@ -671,7 +830,8 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 	//
 	// private void getCooccuranceRelationships() throws SQLException {
 	// Transaction transaction = graphDatabaseService.beginTx();
-	// PreparedStatement getConceptStatement = connection.prepareStatement("select CUI1, CUI2, COF from MRCOC",
+	// PreparedStatement getConceptStatement =
+	// connection.prepareStatement("select CUI1, CUI2, COF from MRCOC",
 	// ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 	// getConceptStatement.setFetchSize(Integer.MIN_VALUE);
 	// int ctr = 0;
@@ -684,12 +844,14 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 	// int cof = results.getInt("COF");// min value for COF in database is 1
 	// // ignore if source or target is not found
 	// if (StringUtils.isBlank(cui1) || StringUtils.isBlank(cui2)) {
-	// logger.warn("No cui1={} cui2={} found. Ignoring", new Object[] { cui1, cui2 });
+	// logger.warn("No cui1={} cui2={} found. Ignoring", new Object[] { cui1,
+	// cui2 });
 	// continue;
 	// }
 	// // ignore if source or target are the same
 	// if (cui1.equalsIgnoreCase(cui2)) {
-	// logger.warn("self relationship found. cui1 {} == cui2 {}. Ignoring", new Object[] { cui1, cui2 });
+	// logger.warn("self relationship found. cui1 {} == cui2 {}. Ignoring", new
+	// Object[] { cui1, cui2 });
 	// continue;
 	// }
 	// String sourceConceptId = cuiConceptIdCache.getByCui(cui1).getConceptId();
@@ -713,7 +875,8 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 	// continue;
 	// }
 	// // whew! we have everything now create rlsp.
-	// ConceptRelationshipInput input = new ConceptRelationshipInput().withSource(sourceConcept)
+	// ConceptRelationshipInput input = new
+	// ConceptRelationshipInput().withSource(sourceConcept)
 	// .withTarget(targetConcept).withConceptRelationshipType(ConceptRelationshipType.RELATED)
 	// .withRelationshipCategory(RelationshipCategory.CO_OCCURANCE).withScore(cof);
 	// relationshipService.createRelationship(input);
@@ -755,7 +918,8 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 
 	private Language getLanguage(String lat) {
 		lat = lat.toLowerCase();
-		// http://www.loc.gov/standards/iso639-2/php/code_changes.php SCR has been deprecated
+		// http://www.loc.gov/standards/iso639-2/php/code_changes.php SCR has
+		// been deprecated
 		if (lat.equalsIgnoreCase(SCR)) {
 			lat = Language.HR.getIso62392Code();
 		}
@@ -771,21 +935,21 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 		// http://www.nlm.nih.gov/research/umls/knowledge_sources/metathesaurus/release/abbreviations.html
 		/*
 		 * 
-		AQ 	Allowed qualifier
-		CHD has child relationship in a Metathesaurus source vocabulary
-		DEL Deleted concept
-		PAR has parent relationship in a Metathesaurus source vocabulary
-		QB 	can be qualified by.
-		RB 	has a broader relationship
-		RL 	the relationship is similar or "alike". the two concepts are similar or "alike". In the current edition of the Metathesaurus, most relationships with this attribute are mappings provided by a source, named in SAB and SL; hence concepts linked by this relationship may be synonymous, i.e. self-referential: CUI1 = CUI2. In previous releases, some MeSH Supplementary Concept relationships were represented in this way.
-		RN 	has a narrower relationship
-		RO 	has relationship other than synonymous, narrower, or broader
-		RQ 	related and possibly synonymous.
-		RU 	Related, unspecified
-		SIB 	has sibling relationship in a Metathesaurus source vocabulary.
-		SY 	source asserted synonymy.
-		XR 	Not related, no mapping
-		Empty relationship
+		 * AQ Allowed qualifier CHD has child relationship in a Metathesaurus
+		 * source vocabulary DEL Deleted concept PAR has parent relationship in
+		 * a Metathesaurus source vocabulary QB can be qualified by. RB has a
+		 * broader relationship RL the relationship is similar or "alike". the
+		 * two concepts are similar or "alike". In the current edition of the
+		 * Metathesaurus, most relationships with this attribute are mappings
+		 * provided by a source, named in SAB and SL; hence concepts linked by
+		 * this relationship may be synonymous, i.e. self-referential: CUI1 =
+		 * CUI2. In previous releases, some MeSH Supplementary Concept
+		 * relationships were represented in this way. RN has a narrower
+		 * relationship RO has relationship other than synonymous, narrower, or
+		 * broader RQ related and possibly synonymous. RU Related, unspecified
+		 * SIB has sibling relationship in a Metathesaurus source vocabulary. SY
+		 * source asserted synonymy. XR Not related, no mapping Empty
+		 * relationship
 		 */
 		ConceptRelationshipType conceptRelationshipType = ConceptRelationshipType.RELATED;
 		String relUpper = rel.toUpperCase().trim();

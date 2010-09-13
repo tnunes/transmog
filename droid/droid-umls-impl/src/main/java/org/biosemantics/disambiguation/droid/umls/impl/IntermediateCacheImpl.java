@@ -29,34 +29,34 @@ public class IntermediateCacheImpl implements IntermediateCache {
 		client = server.openClient();
 	}
 
-	@Override
-	public boolean addToCache(CuiConceptId cuiConceptId) {
-		try {
-			client.store(cuiConceptId);
-			return true;
-		} catch (Exception e) {
-			logger.info("cannot add object to cache", e);
-			return false;
-		}
-
-	}
-
-	@Override
-	public CuiConceptId getByCui(final String cui) {
-		List<CuiConceptId> cuiConceptIds = client.query(new Predicate<CuiConceptId>() {
-			private static final long serialVersionUID = -4618020293845815708L;
-
-			public boolean match(CuiConceptId match) {
-				return match.getCui().equals(cui);
-			}
-		});
-		if (cuiConceptIds == null || cuiConceptIds.isEmpty()) {
-			logger.warn("cannot find cui {} in cache", cui);
-			return null;
-		} else {
-			return cuiConceptIds.get(0);
-		}
-	}
+//	@Override
+//	public boolean addToCache(CuiConceptId cuiConceptId) {
+//		try {
+//			client.store(cuiConceptId);
+//			return true;
+//		} catch (Exception e) {
+//			logger.info("cannot add object to cache", e);
+//			return false;
+//		}
+//
+//	}
+//
+//	@Override
+//	public CuiConceptId getByCui(final String cui) {
+//		List<CuiConceptId> cuiConceptIds = client.query(new Predicate<CuiConceptId>() {
+//			private static final long serialVersionUID = -4618020293845815708L;
+//
+//			public boolean match(CuiConceptId match) {
+//				return match.getCui().equals(cui);
+//			}
+//		});
+//		if (cuiConceptIds == null || cuiConceptIds.isEmpty()) {
+//			logger.warn("cannot find cui {} in cache", cui);
+//			return null;
+//		} else {
+//			return cuiConceptIds.get(0);
+//		}
+//	}
 
 	public void destroy() {
 		client.close();

@@ -44,7 +44,8 @@
 		<property name="intermediateCache">
 			<ref local="intermediateCache"/>
 		</property>
+		<property name="idGenerator" ref="idGenerator"></property>
 	</bean>
 	
-	<bean id="intermediateCache" class="org.biosemantics.disambiguation.droid.umls.impl.IntermediateCacheImpl"></bean>
+	<bean id="intermediateCache" class="org.biosemantics.disambiguation.droid.umls.impl.IntermediateCacheHashmapImpl" init-method="init" destroy-method="destroy"></bean>
 </beans>
