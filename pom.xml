@@ -266,5 +266,6 @@
 	<modules>
 		<module>knowledgebase</module>
 		<module>droid</module>
+		<module>web</module>
 	</modules>
 </project>
