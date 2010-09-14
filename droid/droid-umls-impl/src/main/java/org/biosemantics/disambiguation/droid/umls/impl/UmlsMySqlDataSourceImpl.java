@@ -1,6 +1,7 @@
 package org.biosemantics.disambiguation.droid.umls.impl;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
@@ -8,34 +9,20 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
-import org.biosemantics.disambiguation.knowledgebase.service.Concept;
-import org.biosemantics.disambiguation.knowledgebase.service.ConceptRelationshipInput;
+import org.apache.commons.lang.StringUtils;
 import org.biosemantics.disambiguation.knowledgebase.service.ConceptRelationshipType;
-import org.biosemantics.disambiguation.knowledgebase.service.ConceptSchemeService;
-import org.biosemantics.disambiguation.knowledgebase.service.ConceptService;
 import org.biosemantics.disambiguation.knowledgebase.service.Domain;
 import org.biosemantics.disambiguation.knowledgebase.service.KnowledgebaseRelationshipType;
-import org.biosemantics.disambiguation.knowledgebase.service.Label;
 import org.biosemantics.disambiguation.knowledgebase.service.Label.LabelType;
-import org.biosemantics.disambiguation.knowledgebase.service.LabelService;
 import org.biosemantics.disambiguation.knowledgebase.service.Language;
-import org.biosemantics.disambiguation.knowledgebase.service.Notation;
-import org.biosemantics.disambiguation.knowledgebase.service.NotationService;
-import org.biosemantics.disambiguation.knowledgebase.service.QueryService;
 import org.biosemantics.disambiguation.knowledgebase.service.RelationshipCategory;
-import org.biosemantics.disambiguation.knowledgebase.service.RelationshipService;
 import org.biosemantics.disambiguation.knowledgebase.service.local.IdGenerator;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Transaction;
 import org.neo4j.index.lucene.LuceneFulltextIndexBatchInserter;
 import org.neo4j.index.lucene.LuceneIndexBatchInserter;
 import org.neo4j.index.lucene.LuceneIndexBatchInserterImpl;
@@ -48,39 +35,42 @@ import org.springframework.util.StopWatch;
 import au.com.bytecode.opencsv.CSVReader;
 
 public class UmlsMySqlDataSourceImpl implements DataSource {
+	private static final String GET_CO_OCCURANCE_RLSP_SQL = "select CUI1, CUI2, COF from MRCOC";
+	private static final String GET_ALL_RLSP_SQL = "select CUI1, CUI2, REL, RELA from MRREL";
 	private static final String GRAPH_FOLDER_PATH = "/home/bhsingh/Code/workspace/transmog/droid/droid-umls-impl/concept-graph";
 	private static final String GET_ALL_CONCEPT_SCHEME = "select STY_RL, UI from SRDEF where RT='STY'";
-	private static final String GET_ALL_CONCEPT_SCHEME_RLSP = "select distinct RL as RL from SRSTRE2";
 	private static final String GET_CONCEPT_SCHEME_RELATIONS = "select STY1, RL, STY2 from SRSTRE2 order by STY1";
 	private static final String GET_ALL_CONCEPTS_SQL = "select CUI, SUI, TS, ISPREF, STT, LAT, STR, SAB, CODE from MRCONSO ORDER BY CUI";
+	private static final String GET_ALL_CONCEPT_SCHEME_RLSP = "select distinct RL as RL from SRSTRE2";
+	private static final String SCR = "scr";
+	private static final Object FULL_TEXT_SEPARATOR = " ";
+	private static final Logger logger = LoggerFactory.getLogger(UmlsMySqlDataSourceImpl.class);
+
 	// key=UMLS language code value=knowledge base language code
 	private Map<String, Language> languageMap = new HashMap<String, Language>();
 	// key =REL from MRREL value=Concept
-	private Map<String, Concept> predicateMap = new HashMap<String, Concept>();
-	private Map<String, Concept> conceptSchemeMap = new HashMap<String, Concept>();
+	private Map<String, Long> predicateMap = new HashMap<String, Long>();
+	private Map<String, Long> conceptSchemeMap = new HashMap<String, Long>();
 	// key=cui value=concept.getId()
 	// private Map<String, String> cuiConceptIdMap = new HashMap<String,
 	// String>();
 
-	private static final Logger logger = LoggerFactory.getLogger(UmlsMySqlDataSourceImpl.class);
-	private static final String SCR = "scr";
-	private static final Object FULL_TEXT_SEPARATOR = " ";
-
+	// MYSQL data
 	private String url;
 	private String userName;
 	private String password;
+
 	private Connection connection;
-	private LabelService labelService;
-	private NotationService notationService;
-	private ConceptService conceptService;
-	private QueryService queryService;
-	private RelationshipService relationshipService;
-	private ConceptSchemeService conceptSchemeService;
-	private GraphDatabaseService graphDatabaseService;
 	private IntermediateCache intermediateCache;
 	private IdGenerator idGenerator;
 	private int batchSize = 10000;
 	private String predicateFile = "predicates.tsv";
+
+	private long labelSubNodeId;
+	private long notationSubNodeId;
+	private long conceptSubNodeId;
+	private long predicateSubNodeId;
+	private long conceptSchemeSubNodeId;
 
 	public void setUrl(String url) {
 		this.url = url;
@@ -94,30 +84,6 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 		this.password = password;
 	}
 
-	public void setLabelService(LabelService labelService) {
-		this.labelService = labelService;
-	}
-
-	public void setNotationService(NotationService notationService) {
-		this.notationService = notationService;
-	}
-
-	public void setConceptService(ConceptService conceptService) {
-		this.conceptService = conceptService;
-	}
-
-	public void setQueryService(QueryService queryService) {
-		this.queryService = queryService;
-	}
-
-	public void setRelationshipService(RelationshipService relationshipService) {
-		this.relationshipService = relationshipService;
-	}
-
-	public void setConceptSchemeService(ConceptSchemeService conceptSchemeService) {
-		this.conceptSchemeService = conceptSchemeService;
-	}
-
 	public void setPredicateFile(String predicateFile) {
 		this.predicateFile = predicateFile;
 	}
@@ -128,15 +94,6 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 
 	public void setIdGenerator(IdGenerator idGenerator) {
 		this.idGenerator = idGenerator;
-	}
-
-	@Override
-	public void setGraphDatabaseService(GraphDatabaseService graphDatabaseService) {
-		this.graphDatabaseService = graphDatabaseService;
-	}
-
-	public void setPredicateMap(Map<String, Concept> predicateMap) {
-		this.predicateMap = predicateMap;
 	}
 
 	@Override
@@ -159,360 +116,223 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 	@Override
 	public void initialize() throws SQLException {
 		StopWatch stopWatch = new StopWatch();
-		// logger.info("creating predicates from text file located at \"{}\" ",
-		// predicateFile);
-		// stopWatch.start();
-		// createPredicateConcepts();
-		// stopWatch.stop();
-		// logger.info("process completed in {} ms",
-		// stopWatch.getLastTaskTimeMillis());
-		//
-		// logger.info("starting concept scheme import from SRDEF table");
-		// stopWatch.start();
-		// createConceptScheme();
-		// stopWatch.stop();
-		// logger.info("process completed in {} ms",
-		// stopWatch.getLastTaskTimeMillis());
-		//
-		// logger.info("starting concept scheme relationship import from SRSTRE2 table");
-		// stopWatch.start();
-		// createConceptSchemeRelationship();
-		// stopWatch.stop();
-		// logger.info("process completed in {} ms",
-		// stopWatch.getLastTaskTimeMillis());
 
-		logger.info("starting concept import from MRCONSO table");
+		logger.info("creating subnodes");
 		stopWatch.start();
-		getConceptsFaster();
-		// conceptIterator();
-		// insertIteratorNoIndex();
-		// insertIteratorWithIndex();
-		// insertOnceWithIndex();
+		createSubNodes();
 		stopWatch.stop();
 		logger.info("process completed in {} ms", stopWatch.getLastTaskTimeMillis());
 
-		// logger.info("starting concept relationship import from MRREL table");
-		// stopWatch.start();
-		// getFactualRelationships();
-		// stopWatch.stop();
-		// logger.info("process completed in {} ms",
-		// stopWatch.getLastTaskTimeMillis());
-		//
-		// logger.info("starting co-occurance relationship import from MRCOC table");
-		// stopWatch.start();
-		// getCooccuranceRelationships();
-		// stopWatch.stop();
-		// logger.info("process completed in {} ms",
-		// stopWatch.getLastTaskTimeMillis());
+		logger.info("creating predicates from text file located at \"{}\" ", predicateFile);
+		stopWatch.start();
+		createPredicateConcepts();
+		stopWatch.stop();
+		logger.info("process completed in {} ms", stopWatch.getLastTaskTimeMillis());
+
+		logger.info("starting concept scheme import from SRDEF table");
+		stopWatch.start();
+		createConceptScheme();
+		stopWatch.stop();
+		logger.info("process completed in {} ms", stopWatch.getLastTaskTimeMillis());
+
+		logger.info("starting concept scheme relationship import from SRSTRE2 table");
+		stopWatch.start();
+		createConceptSchemeRelationship();
+		stopWatch.stop();
+		logger.info("process completed in {} ms", stopWatch.getLastTaskTimeMillis());
+
+		logger.info("starting concept import from MRCONSO table");
+		stopWatch.start();
+		getConcepts();
+		stopWatch.stop();
+		logger.info("process completed in {} ms", stopWatch.getLastTaskTimeMillis());
+
+		logger.info("starting concept relationship import from MRREL table");
+		stopWatch.start();
+		getFactualRelationships();
+		stopWatch.stop();
+		logger.info("process completed in {} ms", stopWatch.getLastTaskTimeMillis());
+
+		logger.info("starting co-occurance relationship import from MRCOC table");
+		stopWatch.start();
+		getCooccuranceRelationships();
+		stopWatch.stop();
+		logger.info("process completed in {} ms", stopWatch.getLastTaskTimeMillis());
 	}
 
-	private void createPredicateConcepts() {
-		Transaction transaction = graphDatabaseService.beginTx();
-		Statement stmt = null;
-		ResultSet rs = null;
+	private void createSubNodes() {
+		Map<String, String> graphProps = new HashMap<String, String>();
+		graphProps.put("neostore.nodestore.db.mapped_memory", "900M");
+		graphProps.put("neostore.relationshipstore.db.mapped_memory", "3G");
+		graphProps.put("neostore.propertystore.db.mapped_memory", "900M");
+		graphProps.put("neostore.propertystore.db.strings.mapped_memory", "1G");
+		graphProps.put("neostore.relationshipstore.db.mapped_memory", "1G");
+		BatchInserter inserter = new BatchInserterImpl(GRAPH_FOLDER_PATH, graphProps);
+		try {
+			long referenceNode = inserter.getReferenceNode();
+			labelSubNodeId = inserter.createNode(null);
+			inserter.createRelationship(referenceNode, labelSubNodeId, KnowledgebaseRelationshipType.LABELS, null);
+			notationSubNodeId = inserter.createNode(null);
+			inserter.createRelationship(referenceNode, notationSubNodeId, KnowledgebaseRelationshipType.NOTATIONS, null);
+			conceptSubNodeId = inserter.createNode(null);
+			inserter.createRelationship(referenceNode, conceptSubNodeId, KnowledgebaseRelationshipType.CONCEPTS, null);
+			predicateSubNodeId = inserter.createNode(null);
+			inserter.createRelationship(referenceNode, predicateSubNodeId, KnowledgebaseRelationshipType.PREDICATES,
+					null);
+			conceptSchemeSubNodeId = inserter.createNode(null);
+			inserter.createRelationship(referenceNode, conceptSchemeSubNodeId,
+					KnowledgebaseRelationshipType.CONCEPT_SCHEMES, null);
+		} finally {
+			inserter.shutdown();
+		}
+	}
+
+	private void createPredicateConcepts() throws SQLException {
+
+		PreparedStatement getDistinctPredicateStatement = connection.prepareStatement(GET_ALL_CONCEPT_SCHEME_RLSP,
+				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		getDistinctPredicateStatement.setFetchSize(Integer.MIN_VALUE);
+		// #---GRAPH DATASTORE CONFIGURATION---#
+		int ctr = 0;
+		Map<String, String> graphProps = new HashMap<String, String>();
+		graphProps.put("neostore.nodestore.db.mapped_memory", "900M");
+		graphProps.put("neostore.relationshipstore.db.mapped_memory", "3G");
+		graphProps.put("neostore.propertystore.db.mapped_memory", "900M");
+		graphProps.put("neostore.propertystore.db.strings.mapped_memory", "1G");
+		graphProps.put("neostore.relationshipstore.db.mapped_memory", "1G");
+		BatchInserter inserter = new BatchInserterImpl(GRAPH_FOLDER_PATH, graphProps);
+		LuceneIndexBatchInserter indexService = new LuceneIndexBatchInserterImpl(inserter);
+		LuceneFulltextIndexBatchInserter fulltextIndexService = new LuceneFulltextIndexBatchInserter(inserter);
+		Map<String, Object> properties = new HashMap<String, Object>();
+		StringBuilder fullText = new StringBuilder();
+		ResultSet results = getDistinctPredicateStatement.executeQuery();
+		try {
+			while (results.next()) {
+				// notations
+				String code = results.getString("RL");
+				properties.clear();
+				properties.put("domain", Domain.UMLS.name());
+				properties.put("code", code);
+				long notationNodeId = inserter.createNode(properties);
+				inserter.createRelationship(notationSubNodeId, notationNodeId, KnowledgebaseRelationshipType.NOTATION,
+						null);
+				indexService.index(notationNodeId, "notation_code", code);
+				fullText.append(code).append(FULL_TEXT_SEPARATOR);
+				// labels
+				String text = code.replace("_", " ");
+				properties.clear();
+				properties.put("language", Language.EN.name());
+				properties.put("text", text);
+				properties.put("labelType", LabelType.PREFERRED.name());
+				long labelNodeId = inserter.createNode(properties);
+				inserter.createRelationship(labelSubNodeId, labelNodeId, KnowledgebaseRelationshipType.LABEL, null);
+				indexService.index(notationNodeId, "label_text", code);
+				fullText.append(text).append(FULL_TEXT_SEPARATOR);
+
+				// create predicate
+				properties.clear();
+				String randomConceptId = idGenerator.generateRandomId();
+				properties.put("id", randomConceptId);
+				long predicateNodeId = inserter.createNode(properties);
+				predicateMap.put(code, predicateNodeId);
+				inserter.createRelationship(predicateSubNodeId, predicateNodeId,
+						KnowledgebaseRelationshipType.PREDICATE, null);
+				indexService.index(predicateNodeId, "concept_id", randomConceptId);
+				fulltextIndexService.index(predicateNodeId, "concept_full_text", fullText);
+				fullText.setLength(0);
+				inserter.createRelationship(predicateNodeId, notationNodeId,
+						KnowledgebaseRelationshipType.HAS_NOTATION, null);
+
+				inserter.createRelationship(predicateNodeId, labelNodeId, KnowledgebaseRelationshipType.HAS_LABEL, null);
+			}
+		} finally {
+			logger.info("closing result set and statement");
+			if (results != null) {
+				results.close();
+			}
+			if (getDistinctPredicateStatement != null) {
+				getDistinctPredicateStatement.close();
+			}
+		}
+
 		try {
 			FileReader fileReader = new FileReader(new File(predicateFile));
 			CSVReader csvReader = new CSVReader(fileReader, '\t');
 			List<String[]> allLines = csvReader.readAll();
 			if (allLines != null) {
-				List<Label> labels = new ArrayList<Label>(1);
-				List<Notation> notations = new ArrayList<Notation>(1);
-				int ctr = 0;
 				for (String[] line : allLines) {
-					ctr++;
 					if (line.length == 2) {
+						ctr++;
+						// notations
 						String code = line[0].trim();
-						Notation notation = notationService.createNotation(Domain.UMLS, code);
-						notations.clear();
-						notations.add(notation);
+						properties.clear();
+						properties.put("domain", Domain.UMLS.name());
+						properties.put("code", code);
+						long notationNodeId = inserter.createNode(properties);
+						inserter.createRelationship(notationSubNodeId, notationNodeId,
+								KnowledgebaseRelationshipType.NOTATION, null);
+						indexService.index(notationNodeId, "notation_code", code);
+						fullText.append(code).append(FULL_TEXT_SEPARATOR);
+						// labels
 						String text = line[1].trim();
-						Label label = labelService.createPreferredLabel(text, Language.EN);
-						labels.clear();
-						labels.add(label);
-						Concept predicate = conceptService.createPredicate(labels, notations);
-						predicateMap.put(code, predicate);
+						properties.clear();
+						properties.put("language", Language.EN.name());
+						properties.put("text", text);
+						properties.put("labelType", LabelType.PREFERRED.name());
+						long labelNodeId = inserter.createNode(properties);
+						inserter.createRelationship(labelSubNodeId, labelNodeId, KnowledgebaseRelationshipType.LABEL,
+								null);
+						indexService.index(notationNodeId, "label_text", code);
+						fullText.append(text).append(FULL_TEXT_SEPARATOR);
 
+						// create predicate
+						properties.clear();
+						String randomConceptId = idGenerator.generateRandomId();
+						properties.put("id", randomConceptId);
+						long predicateNodeId = inserter.createNode(properties);
+						predicateMap.put(code, predicateNodeId);
+						inserter.createRelationship(predicateSubNodeId, predicateNodeId,
+								KnowledgebaseRelationshipType.PREDICATE, null);
+						indexService.index(predicateNodeId, "concept_id", randomConceptId);
+						fulltextIndexService.index(predicateNodeId, "concept_full_text", fullText);
+						fullText.setLength(0);
+						inserter.createRelationship(predicateNodeId, notationNodeId,
+								KnowledgebaseRelationshipType.HAS_NOTATION, null);
+
+						inserter.createRelationship(predicateNodeId, labelNodeId,
+								KnowledgebaseRelationshipType.HAS_LABEL, null);
 					} else {
 						logger.warn("line number {} is unreadable.", ctr);
 					}
-				}
-				stmt = connection.createStatement();
-				rs = stmt.executeQuery(GET_ALL_CONCEPT_SCHEME_RLSP);
-				while (rs.next()) {
-					String rlsp = rs.getString("RL");
-					if (predicateMap.containsKey(rlsp)) {
-						// logger.info("found {} rlsp in predicate map ", rlsp);
-					} else {
-						logger.info(
-								"No match found for predicate \"{}\" in the predicate map, creating new predicate concept",
-								rlsp);
-						labels.clear();
-						labels.add(labelService.createPreferredLabel(rlsp, Language.EN));
-						Concept predicate = conceptService.createPredicate(labels);
-						predicateMap.put(rlsp, predicate);
-					}
-				}
 
+				}
+				logger.info("{} predicates added", ctr);
 			}
-			transaction.success();
-		} catch (IOException ex) {
-			logger.error("IO exception when reading from predicate file", ex);
-			transaction.failure();
-		} catch (SQLException ex) {
-			logger.error("SQL exception with query", ex);
-			transaction.failure();
+		} catch (FileNotFoundException e) {
+			logger.info("Predicates file not found", e);
+		} catch (IOException e) {
+			logger.info("IOException when reading lines from TSV file", e);
 		} finally {
-			if (transaction != null) {
-				transaction.finish();
-			}
-			try {
-				if (rs != null) {
-					rs.close();
-				}
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-				logger.warn("exception when closing resultset / statement in finally block", e);
-			}
+			logger.info("closing result set and statement");
+			logger.info("optimising indexes ...");
+			long start = System.currentTimeMillis();
+			indexService.optimize();
+			fulltextIndexService.optimize();
+			logger.info("indexes optimised in {} (ms)", System.currentTimeMillis() - start);
+			logger.info("shutdown store called ...");
+			start = System.currentTimeMillis();
+			indexService.shutdown();
+			fulltextIndexService.shutdown();
+			inserter.shutdown();
+			logger.info("shutdown complete in {} (ms)", System.currentTimeMillis() - start);
 		}
 
 	}
 
-	private void createConceptScheme() {
-		Transaction transaction = graphDatabaseService.beginTx();
-		Statement stmt = null;
-		ResultSet rs = null;
-		try {
-			stmt = connection.createStatement();
-			rs = stmt.executeQuery(GET_ALL_CONCEPT_SCHEME);
-			List<Label> labels = new ArrayList<Label>(1);
-			List<Notation> notations = new ArrayList<Notation>(1);
-			while (rs.next()) {
-				Label label = labelService.createPreferredLabel(rs.getString("STY_RL"), Language.EN);
-				labels.clear();
-				labels.add(label);
-				Notation notation = notationService.createNotation(Domain.UMLS, rs.getString("UI"));
-				notations.clear();
-				notations.add(notation);
-				Concept conceptScheme = conceptSchemeService.createConceptScheme(labels, notations);
-				conceptSchemeMap.put(label.getText(), conceptScheme);
-			}
-			transaction.success();
-		} catch (SQLException e) {
-			logger.error("SQL exception creating concept scheme", e);
-			transaction.failure();
-		} finally {
-			if (transaction != null) {
-				transaction.finish();
-			}
-			try {
-				if (rs != null) {
-					rs.close();
-				}
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-				logger.warn("exception when closing resultset / statement in finally block", e);
-			}
-		}
-	}
-
-	private void createConceptSchemeRelationship() {
-		Transaction transaction = graphDatabaseService.beginTx();
-		Statement stmt = null;
-		ResultSet rs = null;
-		try {
-			stmt = connection.createStatement();
-			rs = stmt.executeQuery(GET_CONCEPT_SCHEME_RELATIONS);
-			while (rs.next()) {
-				String sty1 = rs.getString("STY1");
-				String sty2 = rs.getString("STY2");
-				String rl = rs.getString("RL");
-				Concept source = conceptSchemeMap.get(sty1);
-				Concept target = conceptSchemeMap.get(sty2);
-				Concept predicate = predicateMap.get(rl);
-				if (predicate == null) {
-					logger.warn("null predicate concept {}", rl);
-				}
-
-				/*
-				 * check against following entries in table. e.g. Acquired
-				 * Abnormality co-occurs_with Acquired Abnormality We cannot
-				 * have the same source and target for a relationship in neo4j
-				 */
-				if (source != null && target != null && !source.equals(target)) {
-					ConceptRelationshipType conceptRelationshipType = getRelationshipType(rl);
-					ConceptRelationshipInput input = new ConceptRelationshipInput().withSource(source)
-							.withTarget(target).withPredicate(predicate)
-							.withConceptRelationshipType(conceptRelationshipType)
-							.withRelationshipCategory(RelationshipCategory.AUTHORITATIVE).withScore(Integer.MAX_VALUE);
-					relationshipService.createRelationship(input);
-				}
-			}
-			transaction.success();
-		} catch (SQLException e) {
-			logger.error("SQL exception creating concept scheme", e);
-			transaction.failure();
-		} finally {
-			if (transaction != null) {
-				transaction.finish();
-			}
-			try {
-				if (rs != null) {
-					rs.close();
-				}
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-				logger.warn("exception when closing resultset / statement in finally block", e);
-			}
-			conceptSchemeMap.clear();
-			conceptSchemeMap = null;
-
-		}
-	}
-
-	// private void getConcepts() throws SQLException {
-	// Transaction transaction = graphDatabaseService.beginTx();
-	// PreparedStatement getConceptStatement =
-	// connection.prepareStatement(GET_ALL_CONCEPTS_SQL,
-	// ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-	// getConceptStatement.setFetchSize(Integer.MIN_VALUE);
-	// int ctr = 0;
-	// int nodeCtr = 0;
-	// String previousCUI = null;
-	// List<Label> labelsForConcept = new ArrayList<Label>();
-	// List<Notation> notationsForConcept = new ArrayList<Notation>();
-	// ResultSet results = getConceptStatement.executeQuery();
-	// try {
-	// while (results.next()) {
-	// // get all data for same CUI
-	// String cui = results.getString("CUI");
-	// String ts = results.getString("TS");
-	// String isPref = results.getString("ISPREF");
-	// String stt = results.getString("STT");// TS, ISPREF, STT
-	// String lat = results.getString("LAT");
-	// String str = results.getString("STR");
-	// String sab = results.getString("SAB");
-	// String code = results.getString("CODE");
-	// // set previous cui to the cui at start
-	// if (ctr == 0) {
-	// previousCUI = cui;
-	// }
-	//
-	// if (previousCUI != null && previousCUI.equals(cui)) {
-	// Language language = getLanguage(lat);
-	// // create label
-	// Label label = null;
-	// if (ts.equalsIgnoreCase("P") && isPref.equalsIgnoreCase("Y") &&
-	// stt.equalsIgnoreCase("PF")) {
-	// label = labelService.createPreferredLabel(str, language);
-	// nodeCtr++;
-	// } else {
-	// label = labelService.createAlternateLabel(str, language);
-	// nodeCtr++;
-	// }
-	// labelsForConcept.add(label);
-	//
-	// // create notation
-	// Domain domain = getDomain(sab);
-	// Notation notation = notationService.createNotation(domain, code);
-	// nodeCtr++;
-	// notationsForConcept.add(notation);
-	// } else {
-	// previousCUI = cui;
-	// if (!labelsForConcept.isEmpty()) {
-	// // so that this notation is added once per concept
-	// Notation umlsNotation = notationService.createNotation(Domain.UMLS, cui);
-	// nodeCtr++;
-	// notationsForConcept.add(umlsNotation);
-	// Concept concept = conceptService.createConcept(labelsForConcept,
-	// notationsForConcept);
-	// cuiConceptIdCache.addToCache(new CuiConceptId(cui, concept.getId()));
-	// nodeCtr++;
-	// labelsForConcept.clear();
-	// }
-	// notationsForConcept.clear();
-	// }
-	// ctr++;
-	// if (ctr % batchSize == 0) {
-	// transaction.success();
-	// transaction.finish();
-	// transaction = null;
-	// transaction = graphDatabaseService.beginTx();
-	// logger.info("created concepts/nodes = {} / {}", new Object[] { ctr,
-	// nodeCtr });
-	// nodeCtr = 0;
-	//
-	// }
-	// }
-	// } finally {
-	// if (results != null) {
-	// results.close();
-	// }
-	// if (getConceptStatement != null) {
-	// getConceptStatement.close();
-	// }
-	// transaction.success();
-	// transaction.finish();
-	// transaction = null;
-	// }
-	// }
-
-	private void conceptIterator() throws SQLException {
-		// Transaction transaction = graphDatabaseService.beginTx();
-		PreparedStatement getConceptStatement = connection.prepareStatement(GET_ALL_CONCEPTS_SQL,
+	private void createConceptScheme() throws SQLException {
+		PreparedStatement getConceptSchemeStatement = connection.prepareStatement(GET_ALL_CONCEPT_SCHEME,
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-		getConceptStatement.setFetchSize(Integer.MIN_VALUE);
-		int ctr = 0;
-		ResultSet results = getConceptStatement.executeQuery();
-		long start = System.currentTimeMillis();
-		while (results.next()) {
-			ctr++;
-			if (ctr % batchSize == 0) {
-				long end = System.currentTimeMillis();
-				logger.info("iterated {} records  in {}(ms)", new Object[] { ctr, (end - start) });
-				start = System.currentTimeMillis();
-			}
-		}
-
-	}
-
-	private void insertIteratorNoIndex() {
-		// #---GRAPH DATASTORE CONFIGURATION---#
-		Map<String, String> graphProps = new HashMap<String, String>();
-		graphProps.put("neostore.nodestore.db.mapped_memory", "90M");
-		graphProps.put("neostore.relationshipstore.db.mapped_memory", "90M");
-		graphProps.put("neostore.propertystore.db.mapped_memory", "90M");
-		graphProps.put("neostore.propertystore.db.strings.mapped_memory", "512M");
-		graphProps.put("neostore.relationshipstore.db.mapped_memory", "0M");
-		BatchInserter inserter = new BatchInserterImpl(GRAPH_FOLDER_PATH, graphProps);
-		int ctr = 0;
-		long start = System.currentTimeMillis();
-		Map<String, Object> properties = new HashMap<String, Object>();
-		for (int i = 0; i < 29850000; i++) {
-			String uuid = UUID.randomUUID().toString();
-			properties.put("domain", Domain.UMLS.name());
-			properties.put("code", uuid);
-			long notationNodeId = inserter.createNode(properties);
-			ctr++;
-			properties.clear();
-			if (ctr % batchSize == 0) {
-				long end = System.currentTimeMillis();
-				logger.info("\"{}\",\"{}\"", new Object[] { ctr, end - start });
-				inserter.shutdown();
-				inserter = new BatchInserterImpl(GRAPH_FOLDER_PATH, graphProps);
-				start = System.currentTimeMillis();
-			}
-		}
-		inserter.shutdown();
-
-	}
-
-	private void insertOnceWithIndex() {
+		getConceptSchemeStatement.setFetchSize(Integer.MIN_VALUE);
 		// #---GRAPH DATASTORE CONFIGURATION---#
 		Map<String, String> graphProps = new HashMap<String, String>();
 		graphProps.put("neostore.nodestore.db.mapped_memory", "900M");
@@ -523,88 +343,131 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 		BatchInserter inserter = new BatchInserterImpl(GRAPH_FOLDER_PATH, graphProps);
 		LuceneIndexBatchInserter indexService = new LuceneIndexBatchInserterImpl(inserter);
 		LuceneFulltextIndexBatchInserter fulltextIndexService = new LuceneFulltextIndexBatchInserter(inserter);
-		int ctr = 0;
-		long start = System.currentTimeMillis();
 		Map<String, Object> properties = new HashMap<String, Object>();
-		for (int i = 0; i < 29850000; i++) {
-			String uuid = UUID.randomUUID().toString();
-			properties.put("domain", Domain.UMLS.name());
-			properties.put("code", uuid);
-			long notationNodeId = inserter.createNode(properties);
-			ctr++;
-			indexService.index(notationNodeId, "notation_1", UUID.randomUUID().toString());
-			indexService.index(notationNodeId, "notation_2", UUID.randomUUID().toString());
-			indexService.index(notationNodeId, "notation_3", UUID.randomUUID().toString());
-			// very long staring
-			fulltextIndexService.index(notationNodeId, "notation_full_text", UUID.randomUUID().toString() + " "
-					+ UUID.randomUUID().toString() + " " + UUID.randomUUID().toString());
-			properties.clear();
-			if (ctr % batchSize == 0) {
-				long end = System.currentTimeMillis();
-				logger.info("\"{}\",\"{}\"", new Object[] { ctr, end - start });
-				start = System.currentTimeMillis();
+		StringBuilder fullText = new StringBuilder();
+		ResultSet results = getConceptSchemeStatement.executeQuery();
+		try {
+			while (results.next()) {
+				String text = results.getString("STY_RL");
+				String code = results.getString("UI");
+
+				// notations
+				properties.clear();
+				properties.put("domain", Domain.UMLS.name());
+				properties.put("code", code);
+				long notationNodeId = inserter.createNode(properties);
+				inserter.createRelationship(notationSubNodeId, notationNodeId, KnowledgebaseRelationshipType.NOTATION,
+						null);
+				indexService.index(notationNodeId, "notation_code", code);
+				fullText.append(code).append(FULL_TEXT_SEPARATOR);
+				// labels
+				properties.clear();
+				properties.put("language", Language.EN.name());
+				properties.put("text", text);
+				properties.put("labelType", LabelType.PREFERRED.name());
+				long labelNodeId = inserter.createNode(properties);
+				inserter.createRelationship(labelSubNodeId, labelNodeId, KnowledgebaseRelationshipType.LABEL, null);
+				indexService.index(notationNodeId, "label_text", code);
+				fullText.append(text).append(FULL_TEXT_SEPARATOR);
+
+				// create predicate
+				properties.clear();
+				String randomConceptId = idGenerator.generateRandomId();
+				properties.put("id", randomConceptId);
+				long conceptSchemeNodeId = inserter.createNode(properties);
+				inserter.createRelationship(conceptSchemeSubNodeId, conceptSchemeNodeId,
+						KnowledgebaseRelationshipType.CONCEPT_SCHEME, null);
+				indexService.index(conceptSchemeNodeId, "concept_id", randomConceptId);
+				fulltextIndexService.index(conceptSchemeNodeId, "concept_full_text", fullText);
+				fullText.setLength(0);
+				inserter.createRelationship(conceptSchemeNodeId, notationNodeId,
+						KnowledgebaseRelationshipType.HAS_NOTATION, null);
+				inserter.createRelationship(conceptSchemeNodeId, labelNodeId, KnowledgebaseRelationshipType.HAS_LABEL,
+						null);
+				conceptSchemeMap.put(text, conceptSchemeNodeId);
 			}
+		} finally {
+			logger.info("closing result set and statement");
+			if (results != null) {
+				results.close();
+			}
+			if (getConceptSchemeStatement != null) {
+				getConceptSchemeStatement.close();
+			}
+			logger.info("optimising indexes ...");
+			long start = System.currentTimeMillis();
+			indexService.optimize();
+			fulltextIndexService.optimize();
+			logger.info("indexes optimised in {} (ms)", System.currentTimeMillis() - start);
+			logger.info("shutdown store called ...");
+			start = System.currentTimeMillis();
+			indexService.shutdown();
+			fulltextIndexService.shutdown();
+			inserter.shutdown();
+			logger.info("shutdown complete in {} (ms)", System.currentTimeMillis() - start);
 		}
-		indexService.optimize();
-		fulltextIndexService.optimize();
-		indexService.shutdown();
-		fulltextIndexService.shutdown();
-		inserter.shutdown();
 	}
 
-	private void insertIteratorWithIndex() {
+	private void createConceptSchemeRelationship() throws SQLException {
+		PreparedStatement getConceptStatement = connection.prepareStatement(GET_CONCEPT_SCHEME_RELATIONS,
+				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		getConceptStatement.setFetchSize(Integer.MIN_VALUE);
 		// #---GRAPH DATASTORE CONFIGURATION---#
 		Map<String, String> graphProps = new HashMap<String, String>();
-		graphProps.put("neostore.nodestore.db.mapped_memory", "90M");
-		graphProps.put("neostore.relationshipstore.db.mapped_memory", "90M");
-		graphProps.put("neostore.propertystore.db.mapped_memory", "90M");
-		graphProps.put("neostore.propertystore.db.strings.mapped_memory", "512M");
-		graphProps.put("neostore.relationshipstore.db.mapped_memory", "0M");
+		graphProps.put("neostore.nodestore.db.mapped_memory", "900M");
+		graphProps.put("neostore.relationshipstore.db.mapped_memory", "3G");
+		graphProps.put("neostore.propertystore.db.mapped_memory", "900M");
+		graphProps.put("neostore.propertystore.db.strings.mapped_memory", "1G");
+		graphProps.put("neostore.relationshipstore.db.mapped_memory", "1G");
 		BatchInserter inserter = new BatchInserterImpl(GRAPH_FOLDER_PATH, graphProps);
-		LuceneIndexBatchInserter indexService = new LuceneIndexBatchInserterImpl(inserter);
-		LuceneFulltextIndexBatchInserter fulltextIndexService = new LuceneFulltextIndexBatchInserter(inserter);
-		int ctr = 0;
-		long start = System.currentTimeMillis();
 		Map<String, Object> properties = new HashMap<String, Object>();
-		for (int i = 0; i < 29850000; i++) {
-			String uuid = UUID.randomUUID().toString();
-			properties.put("domain", Domain.UMLS.name());
-			properties.put("code", uuid);
-			long notationNodeId = inserter.createNode(properties);
-			ctr++;
-			indexService.index(notationNodeId, "notation_1", UUID.randomUUID().toString());
-			indexService.index(notationNodeId, "notation_2", UUID.randomUUID().toString());
-			indexService.index(notationNodeId, "notation_3", UUID.randomUUID().toString());
-			// very long staring
-			fulltextIndexService.index(notationNodeId, "notation_full_text", UUID.randomUUID().toString() + " "
-					+ UUID.randomUUID().toString() + " " + UUID.randomUUID().toString());
-			properties.clear();
-			if (ctr % batchSize == 0) {
-				long end = System.currentTimeMillis();
-				logger.info("\"{}\",\"{}\"", new Object[] { ctr, end - start });
-				start = System.currentTimeMillis();
-				indexService.optimize();
-				fulltextIndexService.optimize();
-				indexService.shutdown();
-				fulltextIndexService.shutdown();
-				inserter.shutdown();
-				inserter = new BatchInserterImpl(GRAPH_FOLDER_PATH, graphProps);
-				indexService = new LuceneIndexBatchInserterImpl(inserter);
-				fulltextIndexService = new LuceneFulltextIndexBatchInserter(inserter);
-				logger.info("\"{}\"", System.currentTimeMillis() - start);
-				start = System.currentTimeMillis();
-			}
-		}
-		indexService.optimize();
-		fulltextIndexService.optimize();
-		indexService.shutdown();
-		fulltextIndexService.shutdown();
-		inserter.shutdown();
+		ResultSet results = getConceptStatement.executeQuery();
+		try {
+			while (results.next()) {
+				String sty1 = results.getString("STY1");
+				String sty2 = results.getString("STY2");
+				String rl = results.getString("RL");
+				Long source = conceptSchemeMap.get(sty1);
+				Long target = conceptSchemeMap.get(sty2);
+				Long predicate = predicateMap.get(rl);
+				if (predicate == null) {
+					logger.warn("null predicate concept {}", rl);
+				}
 
+				/*
+				 * check against following entries in table. e.g. Acquired
+				 * Abnormality co-occurs_with Acquired Abnormality We cannot
+				 * have the same source and target for a relationship in neo4j
+				 */
+				if (source != null && target != null && !source.equals(target)) {
+					properties.clear();
+					// reuse a map for all rlsps.
+					properties.put("id", idGenerator.generateRandomId());
+					properties.put("score", String.valueOf(Integer.MAX_VALUE));
+					properties.put("relationshipCategory", RelationshipCategory.AUTHORITATIVE.name());
+					ConceptRelationshipType conceptRelationshipType = getRelationshipType(rl);
+					if (predicate != null) {
+						properties.put("predicateConceptId", predicate);
+					}
+					inserter.createRelationship(source, target, conceptRelationshipType, properties);
+				}
+			}
+		} finally {
+			logger.info("closing result set and statement");
+			if (results != null) {
+				results.close();
+			}
+			if (getConceptStatement != null) {
+				getConceptStatement.close();
+			}
+			logger.info("shutdown store called ...");
+			long start = System.currentTimeMillis();
+			inserter.shutdown();
+			logger.info("shutdown complete in {} (ms)", System.currentTimeMillis() - start);
+		}
 	}
 
-	private void getConceptsFaster() throws SQLException {
-		// Transaction transaction = graphDatabaseService.beginTx();
+	private void getConcepts() throws SQLException {
 		PreparedStatement getConceptStatement = connection.prepareStatement(GET_ALL_CONCEPTS_SQL,
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		getConceptStatement.setFetchSize(Integer.MIN_VALUE);
@@ -650,18 +513,24 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 					properties.put("domain", Domain.UMLS.name());
 					properties.put("code", previousCUI);
 					long notationNodeId = inserter.createNode(properties);
+					inserter.createRelationship(notationSubNodeId, notationNodeId,
+							KnowledgebaseRelationshipType.NOTATION, null);
 					nodeCtr++;
-					NotationNode notationNode = new NotationNode(Domain.UMLS.name(), previousCUI, notationNodeId);
-					intermediateCache.addNotationNode(notationNode);
+					intermediateCache.addNotationNode(Domain.UMLS.name(), previousCUI, notationNodeId);
 					indexService.index(notationNodeId, "notation_code", previousCUI);
 					fullText.append(previousCUI).append(FULL_TEXT_SEPARATOR);
 					notationIds.add(notationNodeId);
 
 					// create concept
 					properties.clear();
-					properties.put("id", idGenerator.generateRandomId());
+					String randomConceptId = idGenerator.generateRandomId();
+					properties.put("id", randomConceptId);
 					long conceptNodeId = inserter.createNode(properties);
+					intermediateCache.addConceptNode(cui, conceptNodeId);
+					inserter.createRelationship(conceptSubNodeId, conceptNodeId, KnowledgebaseRelationshipType.CONCEPT,
+							null);
 					nodeCtr++;
+					indexService.index(conceptNodeId, "concept_id", randomConceptId);
 					fulltextIndexService.index(conceptNodeId, "concept_full_text", fullText);
 					fullText.setLength(0);
 
@@ -691,9 +560,9 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 					}
 					properties.put("text", str);
 					labelNodeId = inserter.createNode(properties);
+					inserter.createRelationship(labelSubNodeId, labelNodeId, KnowledgebaseRelationshipType.LABEL, null);
 					nodeCtr++;
-					LabelNode labelNode = new LabelNode(sui, labelNodeId);
-					intermediateCache.addLabelNode(labelNode);
+					intermediateCache.addLabelNode(sui, labelNodeId);
 					indexService.index(labelNodeId, "label_text", str);
 					fullText.append(str).append(FULL_TEXT_SEPARATOR);
 				}
@@ -707,9 +576,10 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 					properties.put("domain", domain.name());
 					properties.put("code", code);
 					notationNodeId = inserter.createNode(properties);
+					inserter.createRelationship(notationSubNodeId, notationNodeId,
+							KnowledgebaseRelationshipType.NOTATION, null);
 					nodeCtr++;
-					NotationNode notationNode = new NotationNode(domain.name(), code, notationNodeId);
-					intermediateCache.addNotationNode(notationNode);
+					intermediateCache.addNotationNode(domain.name(), code, notationNodeId);
 					indexService.index(notationNodeId, "notation_code", code);
 					fullText.append(code).append(FULL_TEXT_SEPARATOR);
 				}
@@ -741,166 +611,154 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 			fulltextIndexService.shutdown();
 			inserter.shutdown();
 			logger.info("shutdown complete in {} (ms)", System.currentTimeMillis() - start);
-
 		}
 	}
 
-	// private void getFactualRelationships() throws SQLException {
-	// Transaction transaction = graphDatabaseService.beginTx();
-	// PreparedStatement getConceptStatement =
-	// connection.prepareStatement("select CUI1, CUI2, REL, RELA from MRREL",
-	// ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-	// getConceptStatement.setFetchSize(Integer.MIN_VALUE);
-	// int ctr = 0;
-	// ResultSet results = getConceptStatement.executeQuery();
-	// try {
-	// while (results.next()) {
-	// // get all data for same CUI
-	// String cui1 = results.getString("CUI1");
-	// String cui2 = results.getString("CUI2");
-	// String rel = results.getString("REL");
-	// String rela = results.getString("RELA");
-	// // ignore if source or target is not found
-	// if (StringUtils.isBlank(cui1) || StringUtils.isBlank(cui2)) {
-	// logger.warn("No cui1={} cui2={} found. Ignoring", new Object[] { cui1,
-	// cui2 });
-	// continue;
-	// }
-	// // ignore if source or target are the same
-	// if (cui1.equalsIgnoreCase(cui2)) {
-	// logger.warn("self relationship found. cui1 {} == cui2 {}. Ignoring", new
-	// Object[] { cui1, cui2 });
-	// continue;
-	// }
-	// String sourceConceptId = cuiConceptIdCache.getByCui(cui1).getConceptId();
-	// if (sourceConceptId == null) {
-	// logger.warn("cui {} not found in map ", cui1);
-	// continue;
-	// }
-	// String targetConceptId = cuiConceptIdCache.getByCui(cui2).getConceptId();
-	// if (targetConceptId == null) {
-	// logger.warn("cui {} not found in map ", cui2);
-	// continue;
-	// }
-	// Concept sourceConcept = queryService.getConceptById(sourceConceptId);
-	// if (sourceConcept == null) {
-	// logger.warn("source concept not found for id {}", sourceConceptId);
-	// continue;
-	// }
-	// Concept targetConcept = queryService.getConceptById(targetConceptId);
-	// if (targetConcept == null) {
-	// logger.warn("target concept not found for id {}", targetConceptId);
-	// continue;
-	// }
-	// // whew! we have everything now create rlsp.
-	// ConceptRelationshipType conceptRelationshipType =
-	// getConceptRelationshipType(rel);
-	// Concept predicate = predicateMap.get(rela);
-	// ConceptRelationshipInput input = new
-	// ConceptRelationshipInput().withSource(sourceConcept)
-	// .withTarget(targetConcept).withConceptRelationshipType(conceptRelationshipType)
-	// .withRelationshipCategory(RelationshipCategory.AUTHORITATIVE).withScore(Integer.MAX_VALUE);
-	// if (predicate == null) {
-	// logger.warn("predicate concept not found for RELA {}", rela);
-	// } else {
-	// input.setPredicate(predicate);
-	// }
-	// relationshipService.createRelationship(input);
-	// ctr++;
-	// if (ctr % batchSize == 0) {
-	// transaction.success();
-	// transaction.finish();
-	// transaction = null;
-	// transaction = graphDatabaseService.beginTx();
-	// logger.info("parsed factual rlsp {}", ctr);
-	// }
-	// }
-	// } finally {
-	// if (results != null) {
-	// results.close();
-	// }
-	// if (getConceptStatement != null) {
-	// getConceptStatement.close();
-	// }
-	// transaction.success();
-	// transaction.finish();
-	// transaction = null;
-	// }
-	// }
-	//
-	// private void getCooccuranceRelationships() throws SQLException {
-	// Transaction transaction = graphDatabaseService.beginTx();
-	// PreparedStatement getConceptStatement =
-	// connection.prepareStatement("select CUI1, CUI2, COF from MRCOC",
-	// ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-	// getConceptStatement.setFetchSize(Integer.MIN_VALUE);
-	// int ctr = 0;
-	// ResultSet results = getConceptStatement.executeQuery();
-	// try {
-	// while (results.next()) {
-	// // get all data for same CUI
-	// String cui1 = results.getString("CUI1");
-	// String cui2 = results.getString("CUI2");
-	// int cof = results.getInt("COF");// min value for COF in database is 1
-	// // ignore if source or target is not found
-	// if (StringUtils.isBlank(cui1) || StringUtils.isBlank(cui2)) {
-	// logger.warn("No cui1={} cui2={} found. Ignoring", new Object[] { cui1,
-	// cui2 });
-	// continue;
-	// }
-	// // ignore if source or target are the same
-	// if (cui1.equalsIgnoreCase(cui2)) {
-	// logger.warn("self relationship found. cui1 {} == cui2 {}. Ignoring", new
-	// Object[] { cui1, cui2 });
-	// continue;
-	// }
-	// String sourceConceptId = cuiConceptIdCache.getByCui(cui1).getConceptId();
-	// if (sourceConceptId == null) {
-	// logger.warn("cui {} not found in map ", cui1);
-	// continue;
-	// }
-	// String targetConceptId = cuiConceptIdCache.getByCui(cui2).getConceptId();
-	// if (targetConceptId == null) {
-	// logger.warn("cui {} not found in map ", cui2);
-	// continue;
-	// }
-	// Concept sourceConcept = queryService.getConceptById(sourceConceptId);
-	// if (sourceConcept == null) {
-	// logger.warn("source concept not found for id {}", sourceConceptId);
-	// continue;
-	// }
-	// Concept targetConcept = queryService.getConceptById(targetConceptId);
-	// if (targetConcept == null) {
-	// logger.warn("target concept not found for id {}", targetConceptId);
-	// continue;
-	// }
-	// // whew! we have everything now create rlsp.
-	// ConceptRelationshipInput input = new
-	// ConceptRelationshipInput().withSource(sourceConcept)
-	// .withTarget(targetConcept).withConceptRelationshipType(ConceptRelationshipType.RELATED)
-	// .withRelationshipCategory(RelationshipCategory.CO_OCCURANCE).withScore(cof);
-	// relationshipService.createRelationship(input);
-	// ctr++;
-	// if (ctr % batchSize == 0) {
-	// transaction.success();
-	// transaction.finish();
-	// transaction = null;
-	// transaction = graphDatabaseService.beginTx();
-	// logger.info("parsed cooccurance rlsp {}", ctr);
-	// }
-	// }
-	// } finally {
-	// if (results != null) {
-	// results.close();
-	// }
-	// if (getConceptStatement != null) {
-	// getConceptStatement.close();
-	// }
-	// transaction.success();
-	// transaction.finish();
-	// transaction = null;
-	// }
-	// }
+	private void getFactualRelationships() throws SQLException {
+		PreparedStatement getAllRlspStatement = connection.prepareStatement(GET_ALL_RLSP_SQL,
+				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		getAllRlspStatement.setFetchSize(Integer.MIN_VALUE);
+		int ctr = 0;
+		// #---GRAPH DATASTORE CONFIGURATION---#
+		Map<String, String> graphProps = new HashMap<String, String>();
+		graphProps.put("neostore.nodestore.db.mapped_memory", "900M");
+		graphProps.put("neostore.relationshipstore.db.mapped_memory", "3G");
+		graphProps.put("neostore.propertystore.db.mapped_memory", "900M");
+		graphProps.put("neostore.propertystore.db.strings.mapped_memory", "1G");
+		graphProps.put("neostore.relationshipstore.db.mapped_memory", "1G");
+		BatchInserter inserter = new BatchInserterImpl(GRAPH_FOLDER_PATH, graphProps);
+		ResultSet results = getAllRlspStatement.executeQuery();
+		Map<String, Object> rlspProperties = new HashMap<String, Object>();
+		try {
+			while (results.next()) {
+				String cui1 = results.getString("CUI1");
+				String cui2 = results.getString("CUI2");
+				String rel = results.getString("REL");
+				String rela = results.getString("RELA");
+				// ignore rlsp if source or target is not found
+				if (StringUtils.isBlank(cui1) || StringUtils.isBlank(cui2)) {
+					logger.warn("No cui1={} cui2={} found. Ignoring", new Object[] { cui1, cui2 });
+					continue;
+				}
+				// ignore rlsp if source or target are the same
+				if (cui1.equalsIgnoreCase(cui2)) {
+					logger.warn("self relationship found. cui1 {} == cui2 {}. Ignoring", new Object[] { cui1, cui2 });
+					continue;
+				}
+				long sourceConceptNodeId = intermediateCache.getConceptNodeByCui(cui1);
+				if (sourceConceptNodeId == 0) {
+					logger.warn("cui (source) {} not found in map ", cui1);
+					continue;
+				}
+				long targetConceptNodeId = intermediateCache.getConceptNodeByCui(cui2);
+				if (targetConceptNodeId == 0) {
+					logger.warn("cui (target) {} not found in map ", cui2);
+					continue;
+				}
+				// reuse a map for all rlsps.
+				rlspProperties.put("id", idGenerator.generateRandomId());
+				rlspProperties.put("score", String.valueOf(Integer.MAX_VALUE));
+				rlspProperties.put("relationshipCategory", RelationshipCategory.AUTHORITATIVE.name());
+				Long predicateConceptId = predicateMap.get(rela);
+				if (predicateConceptId != null) {
+					rlspProperties.put("predicateConceptId", predicateConceptId);
+				}
+				ConceptRelationshipType conceptRelationshipType = getConceptRelationshipType(rel);
+				inserter.createRelationship(sourceConceptNodeId, targetConceptNodeId, conceptRelationshipType,
+						rlspProperties);
+				// clear map as we need to reuse it
+				rlspProperties.clear();
+				ctr++;
+				if (ctr % batchSize == 0) {
+					logger.info("created {} rlsps.", new Object[] { ctr });
+				}
+			}
+		} finally {
+			logger.info("closing result set and statement");
+			if (results != null) {
+				results.close();
+			}
+			if (getAllRlspStatement != null) {
+				getAllRlspStatement.close();
+			}
+			logger.info("optimising indexes ...");
+			long start = System.currentTimeMillis();
+			logger.info("shutdown store called ...");
+			start = System.currentTimeMillis();
+			inserter.shutdown();
+			logger.info("shutdown complete in {} (ms)", System.currentTimeMillis() - start);
+		}
+	}
+
+	private void getCooccuranceRelationships() throws SQLException {
+		PreparedStatement getAllRlspStatement = connection.prepareStatement(GET_CO_OCCURANCE_RLSP_SQL,
+				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		getAllRlspStatement.setFetchSize(Integer.MIN_VALUE);
+		int ctr = 0;
+		// #---GRAPH DATASTORE CONFIGURATION---#
+		Map<String, String> graphProps = new HashMap<String, String>();
+		graphProps.put("neostore.nodestore.db.mapped_memory", "900M");
+		graphProps.put("neostore.relationshipstore.db.mapped_memory", "3G");
+		graphProps.put("neostore.propertystore.db.mapped_memory", "900M");
+		graphProps.put("neostore.propertystore.db.strings.mapped_memory", "1G");
+		graphProps.put("neostore.relationshipstore.db.mapped_memory", "1G");
+		BatchInserter inserter = new BatchInserterImpl(GRAPH_FOLDER_PATH, graphProps);
+		ResultSet results = getAllRlspStatement.executeQuery();
+		Map<String, Object> rlspProperties = new HashMap<String, Object>();
+		try {
+			while (results.next()) {
+				String cui1 = results.getString("CUI1");
+				String cui2 = results.getString("CUI2");
+				int cof = results.getInt("COF");// min value for COF in database is 1
+				// ignore rlsp if source or target is not found
+				if (StringUtils.isBlank(cui1) || StringUtils.isBlank(cui2)) {
+					logger.warn("No cui1={} cui2={} found. Ignoring", new Object[] { cui1, cui2 });
+					continue;
+				}
+				// ignore rlsp if source or target are the same
+				if (cui1.equalsIgnoreCase(cui2)) {
+					logger.warn("self relationship found. cui1 {} == cui2 {}. Ignoring", new Object[] { cui1, cui2 });
+					continue;
+				}
+				long sourceConceptNodeId = intermediateCache.getConceptNodeByCui(cui1);
+				if (sourceConceptNodeId == 0) {
+					logger.warn("cui (source) {} not found in map ", cui1);
+					continue;
+				}
+				long targetConceptNodeId = intermediateCache.getConceptNodeByCui(cui2);
+				if (targetConceptNodeId == 0) {
+					logger.warn("cui (target) {} not found in map ", cui2);
+					continue;
+				}
+				// reuse a map for all rlsps.
+				rlspProperties.put("id", idGenerator.generateRandomId());
+				rlspProperties.put("score", String.valueOf(cof));
+				rlspProperties.put("relationshipCategory", RelationshipCategory.CO_OCCURANCE.name());
+				inserter.createRelationship(sourceConceptNodeId, targetConceptNodeId, ConceptRelationshipType.RELATED,
+						rlspProperties);
+				// clear map as we need to reuse it
+				rlspProperties.clear();
+				ctr++;
+				if (ctr % batchSize == 0) {
+					logger.info("created {} rlsps.", new Object[] { ctr });
+				}
+			}
+		} finally {
+			logger.info("closing result set and statement");
+			if (results != null) {
+				results.close();
+			}
+			if (getAllRlspStatement != null) {
+				getAllRlspStatement.close();
+			}
+			logger.info("optimising indexes ...");
+			long start = System.currentTimeMillis();
+			logger.info("shutdown store called ...");
+			start = System.currentTimeMillis();
+			inserter.shutdown();
+			logger.info("shutdown complete in {} (ms)", System.currentTimeMillis() - start);
+		}
+	}
 
 	private Domain getDomain(String sab) {
 		/**

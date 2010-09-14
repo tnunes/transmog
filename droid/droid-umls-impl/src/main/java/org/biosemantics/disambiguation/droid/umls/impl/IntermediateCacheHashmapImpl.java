@@ -8,15 +8,17 @@ import org.slf4j.LoggerFactory;
 
 public class IntermediateCacheHashmapImpl implements IntermediateCache {
 
-	private Map<String, LabelNode> labelNodeMap;
-	private Map<String, NotationNode> notationNodeMap;
+	private Map<String, Long> labelNodeMap;
+	private Map<String, Long> notationNodeMap;
+	private Map<String, Long> cuiConceptMap;
 
 	private static final Logger logger = LoggerFactory.getLogger(IntermediateCacheHashmapImpl.class);
 
 	public void init() {
-		logger.info("creating hashmaps for intermediate cache");
-		labelNodeMap = new HashMap<String, LabelNode>();
-		notationNodeMap = new HashMap<String, NotationNode>();
+		labelNodeMap = new HashMap<String, Long>();
+		notationNodeMap = new HashMap<String, Long>();
+		cuiConceptMap = new HashMap<String, Long>();
+		logger.info("created hashmaps for intermediate cache");
 	}
 
 	// @Override
@@ -33,34 +35,32 @@ public class IntermediateCacheHashmapImpl implements IntermediateCache {
 
 	@Override
 	public long getLabelNodeId(String sui) {
-		long id = 0;
-		LabelNode labelNode = labelNodeMap.get(sui);
-		if (labelNode != null) {
-			id = labelNode.getNodeId();
-		}
-		return id;
+		Long labelNodeId = labelNodeMap.get(sui);
+		if (labelNodeId == null)
+			return 0;
+		else
+			return labelNodeId;
 	}
 
 	@Override
-	public void addLabelNode(LabelNode labelNode) {
-		labelNodeMap.put(labelNode.getSui(), labelNode);
+	public void addLabelNode(String sui, Long labelNodeId) {
+		labelNodeMap.put(sui, labelNodeId);
 
 	}
 
 	@Override
-	public void addNotationNode(NotationNode notationNode) {
-		notationNodeMap.put(notationNode.getDomain() + notationNode.getCode(), notationNode);
+	public void addNotationNode(String domain, String code, long notationNodeId) {
+		notationNodeMap.put(domain + code, notationNodeId);
 
 	}
 
 	@Override
 	public long getNotationNodeId(String domain, String code) {
-		long id = 0;
-		NotationNode notationNode = notationNodeMap.get(domain + code);
-		if (notationNode != null) {
-			id = notationNode.getNodeId();
-		}
-		return id;
+		Long id = notationNodeMap.get(domain + code);
+		if (id == null)
+			return 0;
+		else
+			return id;
 	}
 
 	public void destroy() {
@@ -68,6 +68,21 @@ public class IntermediateCacheHashmapImpl implements IntermediateCache {
 		notationNodeMap.clear();
 		labelNodeMap = null;
 		notationNodeMap = null;
+	}
+
+	@Override
+	public void addConceptNode(String cui, long conceptNode) {
+		cuiConceptMap.put(cui, conceptNode);
+
+	}
+
+	@Override
+	public long getConceptNodeByCui(String cui1) {
+		Long id = cuiConceptMap.get(cui1);
+		if (id == null)
+			return 0;
+		else
+			return id;
 	}
 
 }
