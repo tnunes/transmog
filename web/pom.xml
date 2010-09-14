@@ -13,4 +13,16 @@
 	<packaging>pom</packaging>
 	<name>web</name>
 	<description>parent project for all web applications</description>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-webmvc</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+	<modules>
+		<module>viewer</module>
+	</modules>
 </project>
