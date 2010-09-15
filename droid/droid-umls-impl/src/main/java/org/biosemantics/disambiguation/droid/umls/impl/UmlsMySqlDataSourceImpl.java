@@ -524,6 +524,7 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 					// create concept
 					properties.clear();
 					String randomConceptId = idGenerator.generateRandomId();
+					fullText.append(randomConceptId).append(FULL_TEXT_SEPARATOR);
 					properties.put("id", randomConceptId);
 					long conceptNodeId = inserter.createNode(properties);
 					intermediateCache.addConceptNode(cui, conceptNodeId);
@@ -637,12 +638,12 @@ public class UmlsMySqlDataSourceImpl implements DataSource {
 				String rela = results.getString("RELA");
 				// ignore rlsp if source or target is not found
 				if (StringUtils.isBlank(cui1) || StringUtils.isBlank(cui2)) {
-					logger.warn("No cui1={} cui2={} found. Ignoring", new Object[] { cui1, cui2 });
+					logger.debug("No cui1={} cui2={} found. Ignoring", new Object[] { cui1, cui2 });
 					continue;
 				}
 				// ignore rlsp if source or target are the same
 				if (cui1.equalsIgnoreCase(cui2)) {
-					logger.warn("self relationship found. cui1 {} == cui2 {}. Ignoring", new Object[] { cui1, cui2 });
+					logger.debug("self relationship found. cui1 {} == cui2 {}. Ignoring", new Object[] { cui1, cui2 });
 					continue;
 				}
 				long sourceConceptNodeId = intermediateCache.getConceptNodeByCui(cui1);
