@@ -2,13 +2,14 @@ package org.biosemantics.disambiguation.knowledgebase.service.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.biosemantics.disambiguation.knowledgebase.service.Concept;
-import org.biosemantics.disambiguation.knowledgebase.service.Domain;
 import org.biosemantics.disambiguation.knowledgebase.service.KnowledgebaseRelationshipType;
 import org.biosemantics.disambiguation.knowledgebase.service.Label;
+import org.biosemantics.disambiguation.knowledgebase.service.Notation;
 import org.biosemantics.disambiguation.knowledgebase.service.QueryService;
 import org.biosemantics.disambiguation.knowledgebase.service.local.TextIndexService;
 import org.neo4j.graphdb.Direction;
@@ -27,10 +28,13 @@ public class QueryServiceImpl implements QueryService {
 	}
 
 	@Override
-	public Collection<Concept> getConceptsByNotation(Domain domain, String code) {
-		List<Concept> concepts = new ArrayList<Concept>();
-		NotationImpl notationImpl = (NotationImpl) textIndexService.getNotationsByDomainAndCode(domain, code);
-		if (notationImpl != null) {
+	public Collection<Concept> getConceptsByNotationCode(String notationCode) {
+		if (StringUtils.isBlank(notationCode))
+			throw new IllegalArgumentException("notationCode cannot be blank");
+		Set<Concept> concepts = new HashSet<Concept>();
+		Collection<Notation> notations = textIndexService.getNotationsByCode(notationCode);
+		for (Notation notation : notations) {
+			NotationImpl notationImpl = (NotationImpl) notation;
 			Traverser traverser = notationImpl.getUnderlyingNode().traverse(Order.BREADTH_FIRST,
 					StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
 					KnowledgebaseRelationshipType.HAS_NOTATION, Direction.INCOMING);
@@ -55,7 +59,7 @@ public class QueryServiceImpl implements QueryService {
 	public Collection<Concept> getConceptsByLabelText(String labelText) {
 		if (StringUtils.isBlank(labelText))
 			throw new IllegalArgumentException("labelText cannot be blank");
-		List<Concept> concepts = new ArrayList<Concept>();
+		Set<Concept> concepts = new HashSet<Concept>();
 		Collection<Label> labels = textIndexService.getLabelsByText(labelText);
 		for (Label label : labels) {
 			LabelImpl labelImpl = (LabelImpl) label;

@@ -64,7 +64,7 @@ public class QueryServiceTest extends AbstractTransactionalDataSource {
 		notations.add(spaceNotation2);
 		conceptService.createConcept(labels);
 
-		Collection<Concept> concepts = queryService.getConceptsByNotation(Domain.UMLS, umls_code);
+		Collection<Concept> concepts = queryService.getConceptsByNotationCode(umls_code);
 		Assert.assertNotNull(concepts);
 		Assert.assertFalse(concepts.isEmpty());
 		Assert.assertEquals(1, concepts.size());
