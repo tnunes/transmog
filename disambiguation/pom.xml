@@ -1,0 +1,146 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.biosemantics</groupId>
+	<artifactId>disambiguation</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>Parent for the disambiguation project.</name>
+	<description>Parent for the disambiguation project.</description>
+	<inceptionYear>2010</inceptionYear>
+	<organization>
+		<name>Department of Medical Informatics, Erasmus Medical Centre</name>
+		<url>http://www.erasmusmc.nl/med_informatica/</url>
+	</organization>
+	<developers>
+		<developer>
+			<name>Bharat Singh</name>
+			<email>b.singh@erasmusmc.nl</email>
+			<url>http://www.biosemantics.org/index.php?page=bharat-singh</url>
+			<organization>Erasmus MC</organization>
+			<organizationUrl>http://www.erasmusmc.nl/med_informatica/</organizationUrl>
+			<roles>
+				<role>architect</role>
+				<role>developer</role>
+			</roles>
+		</developer>
+	</developers>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<com.google.guava.version>r03</com.google.guava.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<org.slf.version>1.6.0</org.slf.version>
+		<ch.qos.logback.version>0.9.21</ch.qos.logback.version>
+		<org.springframework.version>3.0.3.RELEASE</org.springframework.version>
+		<junit.version>4.8.1</junit.version>
+		<org.jmock.version>2.5.1</org.jmock.version>
+		<joda.time.version>1.6.2</joda.time.version>
+	</properties>
+	<dependencyManagement>
+		<dependencies>
+			<!-- Google gauva -->
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava-collections</artifactId>
+				<version>${com.google.guava.version}</version>
+			</dependency>
+			<!-- Logging framework and implementation -->
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>${org.slf.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+				<version>${ch.qos.logback.version}</version>
+			</dependency>
+			<!-- unit testing -->
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>${junit.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.jmock</groupId>
+				<artifactId>jmock-junit4</artifactId>
+				<version>${org.jmock.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<!-- Spring dependencies we might not need all of these -->
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-core</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-web</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-beans</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-aop</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context-support</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-tx</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-orm</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-jdbc</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-test</artifactId>
+				<version>${org.springframework.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>joda-time</groupId>
+				<artifactId>joda-time</artifactId>
+				<version>${joda.time.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+	<build>
+		<plugins>
+			<!-- Global settings for maven-compiler-plugin: -->
+			<plugin>
+				<inherited>true</inherited>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<modules>
+		<module>conceptstore-impl</module>
+	</modules>
+</project>

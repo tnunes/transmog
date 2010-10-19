@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:aop="http://www.springframework.org/schema/aop" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd  http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context-3.0.xsd  http://www.springframework.org/schema/tx  http://www.springframework.org/schema/tx/spring-tx-3.0.xsd  http://www.springframework.org/schema/aop  http://www.springframework.org/schema/aop/spring-aop-3.0.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd"
+	default-init-method="init" default-destroy-method="destroy">
+
+<import resource="classpath:conceptstore-utils-context.xml"/>
+
+	<!-- GRAPH DATABASE AND TRANSACTION CONFIGURATION -->
+
+	<tx:annotation-driven transaction-manager="transactionManager" />
+	<alias name="neo4jTransactionManager" alias="transactionManager" />
+
+	<bean id="neo4jTransactionManagerService" class="org.neo4j.kernel.impl.transaction.SpringTransactionManager">
+		<constructor-arg ref="graphDb" />
+	</bean>
+	<bean id="neo4jUserTransactionService" class="org.neo4j.kernel.impl.transaction.UserTransactionImpl">
+		<constructor-arg ref="graphDb" />
+	</bean>
+
+	<bean id="neo4jTransactionManager" class="org.springframework.transaction.jta.JtaTransactionManager">
+		<property name="transactionManager" ref="neo4jTransactionManagerService" />
+		<property name="userTransaction" ref="neo4jUserTransactionService" />
+	</bean>
+
+	<bean id="graphDb" factory-bean="graphStorageTemplate" factory-method="getGraphDatabaseService" />
+
+
+	<!-- SERVICES -->
+
+	<bean id="graphStorageTemplate" class="org.biosemantics.disambiguation.service.impl.GraphStorageTemplateImpl">
+		<constructor-arg value="${data.store}" />
+	</bean>
+
+	<bean id="indexService" class="org.biosemantics.disambiguation.service.impl.IndexServiceImpl">
+		<constructor-arg>
+			<ref local="graphStorageTemplate" />
+		</constructor-arg>
+	</bean>
+
+	<bean id="labelStorageService" class="org.biosemantics.disambiguation.service.impl.LabelStorageServiceImpl">
+		<constructor-arg>
+			<ref local="graphStorageTemplate" />
+		</constructor-arg>
+		<property name="indexService">
+			<ref local="indexService" />
+		</property>
+	</bean>
+	
+	<bean id="notationStorageService" class="org.biosemantics.disambiguation.service.impl.NotationStorageServiceImpl">
+		<constructor-arg>
+			<ref local="graphStorageTemplate" />
+		</constructor-arg>
+		<property name="indexService">
+			<ref local="indexService"/>
+		</property>
+	</bean>
+	
+	<bean id="conceptStorageService" class="org.biosemantics.disambiguation.service.impl.ConceptStorageServiceIndexingImpl">
+		<constructor-arg>
+			<bean class="org.biosemantics.disambiguation.service.impl.ConceptStorageServiceImpl">
+				<constructor-arg>
+					<ref local="graphStorageTemplate" />
+				</constructor-arg>
+				<property name="uuidGeneratorService" ref="uuidGeneratorService"></property>
+			</bean>
+		</constructor-arg>
+		<property name="indexService">
+			<ref local="indexService"/>
+		</property>
+	</bean>
+	<!-- <bean id="indexService" class="org.biosemantics.disambiguation.service.impl.IndexServiceImpl"> <constructor-arg> <ref 
+		local="graphStorageTemplate" /> </constructor-arg> </bean> -->
+		
+</beans>
