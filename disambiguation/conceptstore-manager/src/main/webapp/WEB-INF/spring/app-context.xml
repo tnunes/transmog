@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:aop="http://www.springframework.org/schema/aop"
+
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd 
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd"
+	default-init-method="init" default-destroy-method="destroy">
+
+	<!-- Scans the classpath of this application for @Components to deploy as beans -->
+	<context:component-scan base-package="org.biosemantics.disambiguation.manager" />
+
+	<!-- Application Message Bundle -->
+	<bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+		<property name="basename" value="/WEB-INF/messages/messages" />
+		<property name="cacheSeconds" value="0" />
+		<property name="defaultEncoding" value="UTF-8" />
+	</bean>
+
+	<!-- Configures Spring MVC -->
+	<import resource="mvc-context.xml" />
+	<import resource="classpath:conceptstore-disambiguation-impl-config.xml" />
+
+	<context:property-placeholder location="/WEB-INF/conceptstore.properties" />
+
+	<!-- Controllers -->
+	<bean id="queryController" class="org.biosemantics.disambiguation.manager.controller.QueryController">
+		<property name="conceptQueryService" ref="conceptQueryService"></property>
+		<property name="queryResultAdapter">
+			<ref local="queryResultAdapter" />
+		</property>
+		<property name="messageManager">
+			<ref local="messageManager" />
+		</property>
+		<property name="userPreference">
+			<ref local="userPreferenceSessionBean" />
+		</property>
+
+	</bean>
+	
+	<bean id="conceptController" class="org.biosemantics.disambiguation.manager.controller.ConceptController">
+		<property name="conceptQueryService" ref="conceptQueryService"></property>
+		<property name="conceptAdapter">
+			<ref local="conceptAdapter" />
+		</property>
+		<property name="messageManager">
+			<ref local="messageManager" />
+		</property>
+	</bean>
+
+	<!-- Adapter -->
+	<bean id="queryResultAdapter" class="org.biosemantics.disambiguation.manager.adapter.QueryResultAdapterImpl" />
+	<bean id="conceptAdapter" class="org.biosemantics.disambiguation.manager.adapter.ConceptAdapterImpl"></bean>
+	<!-- Message manager -->
+	<bean id="messageManager" class="org.biosemantics.disambiguation.manager.common.MessageManagerImpl">
+		<property name="messageSource" ref="messageSource"></property>
+	</bean>
+
+	<!-- Session scoped bean holding user preferences -->
+	<!-- a HTTP Session-scoped bean exposed as a proxy -->
+	<bean id="userPreferenceSessionBean" class="org.biosemantics.disambiguation.manager.common.UserPreferenceImpl"
+		scope="session">
+		<!-- this next element effects the proxying of the surrounding bean -->
+		<aop:scoped-proxy />
+	</bean>
+
+
+	<bean id="dummyDataLoader" class="org.biosemantics.disambiguation.manager.common.DummyDataProviderImpl">
+		<property name="conceptStorageService" ref="conceptStorageService"></property>
+		<property name="labelStorageService" ref="labelStorageService"></property>
+		<property name="notationStorageService" ref="notationStorageService"></property>
+		<property name="uuidGeneratorService" ref="uuidGeneratorService"></property>
+		<property name="loadData" value="false"></property>
+	</bean>
+</beans>
