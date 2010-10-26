@@ -18,7 +18,7 @@ public class NoteStorageServiceImpl implements NoteStorageService {
 
 	public NoteStorageServiceImpl(GraphStorageTemplate graphStorageTemplate) {
 		this.graphStorageTemplate = checkNotNull(graphStorageTemplate);
-		this.noteParentNode = this.graphStorageTemplate.getParentNode(DefaultRelationshipType.LABELS);
+		this.noteParentNode = this.graphStorageTemplate.getParentNode(DefaultRelationshipType.NOTES);
 		this.checkExists = false;
 	}
 
@@ -40,7 +40,7 @@ public class NoteStorageServiceImpl implements NoteStorageService {
 		if (createdNote == null) {
 			// create new node if none exists
 			Node node = graphStorageTemplate.getGraphDatabaseService().createNode();
-			graphStorageTemplate.createRelationship(noteParentNode, node, DefaultRelationshipType.LABEL);
+			graphStorageTemplate.createRelationship(noteParentNode, node, DefaultRelationshipType.NOTE);
 			createdNote = new NoteImpl(node).withLanguage(note.getLanguage()).withText(note.getText());
 		}
 		return createdNote;
