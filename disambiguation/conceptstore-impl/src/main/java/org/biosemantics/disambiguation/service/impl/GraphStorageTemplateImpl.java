@@ -12,6 +12,8 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GraphStorageTemplateImpl implements GraphStorageTemplate {
 
@@ -22,11 +24,15 @@ public class GraphStorageTemplateImpl implements GraphStorageTemplate {
 	private long nodeCount;
 	private long rlspCount;
 
+	private static final Logger logger = LoggerFactory.getLogger(GraphStorageTemplateImpl.class);
+
 	public GraphStorageTemplateImpl(String dataStore, Map<String, String> configuration) {
 		super();
 		this.dataStore = checkNotNull(dataStore);
 		this.configuration = checkNotNull(configuration);
 		graphDatabaseService = new EmbeddedGraphDatabase(this.dataStore, this.configuration);
+		logger.info("graph database data folder is \"{}\"",
+				((EmbeddedGraphDatabase) graphDatabaseService).getStoreDir());
 		parentNodes = new HashMap<DefaultRelationshipType, Node>();
 	}
 
@@ -34,6 +40,8 @@ public class GraphStorageTemplateImpl implements GraphStorageTemplate {
 		super();
 		this.dataStore = checkNotNull(dataStore);
 		graphDatabaseService = new EmbeddedGraphDatabase(this.dataStore);
+		logger.info("graph database data folder is \"{}\"",
+				((EmbeddedGraphDatabase) graphDatabaseService).getStoreDir());
 		parentNodes = new HashMap<DefaultRelationshipType, Node>();
 	}
 
@@ -89,11 +97,17 @@ public class GraphStorageTemplateImpl implements GraphStorageTemplate {
 	}
 
 	public void destroy() {
-		parentNodes.clear();
-		parentNodes = null;
-		configuration.clear();
-		configuration = null;
-		graphDatabaseService.shutdown();
+		if (parentNodes != null) {
+			parentNodes.clear();
+			parentNodes = null;
+		}
+		if (configuration != null) {
+			configuration.clear();
+			configuration = null;
+		}
+		if (graphDatabaseService != null) {
+			graphDatabaseService.shutdown();
+		}
 	}
 
 	@Override
