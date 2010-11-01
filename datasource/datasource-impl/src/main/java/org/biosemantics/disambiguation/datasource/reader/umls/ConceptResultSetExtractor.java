@@ -11,6 +11,7 @@ import org.biosemantics.conceptstore.common.domain.Language;
 import org.biosemantics.conceptstore.utils.domain.impl.ConceptImpl;
 import org.biosemantics.conceptstore.utils.domain.impl.LabelImpl;
 import org.biosemantics.conceptstore.utils.domain.impl.NotationImpl;
+import org.biosemantics.disambiguation.datasource.reader.DataSourceCommonUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -58,7 +59,7 @@ public class ConceptResultSetExtractor implements ResultSetExtractor<Concept> {
 				}
 			}
 			// notation
-			//FIXME HACK use proper keys here
+			// FIXME HACK use proper keys here
 			if (!notations.containsKey(code + sab) && !code.equals(NOCODE)) {
 				Concept domain = getDomain(sab);
 				NotationImpl notationImpl = new NotationImpl(domain, code);
@@ -79,7 +80,7 @@ public class ConceptResultSetExtractor implements ResultSetExtractor<Concept> {
 			lat = Language.HR.getIso6392Code();
 		}
 		logger.debug(lat);
-		return Language.fromIso6392Code(lat);
+		return DataSourceCommonUtility.getLanguageByIso6392Code(lat);
 	}
 
 	private Concept getDomain(String sab) {
