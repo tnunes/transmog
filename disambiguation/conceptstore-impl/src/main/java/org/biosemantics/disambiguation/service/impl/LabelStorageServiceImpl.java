@@ -45,8 +45,7 @@ public class LabelStorageServiceImpl implements LabelStorageService {
 			// create new node if none exists
 			Node node = graphStorageTemplate.getGraphDatabaseService().createNode();
 			graphStorageTemplate.createRelationship(labelParentNode, node, DefaultRelationshipType.LABEL);
-			createdLabel = new LabelImpl(node).withLabelType(label.getLabelType()).withLanguage(label.getLanguage())
-					.withText(label.getText());
+			createdLabel = new LabelImpl(node).withLanguage(label.getLanguage()).withText(label.getText());
 			indexService.indexLabel(createdLabel);
 		}
 		return createdLabel;
@@ -57,9 +56,7 @@ public class LabelStorageServiceImpl implements LabelStorageService {
 		Iterable<Label> labels = indexService.getLabelsByText(label.getText());
 		if (labels != null) {
 			for (Label foundLabel : labels) {
-				if (foundLabel.getLabelType() == label.getLabelType()
-						&& foundLabel.getLanguage() == label.getLanguage()
-						&& foundLabel.getText().equals(label.getText())) {
+				if (foundLabel.getLanguage() == label.getLanguage() && foundLabel.getText().equals(label.getText())) {
 					found = foundLabel;
 					break;
 				}

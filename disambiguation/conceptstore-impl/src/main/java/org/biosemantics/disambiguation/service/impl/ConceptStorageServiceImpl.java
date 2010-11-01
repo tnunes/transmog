@@ -2,7 +2,11 @@ package org.biosemantics.disambiguation.service.impl;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Collection;
+
 import org.biosemantics.conceptstore.common.domain.Concept;
+import org.biosemantics.conceptstore.common.domain.Label;
+import org.biosemantics.conceptstore.common.domain.Label.LabelType;
 import org.biosemantics.conceptstore.common.service.ConceptStorageService;
 import org.biosemantics.conceptstore.utils.service.UuidGeneratorService;
 import org.biosemantics.disambiguation.domain.impl.ConceptImpl;
@@ -75,12 +79,23 @@ public class ConceptStorageServiceImpl implements ConceptStorageService {
 			break;
 		}
 		graphStorageTemplate.createRelationship(parentNode, node, defaultRelationshipType);
-		ConceptImpl conceptImpl = new ConceptImpl(node).withUuid(uuidGeneratorService.generateRandomUuid())
-				.withLabels(concept.getLabels());
-		if(concept.getNotations() != null){
+		ConceptImpl conceptImpl = new ConceptImpl(node).withUuid(uuidGeneratorService.generateRandomUuid());
+		Collection<Label> labels = concept.getLabelsByType(LabelType.PREFERRED);
+		if (labels != null) {
+			conceptImpl.setLabels(LabelType.PREFERRED, labels);
+		}
+		labels = concept.getLabelsByType(LabelType.ALTERNATE);
+		if (labels != null) {
+			conceptImpl.setLabels(LabelType.ALTERNATE, labels);
+		}
+		labels = concept.getLabelsByType(LabelType.HIDDEN);
+		if (labels != null) {
+			conceptImpl.setLabels(LabelType.HIDDEN, labels);
+		}
+		if (concept.getNotations() != null) {
 			conceptImpl.setNotations(concept.getNotations());
 		}
-		if(concept.getNotes() != null){
+		if (concept.getNotes() != null) {
 			conceptImpl.setNotes(concept.getNotes());
 		}
 		return conceptImpl;

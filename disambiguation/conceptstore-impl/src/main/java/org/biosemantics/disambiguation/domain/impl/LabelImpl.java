@@ -11,23 +11,12 @@ import org.neo4j.graphdb.Node;
 public class LabelImpl implements Label {
 
 	private static final long serialVersionUID = 2625024353276251601L;
-	private static final String LABEL_TYPE_PROPERTY = "labelType";
 	private static final String LANGUAGE_PROPERTY = "language";
 	private static final String TEXT_PROPERTY = "text";
 	private Node underlyingNode;
 
 	public LabelImpl(Node node) {
 		this.underlyingNode = node;
-	}
-
-	@Override
-	public LabelType getLabelType() {
-		return LabelType.valueOf((String) underlyingNode.getProperty(LABEL_TYPE_PROPERTY));
-	}
-
-	public void setLabelType(LabelType labelType) {
-		checkNotNull(labelType);
-		underlyingNode.setProperty(LABEL_TYPE_PROPERTY, labelType.name());
 	}
 
 	@Override
@@ -47,7 +36,7 @@ public class LabelImpl implements Label {
 
 	public void setText(String text) {
 		checkNotNull(text);
-		checkArgument(! text.isEmpty(), ErrorMessage.EMPTY_STRING_MSG, text);
+		checkArgument(!text.isEmpty(), ErrorMessage.EMPTY_STRING_MSG, text);
 		underlyingNode.setProperty(TEXT_PROPERTY, text);
 	}
 
@@ -66,11 +55,6 @@ public class LabelImpl implements Label {
 	@Override
 	public int hashCode() {
 		return this.underlyingNode.hashCode();
-	}
-
-	public LabelImpl withLabelType(LabelType labelType) {
-		setLabelType(labelType);
-		return this;
 	}
 
 	public LabelImpl withLanguage(Language language) {
