@@ -38,8 +38,9 @@ public class NotationStorageServiceImplTest extends AbstractTransactionalDataSou
 	}
 
 	private Concept createDomain() {
-		Label label = labelStorageService.createLabel(new LabelImpl(LabelType.PREFERRED, "UMLS", Language.EN));
-		ConceptImpl conceptImpl = new ConceptImpl.Builder("", label).build();
+		Label label = labelStorageService.createLabel(new LabelImpl("UMLS", Language.EN));
+		ConceptImpl conceptImpl = new ConceptImpl();
+		conceptImpl.addLabelByType(LabelType.PREFERRED, label);
 		return conceptStorageService.createDomain(conceptImpl);
 
 	}
@@ -77,11 +78,11 @@ public class NotationStorageServiceImplTest extends AbstractTransactionalDataSou
 		Notation createdTwice = notationStorageService.createNotation(other);
 		assertTrue(createdOnce.equals(createdTwice));
 	}
-	
+
 	@Test
 	public void testGetNotationByCodeWithSpecialCharacter() {
 		Concept domain = createDomain();
-		NotationImpl notationImpl =  new NotationImpl(domain, SPECIAL_CHARS_NOTATION_CODE);
+		NotationImpl notationImpl = new NotationImpl(domain, SPECIAL_CHARS_NOTATION_CODE);
 		notationStorageService.createNotation(notationImpl);
 		Collection<Notation> notations = notationStorageService.getNotationsByCode(SPECIAL_CHARS_NOTATION_CODE);
 		assertNotNull(notations);
@@ -91,6 +92,5 @@ public class NotationStorageServiceImplTest extends AbstractTransactionalDataSou
 			assertTrue(notation.getDomain().equals(domain));
 		}
 	}
-	
 
 }

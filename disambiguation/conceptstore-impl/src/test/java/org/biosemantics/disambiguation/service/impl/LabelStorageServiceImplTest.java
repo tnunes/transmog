@@ -6,7 +6,6 @@ import static junit.framework.Assert.assertTrue;
 import java.util.Collection;
 
 import org.biosemantics.conceptstore.common.domain.Label;
-import org.biosemantics.conceptstore.common.domain.Label.LabelType;
 import org.biosemantics.conceptstore.common.domain.Language;
 import org.biosemantics.conceptstore.common.service.LabelStorageService;
 import org.biosemantics.conceptstore.utils.domain.impl.LabelImpl;
@@ -23,52 +22,50 @@ public class LabelStorageServiceImplTest extends AbstractTransactionalDataSource
 
 	@Test
 	public void testCreateLabel() {
-		LabelImpl labelImpl =  new LabelImpl(LabelType.PREFERRED, PREFERRED_TXT, Language.EN);
+		LabelImpl labelImpl = new LabelImpl(PREFERRED_TXT, Language.EN);
 		labelStorageService.createLabel(labelImpl);
 	}
 
 	@Test
 	public void testGetLabelByText() {
-		LabelImpl labelImpl =  new LabelImpl(LabelType.PREFERRED, PREFERRED_TXT, Language.EN);
-		LabelImpl otherLabel =  new LabelImpl(LabelType.PREFERRED, PREFERRED_TXT_SPACES, Language.EN);
+		LabelImpl labelImpl = new LabelImpl(PREFERRED_TXT, Language.EN);
+		LabelImpl otherLabel = new LabelImpl(PREFERRED_TXT_SPACES, Language.EN);
 		labelStorageService.createLabel(labelImpl);
 		labelStorageService.createLabel(otherLabel);
 		Collection<Label> labels = labelStorageService.getLabelByText(PREFERRED_TXT);
 		assertNotNull(labels);
 		assertTrue(labels.size() == 1);
 		for (Label label : labels) {
-			assertTrue(label.getLabelType() == LabelType.PREFERRED);
 			assertTrue(label.getLanguage() == Language.EN);
 			assertTrue(label.getText().equals(PREFERRED_TXT));
 		}
 	}
-	
+
 	@Test
 	public void testGetLabelByTextEmpty() {
-		LabelImpl labelImpl =  new LabelImpl(LabelType.PREFERRED, PREFERRED_TXT, Language.EN);
+		LabelImpl labelImpl = new LabelImpl(PREFERRED_TXT, Language.EN);
 		labelStorageService.createLabel(labelImpl);
 		Collection<Label> labels = labelStorageService.getLabelByText("DUMMY");
 		assertNotNull(labels);
 		assertTrue(labels.isEmpty());
 	}
-	
+
 	@Test
 	public void testGetLabelByTextWithSpaces() {
-		LabelImpl labelImpl =  new LabelImpl(LabelType.PREFERRED, TEXT_WITH_SPACES, Language.EN);
+		LabelImpl labelImpl = new LabelImpl(TEXT_WITH_SPACES, Language.EN);
 		labelStorageService.createLabel(labelImpl);
 		Collection<Label> labels = labelStorageService.getLabelByText(TEXT_WITH_SPACES);
 		assertNotNull(labels);
 		assertTrue(labels.size() == 1);
 		for (Label label : labels) {
-			assertTrue(label.getLabelType() == LabelType.PREFERRED);
 			assertTrue(label.getLanguage() == Language.EN);
 			assertTrue(label.getText().equals(TEXT_WITH_SPACES));
 		}
 	}
-	
+
 	@Test
 	public void testGetLabelByTextEquals() {
-		LabelImpl labelImpl =  new LabelImpl(LabelType.PREFERRED, TEXT_WITH_SPACES, Language.EN);
+		LabelImpl labelImpl = new LabelImpl(TEXT_WITH_SPACES, Language.EN);
 		Label createdOnce = labelStorageService.createLabel(labelImpl);
 		Label createdTwice = labelStorageService.createLabel(labelImpl);
 		assertTrue(createdOnce.equals(createdTwice));
