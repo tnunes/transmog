@@ -12,7 +12,6 @@ import org.neo4j.graphdb.Relationship;
 
 public class RelationshipImpl implements org.biosemantics.conceptstore.common.domain.Relationship {
 
-
 	private static final long serialVersionUID = 3506729852996059944L;
 	private static final String UUID_PROPERTY = "uuid";
 	private static final String SCORE_PROPERTY = "score";
@@ -42,7 +41,7 @@ public class RelationshipImpl implements org.biosemantics.conceptstore.common.do
 	}
 
 	@Override
-	public int getScore() {
+	public int getWeight() {
 		return Integer.valueOf((String) underlyingRelationship.getProperty(SCORE_PROPERTY));
 	}
 

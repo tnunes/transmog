@@ -40,14 +40,14 @@ public class RelationshipStoreServiceImpl implements RelationshipStoreService {
 			RelationshipImpl relationshipImpl = new RelationshipImpl(underlyingRelationship);
 			relationshipImpl.setUuid(uuidGeneratorService.generateRandomUuid());
 			relationshipImpl.setPredicateConceptId(relationship.getPredicateConceptUuid());
-			relationshipImpl.setScore(relationship.getScore());
+			relationshipImpl.setScore(relationship.getWeight());
 			relationshipImpl.setRelationshipCategory(relationship.getRelationshipCategory());
 			createdRelationship = relationshipImpl;
 		}
 		return createdRelationship;
 	}
 
-	//FIXME need to find out what constitutes a .equals relationship
+	// FIXME need to find out what constitutes a .equals relationship
 	/*
 	 * Direction / Category / Relationship type
 	 */
