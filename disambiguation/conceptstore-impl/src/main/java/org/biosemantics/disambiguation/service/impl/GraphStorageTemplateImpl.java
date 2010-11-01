@@ -71,7 +71,6 @@ public class GraphStorageTemplateImpl implements GraphStorageTemplate {
 		parentNodes.put(DefaultRelationshipType.DOMAINS, initParentNodes(DefaultRelationshipType.DOMAINS));
 		parentNodes.put(DefaultRelationshipType.CONCEPT_SCHEMES,
 				initParentNodes(DefaultRelationshipType.CONCEPT_SCHEMES));
-
 	}
 
 	private Node initParentNodes(DefaultRelationshipType defaultRelationshipTypes) {

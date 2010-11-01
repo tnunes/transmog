@@ -9,7 +9,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-//ApplicationContext will be loaded from files in the root of the classpath
+// ApplicationContext will be loaded from files in the root of the classpath
 @ContextConfiguration({ "/conceptstore-disambiguation-test-context.xml" })
 public abstract class AbstractTransactionalDataSource {
 
@@ -28,5 +28,5 @@ public abstract class AbstractTransactionalDataSource {
 		transaction.failure();
 		transaction.finish();
 	}
-	
+
 }
