@@ -21,6 +21,11 @@
     <!--[if lte IE 6]><link rel="stylesheet" media="screen,projection" type="text/css" href="<c:url value="/styles/main-ie6.css" />" /><![endif]-->
     <link rel="stylesheet" media="screen,projection" type="text/css" href="<c:url value="/styles/style.css" />" />
     <script type="text/javascript" src="<c:url value="/scripts/jquery-1.4.2.min.js" />"></script>
+    <!-- Visualization -->
+    <link rel="stylesheet" media="screen,projection" type="text/css" href="<c:url value="/styles/jit/base.css" />" />
+    <link rel="stylesheet" media="screen,projection" type="text/css" href="<c:url value="/styles/jit/ForceDirected.css" />" />
+    <script type="text/javascript" src="<c:url value="/scripts/jit/jit.js" />"></script>
+    <script type="text/javascript" src="<c:url value="/scripts/jit/Examples/ForceDirected/example2.js" />"></script>
     <title><spring:message code="title.search"/></title>
     <script type="text/javascript">
 	    function submitSearch(myfield, e){
@@ -50,7 +55,7 @@
     </script>
 </head>
 
-<body>
+<body onload="init();">
 
 <div id="main">
 
@@ -165,11 +170,28 @@
                 		</tr>
                 </c:forEach>
             </table>
-            
-            <p class="nomt"><strong><spring:message code="label.responseSummary" arguments="${conceptResultResponse.responseTime/1000}"/></strong><br /></p>
-
-            <div class="fix"></div>
 		</c:if>
+		
+		
+		<!--VISUALIZATION-->
+            <h2>Relations</h2>
+		<!-- JIT starts -->
+		<div id="container">
+			<div id="left-container">
+        	<div id="id-list"></div>          
+		</div>
+
+		<div id="center-container">
+    		<div id="infovis"></div>    
+		</div>
+
+
+		<div id="log"></div>
+		</div>
+		<!-- JIT ends -->
+		<br/>
+		<p class="nomt"><strong><spring:message code="label.responseSummary" arguments="${conceptResultResponse.responseTime/1000}"/></strong><br /></p>
+		 <div class="fix"></div>
         </div> <!-- /content-in -->
         
         <div class="content-bottom"></div>

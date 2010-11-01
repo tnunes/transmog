@@ -20,7 +20,7 @@
 
 	<!-- Configures Spring MVC -->
 	<import resource="mvc-context.xml" />
-	<import resource="classpath:conceptstore-disambiguation-impl-config.xml" />
+	<import resource="classpath:conceptstore-disambiguation-impl-context.xml" />
 
 	<context:property-placeholder location="/WEB-INF/conceptstore.properties" />
 

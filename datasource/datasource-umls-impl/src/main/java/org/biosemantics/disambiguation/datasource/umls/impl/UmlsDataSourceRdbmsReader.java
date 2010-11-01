@@ -1,0 +1,54 @@
+package org.biosemantics.disambiguation.datasource.umls.impl;
+
+import java.util.Iterator;
+
+import javax.sql.DataSource;
+
+import org.biosemantics.conceptstore.common.domain.Concept;
+import org.biosemantics.conceptstore.common.domain.Relationship;
+import org.biosemantics.datasource.common.ConceptDetail;
+import org.biosemantics.datasource.common.DataSourceRdbmsReader;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+public class UmlsDataSourceRdbmsReader implements DataSourceRdbmsReader {
+
+	private DataSource dataSource;
+	private JdbcTemplate jdbcTemplate;
+	private Concept defaultDomain;
+
+	@Override
+	public void init() {
+	}
+
+	@Override
+	public void destroy() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public Iterator<ConceptDetail> getConcepts() {
+		ConceptDetailIterator conceptDetailIterator = new ConceptDetailIterator();
+		conceptDetailIterator.setJdbcTemplate(jdbcTemplate);
+		return conceptDetailIterator;
+	}
+
+	@Override
+	public Iterator<Relationship> getRelationships() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setDataSource(DataSource dataSource) {
+		this.dataSource = dataSource;
+		this.jdbcTemplate = new JdbcTemplate(dataSource);
+	}
+
+	@Override
+	public void setDeafaultDomain(Concept domain) {
+		this.defaultDomain = domain;
+
+	}
+
+}

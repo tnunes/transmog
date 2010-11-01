@@ -64,25 +64,27 @@ public class DummyDataProviderImpl {
 			List<Label> labels = new ArrayList<Label>();
 			List<Notation> notations = new ArrayList<Notation>();
 			for (int i = 0; i < dataSize; i++) {
-				LabelImpl labelImpl = new LabelImpl(LabelType.PREFERRED, uuidGeneratorService.generateRandomUuid(),
-						Language.EN);
+				LabelImpl labelImpl = new LabelImpl(uuidGeneratorService.generateRandomUuid(), Language.EN);
 				labels.add(labelStorageService.createLabel(labelImpl));
 				NotationImpl notationImpl = new NotationImpl(domain, uuidGeneratorService.generateRandomUuid());
 				notations.add(notationStorageService.createNotation(notationImpl));
-				conceptStorageService.createConcept(new ConceptImpl.Builder(labels, DummyDataProviderImpl.class
-						.getName()).notations(notations).build());
+				ConceptImpl conceptImpl = new ConceptImpl();
+				conceptImpl.addLabelByType(LabelType.PREFERRED, labels);
+				conceptImpl.addNotations(notations);
+				Concept concept = conceptStorageService.createConcept(conceptImpl);
+				logger.debug(concept.getUuid());
 				labels.clear();
 				notations.clear();
-				
+
 			}
 			logger.info("----------DATA LOAD COMPLETED----------");
-
 		}
 	}
 
 	private Concept createDomain() {
-		Label label = labelStorageService.createLabel(new LabelImpl(LabelType.PREFERRED, "UMLS", Language.EN));
-		ConceptImpl conceptImpl = new ConceptImpl.Builder("", label).build();
+		Label label = labelStorageService.createLabel(new LabelImpl("UMLS", Language.EN));
+		ConceptImpl conceptImpl = new ConceptImpl();
+		conceptImpl.addLabelByType(LabelType.PREFERRED, label);
 		return conceptStorageService.createDomain(conceptImpl);
 
 	}

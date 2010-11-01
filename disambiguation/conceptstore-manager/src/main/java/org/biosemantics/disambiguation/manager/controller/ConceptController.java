@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
+
 @Controller
 public class ConceptController {
 	private static final Logger logger = LoggerFactory.getLogger(ConceptController.class);
@@ -62,5 +63,5 @@ public class ConceptController {
 		logger.info("time taken {}(ms)", end - start);
 		return mav;
 	}
-	
+
 }
