@@ -12,7 +12,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 public class UmlsDataSourceRdbmsReader implements DataSourceRdbmsReader {
 
-	private DataSource dataSource;
 	private JdbcTemplate jdbcTemplate;
 	private Concept defaultDomain;
 
@@ -22,14 +21,14 @@ public class UmlsDataSourceRdbmsReader implements DataSourceRdbmsReader {
 
 	@Override
 	public void destroy() {
-		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
 	public Iterator<ConceptDetail> getConcepts() {
 		ConceptDetailIterator conceptDetailIterator = new ConceptDetailIterator();
 		conceptDetailIterator.setJdbcTemplate(jdbcTemplate);
+		conceptDetailIterator.setDefaultDomain(defaultDomain);
 		return conceptDetailIterator;
 	}
 
@@ -41,14 +40,12 @@ public class UmlsDataSourceRdbmsReader implements DataSourceRdbmsReader {
 
 	@Override
 	public void setDataSource(DataSource dataSource) {
-		this.dataSource = dataSource;
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 
 	@Override
-	public void setDeafaultDomain(Concept domain) {
+	public void setDefaultDomain(Concept domain) {
 		this.defaultDomain = domain;
-
 	}
 
 }

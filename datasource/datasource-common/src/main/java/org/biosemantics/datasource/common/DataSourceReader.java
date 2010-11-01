@@ -10,7 +10,7 @@ public interface DataSourceReader {
 
 	void destroy();
 
-	void setDeafaultDomain(Concept domain);
+	void setDefaultDomain(Concept domain);
 
 	Iterator<ConceptDetail> getConcepts();
 

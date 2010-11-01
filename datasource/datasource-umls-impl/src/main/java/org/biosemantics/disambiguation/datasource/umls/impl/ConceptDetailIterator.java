@@ -31,6 +31,10 @@ public class ConceptDetailIterator implements Iterator<ConceptDetail> {
 		this.jdbcTemplate = jdbcTemplate;
 	}
 
+	public void setDefaultDomain(Concept defaultDomain) {
+		this.defaultDomain = defaultDomain;
+	}
+
 	public void init() throws IOException, SQLException {
 		predicateIterator = new PredicateIterator(jdbcTemplate, defaultDomain);
 		predicateIterator.init();
