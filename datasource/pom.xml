@@ -25,6 +25,6 @@
 	</build>
 	<modules>
 		<module>datasource-common</module>
-		<module>datasource-umls-impl</module>
+		<module>datasource-impl</module>
 	</modules>
 </project>
