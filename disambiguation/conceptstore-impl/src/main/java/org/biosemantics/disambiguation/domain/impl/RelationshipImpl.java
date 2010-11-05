@@ -13,10 +13,10 @@ import org.neo4j.graphdb.Relationship;
 public class RelationshipImpl implements org.biosemantics.conceptstore.common.domain.Relationship {
 
 	private static final long serialVersionUID = 3506729852996059944L;
-	private static final String UUID_PROPERTY = "uuid";
-	private static final String SCORE_PROPERTY = "score";
-	private static final String RELATIONSHIP_CATEGORY_PROPERTY = "relationshipCategory";
-	private static final String PREDICATE_CONCEPT_UUID_PROPERTY = "predicateConceptUuid";
+	public static final String UUID_PROPERTY = "uuid";
+	public static final String SCORE_PROPERTY = "score";
+	public static final String RELATIONSHIP_CATEGORY_PROPERTY = "relationshipCategory";
+	public static final String PREDICATE_CONCEPT_UUID_PROPERTY = "predicateConceptUuid";
 
 	private Relationship underlyingRelationship;
 

@@ -2,16 +2,26 @@ package org.biosemantics.disambiguation.service.impl;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import org.biosemantics.conceptstore.common.domain.Concept;
+import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.common.domain.Label.LabelType;
+import org.biosemantics.conceptstore.common.domain.Notation;
+import org.biosemantics.conceptstore.common.domain.Note;
 import org.biosemantics.conceptstore.common.service.ConceptStorageService;
+import org.biosemantics.conceptstore.common.service.LabelStorageService;
+import org.biosemantics.conceptstore.common.service.NotationStorageService;
+import org.biosemantics.conceptstore.common.service.NoteStorageService;
 import org.biosemantics.conceptstore.utils.service.UuidGeneratorService;
+import org.biosemantics.conceptstore.utils.validation.ConceptValidator;
 import org.biosemantics.disambiguation.domain.impl.ConceptImpl;
 import org.neo4j.graphdb.Node;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 public class ConceptStorageServiceImpl implements ConceptStorageService {
 
@@ -22,8 +32,13 @@ public class ConceptStorageServiceImpl implements ConceptStorageService {
 	private final Node conceptSchemeParentNode;
 
 	private UuidGeneratorService uuidGeneratorService;
+	private LabelStorageService labelStorageService;
+	private NotationStorageService notationStorageService;
+	private NoteStorageService noteStorageService;
+	private ConceptValidator conceptValidator;
 
 	public ConceptStorageServiceImpl(GraphStorageTemplate graphStorageTemplate) {
+		// FIXME two enums relationshipTypes and ConceptTypes with certain overlap between them.
 		this.graphStorageTemplate = checkNotNull(graphStorageTemplate);
 		this.conceptParentNode = this.graphStorageTemplate.getParentNode(DefaultRelationshipType.CONCEPTS);
 		this.predicateParentNode = this.graphStorageTemplate.getParentNode(DefaultRelationshipType.PREDICATES);
@@ -31,38 +46,95 @@ public class ConceptStorageServiceImpl implements ConceptStorageService {
 		this.conceptSchemeParentNode = this.graphStorageTemplate.getParentNode(DefaultRelationshipType.CONCEPT_SCHEMES);
 	}
 
+	@Required
 	public void setUuidGeneratorService(UuidGeneratorService uuidGeneratorService) {
 		this.uuidGeneratorService = uuidGeneratorService;
 	}
 
-	@Override
-	@Transactional
-	public Concept createConcept(Concept concept) {
-		return createConceptInternal(concept, DefaultRelationshipType.CONCEPT);
+	@Required
+	public void setLabelStorageService(LabelStorageService labelStorageService) {
+		this.labelStorageService = labelStorageService;
+	}
+
+	@Required
+	public void setNotationStorageService(NotationStorageService notationStorageService) {
+		this.notationStorageService = notationStorageService;
+	}
+
+	@Required
+	public void setNoteStorageService(NoteStorageService noteStorageService) {
+		this.noteStorageService = noteStorageService;
+	}
+
+	@Required
+	public void setConceptValidator(ConceptValidator conceptValidator) {
+		this.conceptValidator = conceptValidator;
 	}
 
 	@Override
 	@Transactional
-	public Concept createPredicate(Concept predicate) {
-		return createConceptInternal(predicate, DefaultRelationshipType.PREDICATE);
-	}
-
-	@Override
-	@Transactional
-	public Concept createConceptScheme(Concept conceptScheme) {
-		return createConceptInternal(conceptScheme, DefaultRelationshipType.CONCEPT_SCHEME);
-	}
-
-	@Override
-	@Transactional
-	public Concept createDomain(Concept domain) {
-		return createConceptInternal(domain, DefaultRelationshipType.DOMAIN);
-	}
-
-	private Concept createConceptInternal(Concept concept, DefaultRelationshipType defaultRelationshipType) {
+	public Concept createConcept(ConceptType conceptType, Concept concept) {
+		conceptValidator.validate(concept);
 		Node node = graphStorageTemplate.createNode();
+		Node parentNode = getParentNode(conceptType);
+		graphStorageTemplate.createRelationship(parentNode, node, DefaultRelationshipType.CONCEPT);
+		ConceptImpl conceptImpl = new ConceptImpl(node).withUuid(uuidGeneratorService.generateRandomUuid());
+		Collection<Label> labels = concept.getLabelsByType(LabelType.PREFERRED);
+		if (!CollectionUtils.isEmpty(labels)) {
+			Collection<Label> createdLabels = createLabels(labels);
+			conceptImpl.setLabels(LabelType.PREFERRED, createdLabels);
+		}
+		labels = concept.getLabelsByType(LabelType.ALTERNATE);
+		if (!CollectionUtils.isEmpty(labels)) {
+			Collection<Label> createdLabels = createLabels(labels);
+			conceptImpl.setLabels(LabelType.ALTERNATE, createdLabels);
+		}
+		labels = concept.getLabelsByType(LabelType.HIDDEN);
+		if (!CollectionUtils.isEmpty(labels)) {
+			Collection<Label> createdLabels = createLabels(labels);
+			conceptImpl.setLabels(LabelType.HIDDEN, createdLabels);
+		}
+		Collection<Notation> notations = concept.getNotations();
+		// create only is something is provided
+		if (!CollectionUtils.isEmpty(notations)) {
+			Collection<Notation> createdNotations = createNotations(notations);
+			conceptImpl.setNotations(createdNotations);
+		}
+		// create only is something is provided
+		Collection<Note> notes = concept.getNotes();
+		if (!CollectionUtils.isEmpty(notes)) {
+			conceptImpl.setNotes(createNotes(notes));
+		}
+		return conceptImpl;
+	}
+
+	private Collection<Notation> createNotations(Collection<Notation> notations) {
+		Collection<Notation> createdNotations = new ArrayList<Notation>(notations.size());
+		for (Notation notation : notations) {
+			createdNotations.add(notationStorageService.createNotation(notation));
+		}
+		return createdNotations;
+	}
+
+	private Collection<Label> createLabels(Collection<Label> labels) {
+		Collection<Label> createdLabels = new ArrayList<Label>(labels.size());
+		for (Label label : labels) {
+			createdLabels.add(labelStorageService.createLabel(label));
+		}
+		return createdLabels;
+	}
+
+	private Collection<Note> createNotes(Collection<Note> notes) {
+		Collection<Note> createdNotes = new ArrayList<Note>(notes.size());
+		for (Note note : notes) {
+			createdNotes.add(noteStorageService.createDefinition(note));
+		}
+		return createdNotes;
+	}
+
+	private Node getParentNode(ConceptType conceptType) {
 		Node parentNode = null;
-		switch (defaultRelationshipType) {
+		switch (conceptType) {
 		case CONCEPT:
 			parentNode = conceptParentNode;
 			break;
@@ -78,27 +150,7 @@ public class ConceptStorageServiceImpl implements ConceptStorageService {
 		default:
 			break;
 		}
-		graphStorageTemplate.createRelationship(parentNode, node, defaultRelationshipType);
-		ConceptImpl conceptImpl = new ConceptImpl(node).withUuid(uuidGeneratorService.generateRandomUuid());
-		Collection<Label> labels = concept.getLabelsByType(LabelType.PREFERRED);
-		if (labels != null) {
-			conceptImpl.setLabels(LabelType.PREFERRED, labels);
-		}
-		labels = concept.getLabelsByType(LabelType.ALTERNATE);
-		if (labels != null) {
-			conceptImpl.setLabels(LabelType.ALTERNATE, labels);
-		}
-		labels = concept.getLabelsByType(LabelType.HIDDEN);
-		if (labels != null) {
-			conceptImpl.setLabels(LabelType.HIDDEN, labels);
-		}
-		if (concept.getNotations() != null) {
-			conceptImpl.setNotations(concept.getNotations());
-		}
-		if (concept.getNotes() != null) {
-			conceptImpl.setNotes(concept.getNotes());
-		}
-		return conceptImpl;
+		return parentNode;
 	}
 
 }

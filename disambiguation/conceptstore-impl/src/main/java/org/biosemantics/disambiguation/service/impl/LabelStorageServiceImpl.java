@@ -6,9 +6,11 @@ import java.util.Collection;
 
 import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.common.service.LabelStorageService;
+import org.biosemantics.conceptstore.utils.validation.LabelValidator;
 import org.biosemantics.disambiguation.domain.impl.LabelImpl;
 import org.biosemantics.disambiguation.service.IndexService;
 import org.neo4j.graphdb.Node;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.transaction.annotation.Transactional;
 
 public class LabelStorageServiceImpl implements LabelStorageService {
@@ -18,6 +20,7 @@ public class LabelStorageServiceImpl implements LabelStorageService {
 
 	private boolean checkExists;
 	private IndexService indexService;
+	private LabelValidator labelValidator;
 
 	public LabelStorageServiceImpl(GraphStorageTemplate graphStorageTemplate) {
 		this.graphStorageTemplate = checkNotNull(graphStorageTemplate);
@@ -29,13 +32,20 @@ public class LabelStorageServiceImpl implements LabelStorageService {
 		this.checkExists = checkExists;
 	}
 
+	@Required
 	public void setIndexService(IndexService indexService) {
 		this.indexService = indexService;
+	}
+
+	@Required
+	public void setLabelValidator(LabelValidator labelValidator) {
+		this.labelValidator = labelValidator;
 	}
 
 	@Override
 	@Transactional
 	public Label createLabel(Label label) {
+		labelValidator.validate(label);
 		Label createdLabel = null;
 		if (checkExists) {
 			// check if node exits in data store

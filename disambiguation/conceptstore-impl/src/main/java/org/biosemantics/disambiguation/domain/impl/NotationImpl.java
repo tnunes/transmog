@@ -15,7 +15,7 @@ public class NotationImpl implements Notation {
 
 	private static final long serialVersionUID = -8506731919995962487L;
 
-	private static final String CODE_PROPERTY = "code";
+	public static final String CODE_PROPERTY = "code";
 
 	private Node underlyingNode;
 

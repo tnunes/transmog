@@ -47,6 +47,7 @@
 		<property name="indexService">
 			<ref local="indexService" />
 		</property>
+		<property name="labelValidator" ref="labelValidator"></property>
 	</bean>
 
 	<bean id="notationStorageService" class="org.biosemantics.disambiguation.service.impl.NotationStorageServiceImpl">
@@ -56,6 +57,15 @@
 		<property name="indexService">
 			<ref local="indexService" />
 		</property>
+		<property name="notationValidator" ref="notationValidator"></property>
+	</bean>
+
+	<bean id="noteStorageService" class="org.biosemantics.disambiguation.service.impl.NoteStorageServiceImpl">
+		<constructor-arg>
+			<ref local="graphStorageTemplate" />
+		</constructor-arg>
+		<property name="checkExists" value="false"></property>
+		<property name="indexService" ref="indexService"></property>
 	</bean>
 
 	<bean id="conceptStorageService" class="org.biosemantics.disambiguation.service.impl.ConceptStorageServiceIndexingImpl">
@@ -65,6 +75,10 @@
 					<ref local="graphStorageTemplate" />
 				</constructor-arg>
 				<property name="uuidGeneratorService" ref="uuidGeneratorService"></property>
+				<property name="labelStorageService" ref="labelStorageService"></property>
+				<property name="notationStorageService" ref="notationStorageService"></property>
+				<property name="noteStorageService" ref="noteStorageService"></property>
+				<property name="conceptValidator" ref="conceptValidator"></property>
 			</bean>
 		</constructor-arg>
 		<property name="indexService">

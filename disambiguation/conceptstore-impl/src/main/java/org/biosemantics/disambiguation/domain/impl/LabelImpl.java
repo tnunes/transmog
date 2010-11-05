@@ -11,8 +11,8 @@ import org.neo4j.graphdb.Node;
 public class LabelImpl implements Label {
 
 	private static final long serialVersionUID = 2625024353276251601L;
-	private static final String LANGUAGE_PROPERTY = "language";
-	private static final String TEXT_PROPERTY = "text";
+	public static final String LANGUAGE_PROPERTY = "language";
+	public static final String TEXT_PROPERTY = "text";
 	private Node underlyingNode;
 
 	public LabelImpl(Node node) {

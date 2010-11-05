@@ -2,6 +2,7 @@ package org.biosemantics.disambiguation.service.impl;
 
 import java.util.Collection;
 
+import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.common.domain.Label.LabelType;
 import org.biosemantics.conceptstore.common.domain.Language;
@@ -22,15 +23,15 @@ public class ConceptStorageServiceIndexingImplTest extends AbstractTransactional
 
 	@Test(expected = NullPointerException.class)
 	public void testCreateConceptNull() {
-		conceptStorageService.createConcept(null);
+		conceptStorageService.createConcept(ConceptType.PREDICATE, null);
 	}
 
-	@Test(expected = NullPointerException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testCreateConceptNullLabels() {
 		Collection<Label> labels = null;
 		ConceptImpl conceptImpl = new ConceptImpl();
 		conceptImpl.addLabelByType(LabelType.PREFERRED, labels);
-		conceptStorageService.createConcept(conceptImpl);
+		conceptStorageService.createConcept(ConceptType.CONCEPT, conceptImpl);
 	}
 
 	@Test(expected = NullPointerException.class)
@@ -38,14 +39,14 @@ public class ConceptStorageServiceIndexingImplTest extends AbstractTransactional
 		Label label = null;
 		ConceptImpl conceptImpl = new ConceptImpl();
 		conceptImpl.addLabelByType(LabelType.PREFERRED, label);
-		conceptStorageService.createConcept(conceptImpl);
+		conceptStorageService.createConcept(ConceptType.CONCEPT, conceptImpl);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testCreateConceptEmptyLabels() {
 		ConceptImpl conceptImpl = new ConceptImpl();
 		conceptImpl.addLabelByType(LabelType.PREFERRED, new Label[0]);
-		conceptStorageService.createConcept(conceptImpl);
+		conceptStorageService.createConcept(ConceptType.CONCEPT, conceptImpl);
 	}
 
 	@Test
@@ -54,8 +55,8 @@ public class ConceptStorageServiceIndexingImplTest extends AbstractTransactional
 		Label label = labelStorageService.createLabel(labelImpl);
 		ConceptImpl conceptImpl = new ConceptImpl();
 		conceptImpl.addLabelByType(LabelType.PREFERRED, label);
-		conceptStorageService.createConcept(conceptImpl);
-		conceptStorageService.createDomain(conceptImpl);
-		conceptStorageService.createPredicate(conceptImpl);
+		conceptStorageService.createConcept(ConceptType.CONCEPT, conceptImpl);
+		conceptStorageService.createConcept(ConceptType.DOMAIN, conceptImpl);
+		conceptStorageService.createConcept(ConceptType.PREDICATE, conceptImpl);
 	}
 }

@@ -6,6 +6,7 @@ import java.util.Collection;
 
 import org.biosemantics.conceptstore.common.domain.Notation;
 import org.biosemantics.conceptstore.common.service.NotationStorageService;
+import org.biosemantics.conceptstore.utils.validation.NotationValidator;
 import org.biosemantics.disambiguation.domain.impl.NotationImpl;
 import org.biosemantics.disambiguation.service.IndexService;
 import org.neo4j.graphdb.Node;
@@ -17,6 +18,7 @@ public class NotationStorageServiceImpl implements NotationStorageService {
 	private final Node notationParentNode;
 	private boolean checkExists;
 	private IndexService indexService;
+	private NotationValidator notationValidator;
 
 	public NotationStorageServiceImpl(GraphStorageTemplate graphStorageTemplate) {
 		super();
@@ -31,6 +33,10 @@ public class NotationStorageServiceImpl implements NotationStorageService {
 
 	public void setIndexService(IndexService indexService) {
 		this.indexService = indexService;
+	}
+
+	public void setNotationValidator(NotationValidator notationValidator) {
+		this.notationValidator = notationValidator;
 	}
 
 	@Override

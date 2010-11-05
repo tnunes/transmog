@@ -21,10 +21,8 @@ import org.neo4j.graphdb.Relationship;
 public class ConceptImpl implements Concept {
 
 	private static final long serialVersionUID = 851453341589506946L;
-	private static final String UUID_PROPERTY = "uuid";
-	private static final DefaultRelationshipType[] ALL_LABEL_RELATIONSHIPS = new DefaultRelationshipType[] {
-			DefaultRelationshipType.HAS_PREFERRED_LABEL, DefaultRelationshipType.HAS_ALTERNATE_LABEL,
-			DefaultRelationshipType.HAS_HIDDEN_LABEL };
+	public static final String UUID_PROPERTY = "uuid";
+	public static final String LABEL_TYPE_PROPERTY = "labelType";
 
 	private Node underlyingNode;
 
@@ -50,7 +48,7 @@ public class ConceptImpl implements Concept {
 	@Override
 	public Collection<Label> getLabels() {
 		final List<Label> labels = new ArrayList<Label>();
-		Iterable<Relationship> relationships = underlyingNode.getRelationships(ALL_LABEL_RELATIONSHIPS);
+		Iterable<Relationship> relationships = underlyingNode.getRelationships(DefaultRelationshipType.HAS_LABEL);
 		for (Relationship rel : relationships) {
 			labels.add(new LabelImpl(rel.getEndNode()));
 		}
@@ -60,10 +58,11 @@ public class ConceptImpl implements Concept {
 	@Override
 	public Collection<Label> getLabelsByType(LabelType labelType) {
 		List<Label> labels = new ArrayList<Label>();
-		Iterable<Relationship> relationships = underlyingNode.getRelationships(getRelationshipsFor(labelType),
+		Iterable<Relationship> relationships = underlyingNode.getRelationships(DefaultRelationshipType.HAS_LABEL,
 				Direction.OUTGOING);
 		for (Relationship relationship : relationships) {
-			labels.add(new LabelImpl(relationship.getEndNode()));
+			if (LabelType.valueOf((String) relationship.getProperty(LABEL_TYPE_PROPERTY)) == labelType)
+				labels.add(new LabelImpl(relationship.getEndNode()));
 		}
 		return labels;
 	}
@@ -73,7 +72,9 @@ public class ConceptImpl implements Concept {
 		checkArgument(!labels.isEmpty(), ErrorMessage.EMPTY_COLLECTION_MSG, "labels");
 		for (Label label : labels) {
 			LabelImpl labelImpl = (LabelImpl) label;
-			underlyingNode.createRelationshipTo(labelImpl.getUnderlyingNode(), getRelationshipsFor(labelType));
+			Relationship relationship = underlyingNode.createRelationshipTo(labelImpl.getUnderlyingNode(),
+					DefaultRelationshipType.HAS_LABEL);
+			relationship.setProperty(LABEL_TYPE_PROPERTY, labelType.name());
 		}
 	}
 
@@ -148,20 +149,6 @@ public class ConceptImpl implements Concept {
 	public ConceptImpl withNotes(Collection<Note> notes) {
 		setNotes(notes);
 		return this;
-	}
-
-	private DefaultRelationshipType getRelationshipsFor(LabelType labelType) {
-		switch (labelType) {
-		case PREFERRED:
-			return DefaultRelationshipType.HAS_PREFERRED_LABEL;
-		case ALTERNATE:
-			return DefaultRelationshipType.HAS_ALTERNATE_LABEL;
-		case HIDDEN:
-			return DefaultRelationshipType.HAS_HIDDEN_LABEL;
-		default:
-			throw new IllegalArgumentException("labeltype not supported " + labelType);
-		}
-
 	}
 
 }

@@ -27,7 +27,7 @@ public class IndexServiceImpl implements IndexService {
 	private final GraphStorageTemplate graphStorageTemplate;
 	private final LuceneIndexService indexService;
 	private final LuceneFulltextIndexService fullTextIndexService;
-	private static final String FULL_TEXT_SEPARATOR = " ";
+
 
 	// TODO implement configuration using a configuration class
 
@@ -89,13 +89,13 @@ public class IndexServiceImpl implements IndexService {
 
 	@Override
 	public void indexConcept(Concept concept) {
-		StringBuilder fullText = new StringBuilder(concept.getUuid()).append(FULL_TEXT_SEPARATOR);
+		StringBuilder fullText = new StringBuilder(concept.getUuid()).append(Index.FULL_TEXT_SEPARATOR);
 		for (Label label : concept.getLabels()) {
-			fullText.append(label.getText()).append(FULL_TEXT_SEPARATOR);
+			fullText.append(label.getText()).append(Index.FULL_TEXT_SEPARATOR);
 		}
 		if (concept.getNotations() != null) {
 			for (Notation notation : concept.getNotations()) {
-				fullText.append(notation.getCode()).append(FULL_TEXT_SEPARATOR);
+				fullText.append(notation.getCode()).append(Index.FULL_TEXT_SEPARATOR);
 			}
 		}
 		ConceptImpl conceptImpl = (ConceptImpl) concept;

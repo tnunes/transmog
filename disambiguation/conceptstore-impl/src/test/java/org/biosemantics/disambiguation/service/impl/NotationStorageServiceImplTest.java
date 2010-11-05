@@ -6,6 +6,7 @@ import static junit.framework.Assert.assertTrue;
 import java.util.Collection;
 
 import org.biosemantics.conceptstore.common.domain.Concept;
+import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.common.domain.Label.LabelType;
 import org.biosemantics.conceptstore.common.domain.Language;
@@ -41,7 +42,7 @@ public class NotationStorageServiceImplTest extends AbstractTransactionalDataSou
 		Label label = labelStorageService.createLabel(new LabelImpl("UMLS", Language.EN));
 		ConceptImpl conceptImpl = new ConceptImpl();
 		conceptImpl.addLabelByType(LabelType.PREFERRED, label);
-		return conceptStorageService.createDomain(conceptImpl);
+		return conceptStorageService.createConcept(ConceptType.DOMAIN, conceptImpl);
 
 	}
 
