@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:aop="http://www.springframework.org/schema/aop" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd  http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context-3.0.xsd  http://www.springframework.org/schema/tx  http://www.springframework.org/schema/tx/spring-tx-3.0.xsd  http://www.springframework.org/schema/aop  http://www.springframework.org/schema/aop/spring-aop-3.0.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd"
+	default-init-method="init" default-destroy-method="destroy">
+	<!-- UUID Generator service is needed here -->
+	<import resource="classpath:conceptstore-utils-context.xml" />
+	<!-- the DataSource (parameterized for configuration via a PropertyPlaceHolderConfigurer) -->
+	<bean id="dataSource" destroy-method="close" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+	</bean>
+
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+
+	<bean id="domainIterator" class="org.biosemantics.disambiguation.datasource.umls.DomainIterator" />
+	<bean id="predicateIterator" class="org.biosemantics.disambiguation.datasource.umls.PredicateIterator">
+		<constructor-arg ref="jdbcTemplate"></constructor-arg>
+		<constructor-arg value="${predicate.tsvFilePath}"></constructor-arg>
+	</bean>
+	<bean id="conceptSchemeIterator" class="org.biosemantics.disambiguation.datasource.umls.ConceptSchemeIterator">
+		<constructor-arg ref="jdbcTemplate" />
+	</bean>
+
+	<bean id="conceptSchemeRelationshipIterator" class="org.biosemantics.disambiguation.datasource.umls.ConceptSchemeRelationshipIterator">
+		<constructor-arg ref="jdbcTemplate" />
+	</bean>
+
+	<bean id="conceptIterator" class="org.biosemantics.disambiguation.datasource.umls.ConceptIterator">
+		<constructor-arg ref="jdbcTemplate" />
+	</bean>
+
+	<bean id="conceptFactualRelationshipIterator" class="org.biosemantics.disambiguation.datasource.umls.ConceptFactualRelationshipIterator">
+		<constructor-arg ref="jdbcTemplate" />
+	</bean>
+
+	<bean id="conceptCooccuranceRelationshipIterator" class="org.biosemantics.disambiguation.datasource.umls.ConceptCooccuranceRelationshipIterator">
+		<constructor-arg ref="jdbcTemplate" />
+	</bean>
+
+	<bean id="UmlsRdbmsDatasourceImporter" class="org.biosemantics.disambiguation.datasource.umls.UmlsRdbmsDatasourceImporter">
+		<property name="cleanImport" value="${umls.cleanImport}"></property>
+		<property name="conceptCooccuranceRelationshipIterator" ref="conceptCooccuranceRelationshipIterator" />
+		<property name="conceptFactualRelationshipIterator" ref="conceptFactualRelationshipIterator" />
+		<property name="conceptIterator" ref="conceptIterator" />
+		<property name="conceptSchemeIterator" ref="conceptSchemeIterator" />
+		<property name="conceptSchemeRelationshipIterator" ref="conceptSchemeRelationshipIterator" />
+		<property name="dataSource" ref="dataSource" />
+		<property name="domainIterator" ref="domainIterator" />
+		<property name="outputDir" ref="${graph.outputDir}"></property>
+		<property name="predicateIterator" ref="predicateIterator" />
+		<property name="uuidGeneratorService" ref="uuidGeneratorService"></property>
+	</bean>
+
+</beans>

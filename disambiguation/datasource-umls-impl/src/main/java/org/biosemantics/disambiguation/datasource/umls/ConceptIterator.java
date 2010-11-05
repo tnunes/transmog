@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.biosemantics.conceptstore.common.domain.Concept;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -28,7 +27,7 @@ public class ConceptIterator implements Iterator<ConceptDetail> {
 	// so we don't have to call it for all hasnext() calls
 	private int size = 0;
 
-	public ConceptIterator(JdbcTemplate jdbcTemplate, Concept defaultDomain, DomainIterator domainIterator) {
+	public ConceptIterator(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
 	}
 

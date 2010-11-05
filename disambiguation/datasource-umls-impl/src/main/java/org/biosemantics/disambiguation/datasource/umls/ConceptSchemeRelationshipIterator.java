@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -18,7 +17,7 @@ public class ConceptSchemeRelationshipIterator implements Iterator<RelationshipD
 	private static final String GET_CONCEPT_SCHEME_RELATIONS_SQL = "select STY1, RL, STY2 from SRSTRE2 order by STY1";
 	private List<String[]> relationships = new ArrayList<String[]>();
 
-	public ConceptSchemeRelationshipIterator(JdbcTemplate jdbcTemplate, Map<String, Long> predicateMap) {
+	public ConceptSchemeRelationshipIterator(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
 	}
 

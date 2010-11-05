@@ -10,10 +10,6 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.lang.StringUtils;
-import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
-import org.biosemantics.conceptstore.common.domain.ConceptType;
-import org.biosemantics.conceptstore.common.domain.Label.LabelType;
 import org.biosemantics.conceptstore.common.domain.RelationshipCategory;
 import org.biosemantics.conceptstore.utils.domain.impl.ErrorMessage;
 import org.biosemantics.conceptstore.utils.service.UuidGeneratorService;
@@ -26,19 +22,15 @@ import org.biosemantics.disambiguation.domain.impl.RelationshipImpl;
 import org.biosemantics.disambiguation.service.Index;
 import org.biosemantics.disambiguation.service.impl.ConceptRelationshipTypeImpl;
 import org.biosemantics.disambiguation.service.impl.DefaultRelationshipType;
-import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.index.lucene.LuceneFulltextIndexBatchInserter;
 import org.neo4j.index.lucene.LuceneIndexBatchInserter;
 import org.neo4j.index.lucene.LuceneIndexBatchInserterImpl;
 import org.neo4j.kernel.impl.batchinsert.BatchInserter;
 import org.neo4j.kernel.impl.batchinsert.BatchInserterImpl;
-import org.omg.CORBA.FREE_MEM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
-
-import com.mysql.jdbc.log.LogFactory;
 
 public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 
@@ -76,6 +68,43 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 	private ConceptIterator conceptIterator;
 	private ConceptFactualRelationshipIterator conceptFactualRelationshipIterator;
 	private ConceptCooccuranceRelationshipIterator conceptCooccuranceRelationshipIterator;
+
+	@Required
+	public void setDomainIterator(DomainIterator domainIterator) {
+		this.domainIterator = domainIterator;
+	}
+
+	@Required
+	public void setPredicateIterator(PredicateIterator predicateIterator) {
+		this.predicateIterator = predicateIterator;
+	}
+
+	@Required
+	public void setConceptSchemeIterator(ConceptSchemeIterator conceptSchemeIterator) {
+		this.conceptSchemeIterator = conceptSchemeIterator;
+	}
+
+	@Required
+	public void setConceptSchemeRelationshipIterator(ConceptSchemeRelationshipIterator conceptSchemeRelationshipIterator) {
+		this.conceptSchemeRelationshipIterator = conceptSchemeRelationshipIterator;
+	}
+
+	@Required
+	public void setConceptIterator(ConceptIterator conceptIterator) {
+		this.conceptIterator = conceptIterator;
+	}
+
+	@Required
+	public void setConceptFactualRelationshipIterator(
+			ConceptFactualRelationshipIterator conceptFactualRelationshipIterator) {
+		this.conceptFactualRelationshipIterator = conceptFactualRelationshipIterator;
+	}
+
+	@Required
+	public void setConceptCooccuranceRelationshipIterator(
+			ConceptCooccuranceRelationshipIterator conceptCooccuranceRelationshipIterator) {
+		this.conceptCooccuranceRelationshipIterator = conceptCooccuranceRelationshipIterator;
+	}
 
 	@Required
 	public void setUuidGeneratorService(UuidGeneratorService uuidGeneratorService) {
