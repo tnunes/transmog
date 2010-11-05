@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.biosemantics.conceptstore.common.domain.Concept;
+import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.common.domain.Label.LabelType;
 import org.biosemantics.conceptstore.common.domain.Language;
@@ -71,7 +72,7 @@ public class DummyDataProviderImpl {
 				ConceptImpl conceptImpl = new ConceptImpl();
 				conceptImpl.addLabelByType(LabelType.PREFERRED, labels);
 				conceptImpl.addNotations(notations);
-				Concept concept = conceptStorageService.createConcept(conceptImpl);
+				Concept concept = conceptStorageService.createConcept(ConceptType.CONCEPT, conceptImpl);
 				logger.debug(concept.getUuid());
 				labels.clear();
 				notations.clear();
@@ -85,7 +86,7 @@ public class DummyDataProviderImpl {
 		Label label = labelStorageService.createLabel(new LabelImpl("UMLS", Language.EN));
 		ConceptImpl conceptImpl = new ConceptImpl();
 		conceptImpl.addLabelByType(LabelType.PREFERRED, label);
-		return conceptStorageService.createDomain(conceptImpl);
+		return conceptStorageService.createConcept(ConceptType.DOMAIN, conceptImpl);
 
 	}
 }
