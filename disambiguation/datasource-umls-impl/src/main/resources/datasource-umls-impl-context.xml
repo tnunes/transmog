@@ -35,12 +35,14 @@
 		<constructor-arg ref="jdbcTemplate" />
 	</bean>
 
-	<bean id="conceptFactualRelationshipIterator" class="org.biosemantics.disambiguation.datasource.umls.ConceptFactualRelationshipIterator">
-		<constructor-arg ref="jdbcTemplate" />
+	<bean id="conceptFactualRelationshipIterator" class="org.biosemantics.disambiguation.datasource.umls.ConceptFactualRelationshipIterator"
+		lazy-init="true">
+		<property name="dataSource" ref="dataSource" />
 	</bean>
 
-	<bean id="conceptCooccuranceRelationshipIterator" class="org.biosemantics.disambiguation.datasource.umls.ConceptCooccuranceRelationshipIterator">
-		<constructor-arg ref="jdbcTemplate" />
+	<bean id="conceptCooccuranceRelationshipIterator" class="org.biosemantics.disambiguation.datasource.umls.ConceptCooccuranceRelationshipIterator"
+		lazy-init="true">
+		<property name="dataSource" ref="dataSource" />
 	</bean>
 
 	<bean id="UmlsRdbmsDatasourceImporter" class="org.biosemantics.disambiguation.datasource.umls.UmlsRdbmsDatasourceImporter">
@@ -52,7 +54,7 @@
 		<property name="conceptSchemeRelationshipIterator" ref="conceptSchemeRelationshipIterator" />
 		<property name="dataSource" ref="dataSource" />
 		<property name="domainIterator" ref="domainIterator" />
-		<property name="outputDir" ref="${graph.outputDir}"></property>
+		<property name="outputDir" value="${graph.outputDir}"></property>
 		<property name="predicateIterator" ref="predicateIterator" />
 		<property name="uuidGeneratorService" ref="uuidGeneratorService"></property>
 	</bean>
