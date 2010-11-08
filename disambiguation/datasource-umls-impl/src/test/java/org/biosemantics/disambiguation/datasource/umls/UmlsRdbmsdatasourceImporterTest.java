@@ -1,5 +1,6 @@
 package org.biosemantics.disambiguation.datasource.umls;
 
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -12,7 +13,9 @@ public class UmlsRdbmsdatasourceImporterTest {
 
 	@Autowired
 	private UmlsRdbmsDatasourceImporter umlsRdbmsDatasourceImporter;
-
 	
-	
+	@Test
+	public void test(){
+		
+	}
 }
