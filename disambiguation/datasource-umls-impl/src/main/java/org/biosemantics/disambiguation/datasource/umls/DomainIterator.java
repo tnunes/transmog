@@ -144,7 +144,7 @@ public class DomainIterator implements Iterator<ConceptDetail> {
 		UmlsDomain umlsDomain = UmlsDomain.values()[counter];
 		counter++;
 		ConceptDetail conceptDetail = new ConceptDetail();
-		conceptDetail.addLabel(new LabelDetail(umlsDomain.getOfficialName(), Language.EN, LabelType.PREFERRED));
+		conceptDetail.addLabel(new LabelDetail(umlsDomain.getOfficialName().trim(), Language.EN, LabelType.PREFERRED));
 		conceptDetail.addNotation(new NotationDetail(umlsDomain.name(), UmlsDomain.getDefaultDomain().name()));
 		return conceptDetail;
 

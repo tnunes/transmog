@@ -7,8 +7,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.biosemantics.conceptstore.common.domain.Label.LabelType;
 import org.biosemantics.conceptstore.common.domain.Language;
@@ -24,7 +26,10 @@ public class PredicateIterator implements Iterator<ConceptDetail> {
 	private static final String GET_PREDICATES_SQL = "select distinct RL as RL from SRSTRE2";
 	private final JdbcTemplate jdbcTemplate;
 	private final String predicateTSVFile;
-	List<String[]> allPredicates;
+	// might be an overlap between database and text file, we do not want 2 different predicate concepts for the same
+	// predicate
+	Set<String> allPredicates = new HashSet<String>();
+	Iterator<String> predicateIterator;
 	int counter = 0;
 
 	public PredicateIterator(JdbcTemplate jdbcTemplate, String predicateTSVFile) {
@@ -46,34 +51,36 @@ public class PredicateIterator implements Iterator<ConceptDetail> {
 					}
 				});
 		for (String predicate : predicates) {
-			String[] predicateArray = new String[2];
-			predicateArray[0] = predicate;
-			predicateArray[1] = predicate.replace("_", " ");
-			allPredicates.add(predicateArray);
+			allPredicates.add(predicate.trim());
 		}
 		FileReader fileReader = new FileReader(new File(predicateTSVFile));
 		CSVReader csvReader = new CSVReader(fileReader, '\t');
-		allPredicates = csvReader.readAll();
+		List<String[]> predicateList = csvReader.readAll();
+		// preprocess any blank spaces: generally a side effect of reading from files
+		for (String[] strings : predicateList) {
+			allPredicates.add(strings[0].trim());
+		}
+		predicateIterator = allPredicates.iterator();
 	}
 
 	@Override
 	public boolean hasNext() {
-		return counter < allPredicates.size();
+		return predicateIterator.hasNext();
 	}
 
 	@Override
 	public ConceptDetail next() {
-		String[] predicate = allPredicates.get(counter);
-		counter++;
+		String code = predicateIterator.next();
+		String text = code.replace("_", " ");
 		ConceptDetail conceptDetail = new ConceptDetail();
-		conceptDetail.addLabel(new LabelDetail(predicate[1], Language.EN, LabelType.PREFERRED));
-		conceptDetail.addNotation(new NotationDetail(predicate[0], UmlsDomain.getDefaultDomain().name()));
+		conceptDetail.addLabel(new LabelDetail(text, Language.EN, LabelType.PREFERRED));
+		conceptDetail.addNotation(new NotationDetail(code, UmlsDomain.getDefaultDomain().name()));
 		return conceptDetail;
 	}
 
 	@Override
 	public void remove() {
-		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("remove is unsupported for this iterator");
 
 	}
 
