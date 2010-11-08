@@ -23,6 +23,7 @@
 			<artifactId>opencsv</artifactId>
 			<version>2.1</version>
 		</dependency>
+		<!-- Concept Store dependencies -->
 		<dependency>
 			<groupId>org.biosemantics</groupId>
 			<artifactId>conceptstore-common</artifactId>
@@ -32,6 +33,12 @@
 		<dependency>
 			<groupId>org.biosemantics</groupId>
 			<artifactId>conceptstore-impl</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.biosemantics</groupId>
+			<artifactId>conceptstore-utils</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
