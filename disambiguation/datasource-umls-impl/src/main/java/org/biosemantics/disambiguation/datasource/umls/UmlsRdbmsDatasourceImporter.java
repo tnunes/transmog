@@ -51,7 +51,7 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 	private Map<String, Long> domainMap = new HashMap<String, Long>();
 	// Key: predicate-notation value: predicateNodeId
 	private Map<String, Long> predicateMap = new HashMap<String, Long>();
-
+	// key label text value=node id
 	private Map<String, Long> conceptSchemeMap = new HashMap<String, Long>();
 	// KEY = cui value = cocneptNodeId
 	private Map<String, Long> conceptMap = new HashMap<String, Long>();
@@ -143,8 +143,9 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 			ConceptDetail conceptDetail = domainIterator.next();
 			long domainNodeId = addConceptDetail(conceptDetail, DefaultRelationshipType.DOMAINS);
 			// populate domain map
-			domainMap.put((String) conceptDetail.getNotations().get(0).getDomain(), domainNodeId);
+			domainMap.put((String) conceptDetail.getNotations().get(0).getCode(), domainNodeId);
 		}
+		logger.debug(domainMap.toString());
 		// get the predicates
 		while (predicateIterator.hasNext()) {
 			ConceptDetail conceptDetail = predicateIterator.next();
@@ -152,19 +153,29 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 			// populate concept map
 			predicateMap.put((String) conceptDetail.getNotations().get(0).getCode(), predicateNodeId);
 		}
+		logger.debug(predicateMap.toString());
 		// get the concept schemes
 		while (conceptSchemeIterator.hasNext()) {
 			ConceptDetail conceptDetail = conceptSchemeIterator.next();
 			long conceptSchemeNodeId = addConceptDetail(conceptDetail, DefaultRelationshipType.CONCEPT_SCHEMES);
-			conceptSchemeMap.put((String) conceptDetail.getNotations().get(0).getCode(), conceptSchemeNodeId);
+			conceptSchemeMap.put((String) conceptDetail.getLabels().get(0).getText(), conceptSchemeNodeId);
 		}
 		// get relationships for concept schemes
 		while (conceptSchemeRelationshipIterator.hasNext()) {
 			// clear reused map
 			properties.clear();
 			RelationshipDetail relationshipDetail = conceptSchemeRelationshipIterator.next();
-			long sourceConceptNodeId = conceptSchemeMap.get(relationshipDetail.getSourceConcept());
-			long targetConceptNodeId = conceptSchemeMap.get(relationshipDetail.getTargetConcept());
+			Long sourceConceptNodeId = conceptSchemeMap.get(relationshipDetail.getSourceConcept());
+			if (sourceConceptNodeId == null) {
+				logger.warn("in conceptscheme relationships, cannot have a null source concept id for string {} ",
+						relationshipDetail.getSourceConcept());
+			}
+
+			Long targetConceptNodeId = conceptSchemeMap.get(relationshipDetail.getTargetConcept());
+			if (targetConceptNodeId == null) {
+				logger.warn("in conceptscheme relationships, cannot have a null target concept id for string {}",
+						relationshipDetail.getTargetConcept());
+			}
 			Long predicateConceptNodeId = predicateMap.get(relationshipDetail.getPredicateConcept());
 			if (predicateConceptNodeId == null) {
 				logger.warn("in conceptscheme relationships, predicate no found in map for key={}",
@@ -176,13 +187,14 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 			 * have the same source and target for a relationship in neo4j
 			 */
 			if (sourceConceptNodeId == targetConceptNodeId) {
-				logger.info("same source and target concept for conceptscheme sourceName={} targetName={}",
+				logger.debug("same source and target concept for conceptscheme sourceName={} targetName={}",
 						new Object[] { relationshipDetail.getSourceConcept(), relationshipDetail.getTargetConcept() });
 			} else {
 				if (predicateConceptNodeId != null) {
 					properties.put(RelationshipImpl.PREDICATE_CONCEPT_UUID_PROPERTY, predicateConceptNodeId);
 				}
-				properties.put(RelationshipImpl.RELATIONSHIP_CATEGORY_PROPERTY, RelationshipCategory.AUTHORITATIVE);
+				properties.put(RelationshipImpl.RELATIONSHIP_CATEGORY_PROPERTY,
+						RelationshipCategory.AUTHORITATIVE.name());
 				properties.put(RelationshipImpl.SCORE_PROPERTY, Integer.MAX_VALUE);
 				properties.put(RelationshipImpl.UUID_PROPERTY, uuidGeneratorService.generateRandomUuid());
 				inserter.createRelationship(sourceConceptNodeId, targetConceptNodeId,
@@ -193,7 +205,7 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 		// clear and de-refernce concept scheme map: not needed anymore (MIGHT free memory);
 		conceptSchemeMap.clear();
 		conceptSchemeMap = null;
-
+		int counter = 0;
 		while (conceptIterator.hasNext()) {
 			ConceptDetail conceptDetail = conceptIterator.next();
 			long conceptNodeId = addConceptDetail(conceptDetail, DefaultRelationshipType.CONCEPTS);
@@ -210,17 +222,34 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 						+ conceptDetail.toString());
 			}
 			conceptMap.put(cui, conceptNodeId);
+			counter++;
+			if (counter % 10000 == 0) {
+				logger.info("record: {}", counter);
+			}
 		}
-
+		counter = 0;
 		while (conceptFactualRelationshipIterator.hasNext()) {
 			// clear reused map
 			properties.clear();
 			RelationshipDetail relationshipDetail = conceptFactualRelationshipIterator.next();
-			long sourceConceptNodeId = conceptSchemeMap.get(relationshipDetail.getSourceConcept());
-			long targetConceptNodeId = conceptSchemeMap.get(relationshipDetail.getTargetConcept());
+			Long sourceConceptNodeId = conceptMap.get(relationshipDetail.getSourceConcept());
+			if (sourceConceptNodeId == null) {
+				logger.warn("in concept factual rlsp. cannot have a null source concept id for string {} ",
+						relationshipDetail.getSourceConcept());
+				//log and ignore record
+				continue;
+			}
+			Long targetConceptNodeId = conceptMap.get(relationshipDetail.getTargetConcept());
+			if (targetConceptNodeId == null) {
+				logger.warn("in concept factual rlsp. cannot have a null target concept id for string {}",
+						relationshipDetail.getTargetConcept());
+				//log and ignore record
+				continue;
+			}
 			Long predicateConceptNodeId = predicateMap.get(relationshipDetail.getPredicateConcept());
+			//lots of entries in database have RELA set to "null"
 			if (predicateConceptNodeId == null) {
-				logger.warn("in conceptscheme relationships, predicate no found in map for key={}",
+				logger.debug("in concept factual relationships, predicate not found in map for key={}",
 						relationshipDetail.getPredicateConcept());
 			}
 			/*
@@ -229,41 +258,66 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 			 * have the same source and target for a relationship in neo4j
 			 */
 			if (sourceConceptNodeId == targetConceptNodeId) {
-				logger.info("same source and target concept for conceptscheme sourceName={} targetName={}",
+				logger.debug("same source and target concept for concept factual rlsp. sourceName={} targetName={}",
 						new Object[] { relationshipDetail.getSourceConcept(), relationshipDetail.getTargetConcept() });
 			} else {
 				if (predicateConceptNodeId != null) {
 					properties.put(RelationshipImpl.PREDICATE_CONCEPT_UUID_PROPERTY, predicateConceptNodeId);
 				}
-				properties.put(RelationshipImpl.RELATIONSHIP_CATEGORY_PROPERTY, RelationshipCategory.AUTHORITATIVE);
+				properties.put(RelationshipImpl.RELATIONSHIP_CATEGORY_PROPERTY,
+						RelationshipCategory.AUTHORITATIVE.name());
 				properties.put(RelationshipImpl.SCORE_PROPERTY, Integer.MAX_VALUE);
 				properties.put(RelationshipImpl.UUID_PROPERTY, uuidGeneratorService.generateRandomUuid());
 				inserter.createRelationship(sourceConceptNodeId, targetConceptNodeId,
 						getConceptRelationshipType(relationshipDetail.getRelationhipType()), properties);
 			}
-		}
+			counter++;
+			if (counter % 10000 == 0) {
+				logger.info("record: {}", counter);
 
+			}
+		}
+		counter = 0;
 		while (conceptCooccuranceRelationshipIterator.hasNext()) {
 			// clear reused map
 			properties.clear();
-			RelationshipDetail relationshipDetail = conceptFactualRelationshipIterator.next();
-			long sourceConceptNodeId = conceptSchemeMap.get(relationshipDetail.getSourceConcept());
-			long targetConceptNodeId = conceptSchemeMap.get(relationshipDetail.getTargetConcept());
+			RelationshipDetail relationshipDetail = conceptCooccuranceRelationshipIterator.next();
+			Long sourceConceptNodeId = conceptMap.get(relationshipDetail.getSourceConcept());
+			if (sourceConceptNodeId == null) {
+				logger.warn("in concept cooccurance rlsp. cannot have a null source concept id for string {} ",
+						relationshipDetail.getSourceConcept());
+				//log and ignore record
+				continue;
+			}
+			Long targetConceptNodeId = conceptMap.get(relationshipDetail.getTargetConcept());
+			if (targetConceptNodeId == null) {
+				logger.warn("in concept cooccurance rlsp. cannot have a null target concept id for string {}",
+						relationshipDetail.getTargetConcept());
+				//log and ignore record
+				continue;
+				
+			}
 			/*
 			 * check against following entries in table. e.g. Acquired
 			 * Abnormality co-occurs_with Acquired Abnormality We cannot
 			 * have the same source and target for a relationship in neo4j
 			 */
 			if (sourceConceptNodeId == targetConceptNodeId) {
-				logger.info("same source and target concept for conceptscheme sourceName={} targetName={}",
+				logger.debug(
+						"same source and target concept for concept cooccurance rlsp. sourceName={} targetName={}",
 						new Object[] { relationshipDetail.getSourceConcept(), relationshipDetail.getTargetConcept() });
 			} else {
 
-				properties.put(RelationshipImpl.RELATIONSHIP_CATEGORY_PROPERTY, RelationshipCategory.AUTHORITATIVE);
+				properties.put(RelationshipImpl.RELATIONSHIP_CATEGORY_PROPERTY,
+						RelationshipCategory.AUTHORITATIVE.name());
 				properties.put(RelationshipImpl.SCORE_PROPERTY, relationshipDetail.getStrength());
 				properties.put(RelationshipImpl.UUID_PROPERTY, uuidGeneratorService.generateRandomUuid());
 				inserter.createRelationship(sourceConceptNodeId, targetConceptNodeId,
 						ConceptRelationshipTypeImpl.RELATED, properties);
+			}
+			counter++;
+			if (counter % 10000 == 0) {
+				logger.info("record: {}", counter);
 			}
 		}
 
@@ -357,6 +411,7 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 				}
 			}
 		}
+		indexService.index(conceptNodeId, Index.CONCEPT_ID_INDEX, uuid);
 		fulltextIndexService.index(conceptNodeId, Index.CONCEPT_FULL_TXT_INDEX, fulltext.toString());
 		return conceptNodeId;
 	}
