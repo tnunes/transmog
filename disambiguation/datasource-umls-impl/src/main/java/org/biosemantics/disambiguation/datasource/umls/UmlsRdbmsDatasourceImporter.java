@@ -34,6 +34,8 @@ import org.springframework.beans.factory.annotation.Required;
 
 public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 
+	private static final int LOG_SIZE = 50000;
+
 	private static final Logger logger = LoggerFactory.getLogger(UmlsRdbmsDatasourceImporter.class);
 
 	private DataSource dataSource;
@@ -68,6 +70,9 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 	private ConceptIterator conceptIterator;
 	private ConceptFactualRelationshipIterator conceptFactualRelationshipIterator;
 	private ConceptCooccuranceRelationshipIterator conceptCooccuranceRelationshipIterator;
+
+	private Map<String, Long> existingLabelsMap = new HashMap<String, Long>();
+	private Map<NotationDetail, Long> existingNotationsMap = new HashMap<NotationDetail, Long>();
 
 	@Required
 	public void setDomainIterator(DomainIterator domainIterator) {
@@ -142,8 +147,10 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 		while (domainIterator.hasNext()) {
 			ConceptDetail conceptDetail = domainIterator.next();
 			long domainNodeId = addConceptDetail(conceptDetail, DefaultRelationshipType.DOMAINS);
-			// populate domain map
-			domainMap.put((String) conceptDetail.getNotations().get(0).getCode(), domainNodeId);
+			// populate domain map: should have just one notation
+			for (NotationDetail notationDetail : conceptDetail.getNotations()) {
+				domainMap.put(notationDetail.getCode(), domainNodeId);
+			}
 		}
 		logger.debug(domainMap.toString());
 		// get the predicates
@@ -151,14 +158,18 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 			ConceptDetail conceptDetail = predicateIterator.next();
 			long predicateNodeId = addConceptDetail(conceptDetail, DefaultRelationshipType.PREDICATES);
 			// populate concept map
-			predicateMap.put((String) conceptDetail.getNotations().get(0).getCode(), predicateNodeId);
+			for (NotationDetail notationDetail : conceptDetail.getNotations()) {
+				predicateMap.put(notationDetail.getCode(), predicateNodeId);
+			}
 		}
 		logger.debug(predicateMap.toString());
 		// get the concept schemes
 		while (conceptSchemeIterator.hasNext()) {
 			ConceptDetail conceptDetail = conceptSchemeIterator.next();
 			long conceptSchemeNodeId = addConceptDetail(conceptDetail, DefaultRelationshipType.CONCEPT_SCHEMES);
-			conceptSchemeMap.put((String) conceptDetail.getLabels().get(0).getText(), conceptSchemeNodeId);
+			for (LabelDetail labelDetail : conceptDetail.getLabels()) {
+				conceptSchemeMap.put(labelDetail.getText(), conceptSchemeNodeId);
+			}
 		}
 		// get relationships for concept schemes
 		while (conceptSchemeRelationshipIterator.hasNext()) {
@@ -167,18 +178,18 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 			RelationshipDetail relationshipDetail = conceptSchemeRelationshipIterator.next();
 			Long sourceConceptNodeId = conceptSchemeMap.get(relationshipDetail.getSourceConcept());
 			if (sourceConceptNodeId == null) {
-				logger.warn("in conceptscheme relationships, cannot have a null source concept id for string {} ",
+				logger.debug("in conceptscheme relationships, cannot have a null source concept id for string {} ",
 						relationshipDetail.getSourceConcept());
 			}
 
 			Long targetConceptNodeId = conceptSchemeMap.get(relationshipDetail.getTargetConcept());
 			if (targetConceptNodeId == null) {
-				logger.warn("in conceptscheme relationships, cannot have a null target concept id for string {}",
+				logger.debug("in conceptscheme relationships, cannot have a null target concept id for string {}",
 						relationshipDetail.getTargetConcept());
 			}
 			Long predicateConceptNodeId = predicateMap.get(relationshipDetail.getPredicateConcept());
 			if (predicateConceptNodeId == null) {
-				logger.warn("in conceptscheme relationships, predicate no found in map for key={}",
+				logger.debug("in conceptscheme relationships, predicate no found in map for key={}",
 						relationshipDetail.getPredicateConcept());
 			}
 			/*
@@ -223,8 +234,8 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 			}
 			conceptMap.put(cui, conceptNodeId);
 			counter++;
-			if (counter % 10000 == 0) {
-				logger.info("record: {}", counter);
+			if (counter % LOG_SIZE == 0) {
+				logger.info("concept record: {}", counter);
 			}
 		}
 		counter = 0;
@@ -234,20 +245,20 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 			RelationshipDetail relationshipDetail = conceptFactualRelationshipIterator.next();
 			Long sourceConceptNodeId = conceptMap.get(relationshipDetail.getSourceConcept());
 			if (sourceConceptNodeId == null) {
-				logger.warn("in concept factual rlsp. cannot have a null source concept id for string {} ",
+				logger.debug("in concept factual rlsp. cannot have a null source concept id for string {} ",
 						relationshipDetail.getSourceConcept());
-				//log and ignore record
+				// log and ignore record
 				continue;
 			}
 			Long targetConceptNodeId = conceptMap.get(relationshipDetail.getTargetConcept());
 			if (targetConceptNodeId == null) {
-				logger.warn("in concept factual rlsp. cannot have a null target concept id for string {}",
+				logger.debug("in concept factual rlsp. cannot have a null target concept id for string {}",
 						relationshipDetail.getTargetConcept());
-				//log and ignore record
+				// log and ignore record
 				continue;
 			}
 			Long predicateConceptNodeId = predicateMap.get(relationshipDetail.getPredicateConcept());
-			//lots of entries in database have RELA set to "null"
+			// lots of entries in database have RELA set to "null"
 			if (predicateConceptNodeId == null) {
 				logger.debug("in concept factual relationships, predicate not found in map for key={}",
 						relationshipDetail.getPredicateConcept());
@@ -272,8 +283,8 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 						getConceptRelationshipType(relationshipDetail.getRelationhipType()), properties);
 			}
 			counter++;
-			if (counter % 10000 == 0) {
-				logger.info("record: {}", counter);
+			if (counter % LOG_SIZE == 0) {
+				logger.info("factual_rlsp record: {}", counter);
 
 			}
 		}
@@ -284,18 +295,18 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 			RelationshipDetail relationshipDetail = conceptCooccuranceRelationshipIterator.next();
 			Long sourceConceptNodeId = conceptMap.get(relationshipDetail.getSourceConcept());
 			if (sourceConceptNodeId == null) {
-				logger.warn("in concept cooccurance rlsp. cannot have a null source concept id for string {} ",
+				logger.debug("in concept cooccurance rlsp. cannot have a null source concept id for string {} ",
 						relationshipDetail.getSourceConcept());
-				//log and ignore record
+				// log and ignore record
 				continue;
 			}
 			Long targetConceptNodeId = conceptMap.get(relationshipDetail.getTargetConcept());
 			if (targetConceptNodeId == null) {
-				logger.warn("in concept cooccurance rlsp. cannot have a null target concept id for string {}",
+				logger.debug("in concept cooccurance rlsp. cannot have a null target concept id for string {}",
 						relationshipDetail.getTargetConcept());
-				//log and ignore record
+				// log and ignore record
 				continue;
-				
+
 			}
 			/*
 			 * check against following entries in table. e.g. Acquired
@@ -316,8 +327,8 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 						ConceptRelationshipTypeImpl.RELATED, properties);
 			}
 			counter++;
-			if (counter % 10000 == 0) {
-				logger.info("record: {}", counter);
+			if (counter % LOG_SIZE == 0) {
+				logger.info("cooccurance record: {}", counter);
 			}
 		}
 
@@ -369,47 +380,69 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 		inserter.createRelationship(conceptParentNode, conceptNodeId, DefaultRelationshipType.CONCEPT, null);
 
 		for (LabelDetail labelDetail : conceptDetail.getLabels()) {
-			// clear map
-			// create label node
-			properties.clear();
-			properties.put(LabelImpl.TEXT_PROPERTY, labelDetail.getText());
-			properties.put(LabelImpl.LANGUAGE_PROPERTY, labelDetail.getLanguage().name());
-			long labelNodeId = inserter.createNode(properties);
-			long parentNode = parentNodes.get(DefaultRelationshipType.LABELS);
-			inserter.createRelationship(parentNode, labelNodeId, DefaultRelationshipType.LABEL, null);
+			// check if we have already created this node is so reuse the node
+			final String key = labelDetail.getLanguage() + labelDetail.getText();
+			Long existingLabelNode = existingLabelsMap.get(key);
+			if (existingLabelNode == null) {
+				// clear map
+				// create label node if none found
+				properties.clear();
+				properties.put(LabelImpl.TEXT_PROPERTY, labelDetail.getText());
+				properties.put(LabelImpl.LANGUAGE_PROPERTY, labelDetail.getLanguage().name());
+				long labelNodeId = inserter.createNode(properties);
+				long parentNode = parentNodes.get(DefaultRelationshipType.LABELS);
+				inserter.createRelationship(parentNode, labelNodeId, DefaultRelationshipType.LABEL, null);
+				// index label
+				indexService.index(labelNodeId, Index.LABEL_TXT_INDEX, labelDetail.getText());
+				// add to full text
+				fulltext.append(labelDetail.getText()).append(Index.FULL_TEXT_SEPARATOR);
+				// set in map as well
+				existingLabelsMap.put(key, labelNodeId);
+				// set the label node
+				existingLabelNode = labelNodeId;
+			}
 			// link label to concept
 			// clear map
 			properties.clear();
 			properties.put(ConceptImpl.LABEL_TYPE_PROPERTY, labelDetail.getLabelType().name());
-			inserter.createRelationship(conceptNodeId, labelNodeId, DefaultRelationshipType.HAS_LABEL, properties);
-			// index label
-			indexService.index(labelNodeId, Index.LABEL_TXT_INDEX, labelDetail.getText());
-			fulltext.append(labelDetail.getText()).append(Index.FULL_TEXT_SEPARATOR);
+			inserter.createRelationship(conceptNodeId, existingLabelNode, DefaultRelationshipType.HAS_LABEL, properties);
+
 		}
 
 		for (NotationDetail notationDetail : conceptDetail.getNotations()) {
-			// clear map
-			properties.clear();
-			properties.put(NotationImpl.CODE_PROPERTY, notationDetail.getCode());
-			long notationNodeId = inserter.createNode(properties);
-			long parentNode = parentNodes.get(DefaultRelationshipType.NOTATIONS);
-			inserter.createRelationship(parentNode, notationNodeId, DefaultRelationshipType.NOTATION, null);
-			inserter.createRelationship(conceptNodeId, notationNodeId, DefaultRelationshipType.HAS_NOTATION, null);
-			// index notation
-			indexService.index(notationNodeId, Index.NOTATION_CODE_INDEX, notationDetail.getCode());
-			fulltext.append(notationDetail.getCode()).append(Index.FULL_TEXT_SEPARATOR);
-			// link to domain
-			Long domainNodeId = domainMap.get(notationDetail.getDomain());
-			if (domainNodeId == null) {
-				logger.warn("no domain node id found for text {}", notationDetail.getDomain());
-			} else {
-				if (notationNodeId == domainNodeId) {
-					logger.warn("notationNodeId and DomainNodeId are {} for notation code {}", new Object[] {
-							notationNodeId, notationDetail.getCode() });
+			// check if we have already created this node is so reuse the node
+			Long existingNotationNode = existingNotationsMap.get(notationDetail);
+			if (existingNotationNode == null) {
+				// create new notation here
+				// clear map
+				properties.clear();
+				properties.put(NotationImpl.CODE_PROPERTY, notationDetail.getCode());
+				long notationNodeId = inserter.createNode(properties);
+				long parentNode = parentNodes.get(DefaultRelationshipType.NOTATIONS);
+				inserter.createRelationship(parentNode, notationNodeId, DefaultRelationshipType.NOTATION, null);
+
+				// index notation
+				indexService.index(notationNodeId, Index.NOTATION_CODE_INDEX, notationDetail.getCode());
+				fulltext.append(notationDetail.getCode()).append(Index.FULL_TEXT_SEPARATOR);
+				// link to domain
+				Long domainNodeId = domainMap.get(notationDetail.getDomain());
+				if (domainNodeId == null) {
+					logger.warn("no domain node id found for text {}", notationDetail.getDomain());
 				} else {
-					inserter.createRelationship(notationNodeId, domainNodeId, DefaultRelationshipType.HAS_DOMAIN, null);
+					if (notationNodeId == domainNodeId) {
+						logger.warn("notationNodeId and DomainNodeId are {} for notation code {}", new Object[] {
+								notationNodeId, notationDetail.getCode() });
+					} else {
+						inserter.createRelationship(notationNodeId, domainNodeId, DefaultRelationshipType.HAS_DOMAIN,
+								null);
+					}
 				}
+				// add to map
+				existingNotationsMap.put(notationDetail, notationNodeId);
+				// set the notation node
+				existingNotationNode = notationNodeId;
 			}
+			inserter.createRelationship(conceptNodeId, existingNotationNode, DefaultRelationshipType.HAS_NOTATION, null);
 		}
 		indexService.index(conceptNodeId, Index.CONCEPT_ID_INDEX, uuid);
 		fulltextIndexService.index(conceptNodeId, Index.CONCEPT_FULL_TXT_INDEX, fulltext.toString());

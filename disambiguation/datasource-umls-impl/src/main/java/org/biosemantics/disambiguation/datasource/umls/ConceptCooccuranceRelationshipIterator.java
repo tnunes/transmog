@@ -48,8 +48,9 @@ public class ConceptCooccuranceRelationshipIterator implements Iterator<Relation
 	public RelationshipDetail next() {
 		try {
 			// min value for COF in database is 1
-			return new RelationshipDetail(resultSet.getString("CUI1"), resultSet.getString("CUI2"),
-					resultSet.getInt("COF"));
+			String cui1 = resultSet.getString("CUI1");
+			String cui2 = resultSet.getString("CUI2");
+			return new RelationshipDetail(cui1, cui2, resultSet.getInt("COF"));
 		} catch (SQLException e) {
 			logger.error("error when iterating result set", e);
 			throw new IllegalStateException();

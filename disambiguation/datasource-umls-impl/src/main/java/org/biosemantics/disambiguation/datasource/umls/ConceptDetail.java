@@ -1,18 +1,18 @@
 package org.biosemantics.disambiguation.datasource.umls;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
 
 public class ConceptDetail {
-	private List<LabelDetail> labels = new ArrayList<LabelDetail>();
-	private List<NotationDetail> notations = new ArrayList<NotationDetail>();
+	private Collection<LabelDetail> labels = new HashSet<LabelDetail>();
+	private Collection<NotationDetail> notations = new HashSet<NotationDetail>();
 
-	public List<NotationDetail> getNotations() {
-		return notations;
+	public Collection<LabelDetail> getLabels() {
+		return labels;
 	}
 
-	public List<LabelDetail> getLabels() {
-		return labels;
+	public Collection<NotationDetail> getNotations() {
+		return notations;
 	}
 
 	public void addNotation(NotationDetail notationDetail) {
