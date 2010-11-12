@@ -36,7 +36,35 @@
 		<org.jmock.version>2.5.1</org.jmock.version>
 		<joda.time.version>1.6.2</joda.time.version>
 		<org.neo4j>1.1</org.neo4j>
+		<hudson.server.url>http://office1.nbiceng.net:8080/hudson/</hudson.server.url>
+		<nexus.server.url>http://office1.nbiceng.net:8081/nexus/content/repositories</nexus.server.url>
 	</properties>
+	<ciManagement>
+		<system>hudson</system>
+		<url>${hudson.server.url}</url>
+	</ciManagement>
+	<distributionManagement>
+		<!-- use the following if you're not using a snapshot version. -->
+		<repository>
+			<id>nexus-server-id</id>
+			<url>${nexus.server.url}/releases</url>
+			<uniqueVersion>false</uniqueVersion>
+		</repository>
+		<!-- use the following if you ARE using a snapshot version. -->
+		<snapshotRepository>
+			<id>nexus-server-id</id>
+			<url>${nexus.server.url}/snapshots</url>
+			<uniqueVersion>false</uniqueVersion>
+		</snapshotRepository>
+	</distributionManagement>
+	
+	<repositories>
+		<repository>
+			<id>nexus-server-id</id>
+			<url>${nexus.server.url}/content/groups/public/</url>
+		</repository>
+	</repositories>
+
 	<dependencyManagement>
 		<dependencies>
 			<!-- Google gauva -->
@@ -160,5 +188,6 @@
 		<module>conceptstore-impl</module>
 		<module>conceptstore-manager</module>
 		<module>datasource-umls-impl</module>
+		<module>datasource</module>
 	</modules>
 </project>
