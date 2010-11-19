@@ -1,0 +1,137 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>datasource</artifactId>
+		<groupId>org.biosemantics</groupId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+	<groupId>org.biosemantics</groupId>
+	<artifactId>datasource-drugbank-impl</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>datasource-drugbank-impl</name>
+	<description>A drugbank datasource implementation</description>
+
+<!--	<pluginRepositories>-->
+<!--		<pluginRepository>-->
+<!--			<id>sryll-plugins</id>-->
+<!--			<name>Steffen's own small Maven repository</name>-->
+<!--			<url>http://myhpi.de/~sryll/maven-repo/</url>-->
+<!--			<snapshots>-->
+<!--				<enabled>true</enabled>-->
+<!--			</snapshots>-->
+<!--		</pluginRepository>-->
+<!--	</pluginRepositories>-->
+<!--	<build>-->
+<!--		<plugins>-->
+<!--			<plugin>-->
+<!--				<groupId>org.semweb4j</groupId>-->
+<!--				<artifactId>maven-rdfreactor-plugin</artifactId>-->
+<!--				<configuration>-->
+<!--					<schemaFile>src/test/resources/drugbank_dump.nt</schemaFile>-->
+<!--					<packageName>ca.drugbank.generated</packageName>-->
+<!--				</configuration>-->
+<!--				<executions>-->
+<!--					<execution>-->
+<!--						<goals>-->
+<!--							<goal>rdfs-classes</goal>-->
+<!--						</goals>-->
+<!--					</execution>-->
+<!--				</executions>-->
+<!--			</plugin>-->
+<!--		</plugins>-->
+<!--	</build>-->
+
+	<dependencies>
+		<!-- validation -->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava-collections</artifactId>
+		</dependency>
+		<!-- CSV file reader -->
+		<dependency>
+			<groupId>net.sf.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>2.1</version>
+		</dependency>
+		<!-- Concept Store dependencies -->
+		<dependency>
+			<groupId>org.biosemantics</groupId>
+			<artifactId>conceptstore-common</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.biosemantics</groupId>
+			<artifactId>conceptstore-impl</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.biosemantics</groupId>
+			<artifactId>conceptstore-utils</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+		<!-- JRDF for parsing ntriples file -->
+		<dependency>
+			<groupId>org.jrdf</groupId>
+			<artifactId>jrdf</artifactId>
+			<version>0.5.6.1</version>
+		</dependency>
+		<!-- Logging -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+		</dependency>
+		<!-- Spring -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<exclusions>
+				<!-- Exclude Commons Logging in favor of SLF4j -->
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!-- For spring JDBC operation -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jdbc</artifactId>
+		</dependency>
+		<!-- Test -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!-- Java Code generators -->
+		<dependency>
+			<groupId>org.semweb4j</groupId>
+			<artifactId>rdfreactor.runtime</artifactId>
+			<version>4.7.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.semweb4j</groupId>
+			<artifactId>rdfreactor.generator</artifactId>
+			<version>4.7.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-runtime-osgi</artifactId>
+			<version>2.3.1</version>
+			<type>jar</type>
+		</dependency>
+	</dependencies>
+</project>
