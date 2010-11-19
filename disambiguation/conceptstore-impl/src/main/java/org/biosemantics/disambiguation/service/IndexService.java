@@ -21,4 +21,6 @@ public interface IndexService {
 	void indexConcept(Concept concept);
 
 	Collection<Concept> fullTextSearch(String text, int maxResults);
+
+	void updateFullTextIndex(Concept concept);
 }

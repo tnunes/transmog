@@ -28,7 +28,6 @@ public class IndexServiceImpl implements IndexService {
 	private final LuceneIndexService indexService;
 	private final LuceneFulltextIndexService fullTextIndexService;
 
-
 	// TODO implement configuration using a configuration class
 
 	public IndexServiceImpl(GraphStorageTemplate graphStorageTemplate) {
@@ -89,18 +88,16 @@ public class IndexServiceImpl implements IndexService {
 
 	@Override
 	public void indexConcept(Concept concept) {
-		StringBuilder fullText = new StringBuilder(concept.getUuid()).append(Index.FULL_TEXT_SEPARATOR);
-		for (Label label : concept.getLabels()) {
-			fullText.append(label.getText()).append(Index.FULL_TEXT_SEPARATOR);
-		}
-		if (concept.getNotations() != null) {
-			for (Notation notation : concept.getNotations()) {
-				fullText.append(notation.getCode()).append(Index.FULL_TEXT_SEPARATOR);
-			}
-		}
 		ConceptImpl conceptImpl = (ConceptImpl) concept;
-		fullTextIndexService.index(conceptImpl.getUnderlyingNode(), Index.CONCEPT_FULL_TXT_INDEX, fullText.toString());
+		createFullTextIndex(conceptImpl);
 		indexService.index(conceptImpl.getUnderlyingNode(), Index.CONCEPT_ID_INDEX, conceptImpl.getUuid());
+	}
+
+	@Override
+	public void updateFullTextIndex(Concept concept) {
+		ConceptImpl conceptImpl = (ConceptImpl) concept;
+		fullTextIndexService.removeIndex(conceptImpl.getUnderlyingNode(), Index.CONCEPT_FULL_TXT_INDEX);
+		createFullTextIndex(conceptImpl);
 	}
 
 	@Override
@@ -123,6 +120,19 @@ public class IndexServiceImpl implements IndexService {
 	public void destroy() {
 		indexService.shutdown();
 		fullTextIndexService.shutdown();
+	}
+
+	private void createFullTextIndex(ConceptImpl conceptImpl) {
+		StringBuilder fullText = new StringBuilder(conceptImpl.getUuid()).append(Index.FULL_TEXT_SEPARATOR);
+		for (Label label : conceptImpl.getLabels()) {
+			fullText.append(label.getText()).append(Index.FULL_TEXT_SEPARATOR);
+		}
+		if (conceptImpl.getNotations() != null) {
+			for (Notation notation : conceptImpl.getNotations()) {
+				fullText.append(notation.getCode()).append(Index.FULL_TEXT_SEPARATOR);
+			}
+		}
+		fullTextIndexService.index(conceptImpl.getUnderlyingNode(), Index.CONCEPT_FULL_TXT_INDEX, fullText.toString());
 	}
 
 }
