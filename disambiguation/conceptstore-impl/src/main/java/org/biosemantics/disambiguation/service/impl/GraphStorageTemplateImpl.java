@@ -110,8 +110,8 @@ public class GraphStorageTemplateImpl implements GraphStorageTemplate {
 	}
 
 	@Override
-	public Node getParentNode(DefaultRelationshipType defaultRelationshipTypes) {
-		return parentNodes.get(defaultRelationshipTypes);
+	public Node getParentNode(DefaultRelationshipType defaultRelationshipType) {
+		return parentNodes.get(defaultRelationshipType);
 	}
 
 	@Override

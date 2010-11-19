@@ -14,7 +14,7 @@ public interface GraphStorageTemplate {
 
 	public GraphDatabaseService getGraphDatabaseService();
 
-	public Node getParentNode(DefaultRelationshipType defaultRelationshipTypes);
+	public Node getParentNode(DefaultRelationshipType defaultRelationshipType);
 
 	public Node createNode();
 
