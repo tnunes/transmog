@@ -25,4 +25,11 @@ public class ConceptStorageServiceIndexingImpl extends ConceptStorageServiceDeco
 		indexService.indexConcept(createdConcept);
 		return createdConcept;
 	}
+
+	@Override
+	public Concept appendConcept(String uuid, Concept concept) {
+		Concept updatedConcept = conceptStorageService.appendConcept(uuid, concept);
+		indexService.updateFullTextIndex(concept);
+		return updatedConcept;
+	}
 }

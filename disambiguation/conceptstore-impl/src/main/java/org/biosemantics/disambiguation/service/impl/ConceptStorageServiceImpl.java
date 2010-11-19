@@ -18,6 +18,7 @@ import org.biosemantics.conceptstore.common.service.NoteStorageService;
 import org.biosemantics.conceptstore.utils.service.UuidGeneratorService;
 import org.biosemantics.conceptstore.utils.validation.ConceptValidator;
 import org.biosemantics.disambiguation.domain.impl.ConceptImpl;
+import org.biosemantics.disambiguation.service.IndexService;
 import org.neo4j.graphdb.Node;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +37,8 @@ public class ConceptStorageServiceImpl implements ConceptStorageService {
 	private NotationStorageService notationStorageService;
 	private NoteStorageService noteStorageService;
 	private ConceptValidator conceptValidator;
+
+	private IndexService indexService;
 
 	public ConceptStorageServiceImpl(GraphStorageTemplate graphStorageTemplate) {
 		// FIXME two enums relationshipTypes and ConceptTypes with certain overlap between them.
@@ -69,6 +72,11 @@ public class ConceptStorageServiceImpl implements ConceptStorageService {
 	@Required
 	public void setConceptValidator(ConceptValidator conceptValidator) {
 		this.conceptValidator = conceptValidator;
+	}
+
+	@Required
+	public void setIndexService(IndexService indexService) {
+		this.indexService = indexService;
 	}
 
 	@Override
@@ -106,6 +114,42 @@ public class ConceptStorageServiceImpl implements ConceptStorageService {
 			conceptImpl.setNotes(createNotes(notes));
 		}
 		return conceptImpl;
+	}
+
+	@Override
+	public Concept appendConcept(String uuid, Concept concept) {
+		ConceptImpl conceptImpl = (ConceptImpl) indexService.getConceptByUuid(uuid);
+		if (conceptImpl == null) {
+			throw new IllegalArgumentException("No concept found in store with uuid = " + uuid);
+		}
+		Collection<Label> labels = concept.getLabelsByType(LabelType.PREFERRED);
+		if (!CollectionUtils.isEmpty(labels)) {
+			Collection<Label> createdLabels = createLabels(labels);
+			conceptImpl.setLabels(LabelType.PREFERRED, createdLabels);
+		}
+		labels = concept.getLabelsByType(LabelType.ALTERNATE);
+		if (!CollectionUtils.isEmpty(labels)) {
+			Collection<Label> createdLabels = createLabels(labels);
+			conceptImpl.setLabels(LabelType.ALTERNATE, createdLabels);
+		}
+		labels = concept.getLabelsByType(LabelType.HIDDEN);
+		if (!CollectionUtils.isEmpty(labels)) {
+			Collection<Label> createdLabels = createLabels(labels);
+			conceptImpl.setLabels(LabelType.HIDDEN, createdLabels);
+		}
+		Collection<Notation> notations = concept.getNotations();
+		// create only is something is provided
+		if (!CollectionUtils.isEmpty(notations)) {
+			Collection<Notation> createdNotations = createNotations(notations);
+			conceptImpl.setNotations(createdNotations);
+		}
+		// create only is something is provided
+		Collection<Note> notes = concept.getNotes();
+		if (!CollectionUtils.isEmpty(notes)) {
+			conceptImpl.setNotes(createNotes(notes));
+		}
+		return conceptImpl;
+
 	}
 
 	private Collection<Notation> createNotations(Collection<Notation> notations) {
