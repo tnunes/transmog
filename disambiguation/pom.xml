@@ -188,5 +188,6 @@
 		<module>conceptstore-impl</module>
 		<module>conceptstore-manager</module>
 		<module>datasource-umls-impl</module>
+		<module>datasource</module>
 	</modules>
 </project>
