@@ -79,6 +79,7 @@
 				<property name="notationStorageService" ref="notationStorageService"></property>
 				<property name="noteStorageService" ref="noteStorageService"></property>
 				<property name="conceptValidator" ref="conceptValidator"></property>
+				<property name="indexService" ref="indexService"></property>
 			</bean>
 		</constructor-arg>
 		<property name="indexService">
