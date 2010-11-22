@@ -3,6 +3,7 @@ package org.biosemantics.disambiguation.domain.impl;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.common.domain.Language;
 import org.biosemantics.conceptstore.utils.domain.impl.ErrorMessage;
@@ -55,6 +56,11 @@ public class LabelImpl implements Label {
 	@Override
 	public int hashCode() {
 		return this.underlyingNode.hashCode();
+	}
+
+	@Override
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this);
 	}
 
 	public LabelImpl withLanguage(Language language) {
