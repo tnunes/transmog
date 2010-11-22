@@ -25,13 +25,14 @@ public class DomainIterator implements Iterator<DrugbankDomain> {
 				Drugs.INCHIIDENTIFIER.toString(), Drugs.INCHIKEY.toString() }), KEGG(
 				"Kyoto Encyclopedia of Genes and Genomes", new String[] { Drugs.KEGGCOMPOUNDID.toString(),
 						Drugs.KEGGDRUGID.toString() }), LIMS("Laboratory information management system",
-				Drugs.LIMSDRUGID.toString()), PBD("RCSB Protein Data Bank", new String[] { Drugs.PDBID.toString(),
-				Drugs.PDBEXPERIMENTALID.toString(), Drugs.PDBHOMOLOGYID.toString() }), PHARMGKB(
-				"Pharmacogenomics Knowledge Base", Drugs.PHARMGKBID.toString()), PUBCHEM("PubChem", new String[] {
-				Drugs.PUBCHEMCOMPOUNDID.toString(), Drugs.PUBCHEMSUBSTANCEID.toString() }), RXLIST("RxList",
-				Drugs.RXLISTLINK.toString()), SMILES("Simplified molecular input line entry specification",
-				new String[] { Drugs.SMILESSTRINGCANONICAL.toString(), Drugs.SMILESSTRINGISOMERIC.toString() }), SWISSPROT(
-				"Uni Prot", Drugs.SWISSPROTID.toString());
+				Drugs.LIMSDRUGID.toString()), MSDS("Material Safety Data Sheets", Drugs.MSDSFILES.toString()), PBD(
+				"RCSB Protein Data Bank", new String[] { Drugs.PDBID.toString(), Drugs.PDBEXPERIMENTALID.toString(),
+						Drugs.PDBHOMOLOGYID.toString() }), PHARMGKB("Pharmacogenomics Knowledge Base", Drugs.PHARMGKBID
+				.toString()), PUBCHEM("PubChem", new String[] { Drugs.PUBCHEMCOMPOUNDID.toString(),
+				Drugs.PUBCHEMSUBSTANCEID.toString() }), RXLIST("RxList", Drugs.RXLISTLINK.toString()), SMILES(
+				"Simplified molecular input line entry specification", new String[] {
+						Drugs.SMILESSTRINGCANONICAL.toString(), Drugs.SMILESSTRINGISOMERIC.toString() }), SWISS_PROT(
+				"Uni Prot", Drugs.SWISSPROTID.toString()), CHEMICAL_FORMULA("Chemical Formula", Drugs.CHEMICALFORMULA.toString());
 		private final String[] uris;
 		private final String officialName;
 
