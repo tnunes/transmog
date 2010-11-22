@@ -51,6 +51,7 @@ public class IndexServiceImpl implements IndexService {
 	}
 
 	@Override
+	@Transactional
 	public void indexLabel(Label label) {
 		LabelImpl labelImpl = (LabelImpl) label;
 		indexService.index(labelImpl.getUnderlyingNode(), Index.LABEL_TXT_INDEX, labelImpl.getText());
@@ -70,6 +71,7 @@ public class IndexServiceImpl implements IndexService {
 	}
 
 	@Override
+	@Transactional
 	public void indexNotation(Notation notation) {
 		NotationImpl notationImpl = (NotationImpl) notation;
 		indexService.index(notationImpl.getUnderlyingNode(), Index.NOTATION_CODE_INDEX, notationImpl.getCode());
@@ -87,6 +89,7 @@ public class IndexServiceImpl implements IndexService {
 	}
 
 	@Override
+	@Transactional
 	public void indexConcept(Concept concept) {
 		ConceptImpl conceptImpl = (ConceptImpl) concept;
 		createFullTextIndex(conceptImpl);
@@ -94,6 +97,7 @@ public class IndexServiceImpl implements IndexService {
 	}
 
 	@Override
+	@Transactional
 	public void updateFullTextIndex(Concept concept) {
 		ConceptImpl conceptImpl = (ConceptImpl) concept;
 		fullTextIndexService.removeIndex(conceptImpl.getUnderlyingNode(), Index.CONCEPT_FULL_TXT_INDEX);
