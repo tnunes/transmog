@@ -2,10 +2,8 @@ package org.biosemantics.disambiguation.service.impl;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.lucene.search.Sort;
@@ -41,7 +39,7 @@ public class IndexServiceImpl implements IndexService {
 	@Transactional
 	public Collection<Label> getLabelsByText(String text) {
 		Iterable<Node> nodes = indexService.getNodes(Index.LABEL_TXT_INDEX, text);
-		List<Label> labels = new ArrayList<Label>();
+		Set<Label> labels = new HashSet<Label>();
 		if (labels != null) {
 			for (Node node : nodes) {
 				labels.add(new LabelImpl(node));
@@ -61,7 +59,7 @@ public class IndexServiceImpl implements IndexService {
 	@Transactional
 	public Collection<Notation> getNotationByCode(String code) {
 		Iterable<Node> nodes = indexService.getNodes(Index.NOTATION_CODE_INDEX, code);
-		List<Notation> notations = new ArrayList<Notation>();
+		Set<Notation> notations = new HashSet<Notation>();
 		if (notations != null) {
 			for (Node node : nodes) {
 				notations.add(new NotationImpl(node));

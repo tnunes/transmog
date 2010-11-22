@@ -5,7 +5,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.biosemantics.conceptstore.common.domain.Concept;
 import org.biosemantics.conceptstore.common.domain.ConceptType;
@@ -74,7 +75,7 @@ public class ConceptQueryServiceImpl implements ConceptQueryService {
 	public Collection<Concept> getConceptsByLabelText(String text) {
 		checkArgument(!(checkNotNull(text).isEmpty()), ErrorMessage.EMPTY_STRING_MSG, "text");
 		Collection<Label> labels = indexService.getLabelsByText(text);
-		List<Concept> concepts = new ArrayList<Concept>();
+		Set<Concept> concepts = new HashSet<Concept>();
 		if (CollectionUtils.isEmpty(labels)) {
 			logger.warn("no labels found for text {} ", text);
 		} else {
@@ -89,24 +90,13 @@ public class ConceptQueryServiceImpl implements ConceptQueryService {
 	public Collection<Concept> getConceptsByNotationCode(String code) {
 		checkArgument(!(checkNotNull(code).isEmpty()), ErrorMessage.EMPTY_STRING_MSG, "code");
 		Collection<Notation> notations = indexService.getNotationByCode(code);
-		List<Concept> concepts = new ArrayList<Concept>();
+		Set<Concept> concepts = new HashSet<Concept>();
 		if (CollectionUtils.isEmpty(notations)) {
 			logger.warn("no notations found for code {} ", code);
 		} else {
 			for (Notation notation : notations) {
 				concepts.addAll(getConceptsForNotation(notation));
 			}
-		}
-		return concepts;
-	}
-
-	private Collection<? extends Concept> getConceptsForNotation(Notation notation) {
-		List<Concept> concepts = new ArrayList<Concept>();
-		NotationImpl notationImpl = (NotationImpl) notation;
-		Iterable<Relationship> relationships = notationImpl.getUnderlyingNode().getRelationships(
-				DefaultRelationshipType.HAS_NOTATION, Direction.INCOMING);
-		for (Relationship relationship : relationships) {
-			concepts.add(new ConceptImpl(relationship.getStartNode()));
 		}
 		return concepts;
 	}
@@ -134,7 +124,7 @@ public class ConceptQueryServiceImpl implements ConceptQueryService {
 			break;
 		}
 		Node node = graphStorageTemplate.getParentNode(defaultRelationshipType);
-		List<Concept> concepts = new ArrayList<Concept>();
+		Set<Concept> concepts = new HashSet<Concept>();
 		Iterable<Relationship> relationships = node.getRelationships(DefaultRelationshipType.CONCEPTS,
 				Direction.OUTGOING);
 		for (Relationship relationship : relationships) {
@@ -144,7 +134,7 @@ public class ConceptQueryServiceImpl implements ConceptQueryService {
 	}
 
 	private Collection<Concept> getConceptsForLabel(Label found) {
-		List<Concept> concepts = new ArrayList<Concept>();
+		Set<Concept> concepts = new HashSet<Concept>();
 		LabelImpl labelImpl = (LabelImpl) found;
 		Iterable<Relationship> relationships = labelImpl.getUnderlyingNode().getRelationships(
 				DefaultRelationshipType.HAS_LABEL, Direction.INCOMING);
@@ -154,4 +144,14 @@ public class ConceptQueryServiceImpl implements ConceptQueryService {
 		return concepts;
 	}
 
+	private Collection<? extends Concept> getConceptsForNotation(Notation notation) {
+		Set<Concept> concepts = new HashSet<Concept>();
+		NotationImpl notationImpl = (NotationImpl) notation;
+		Iterable<Relationship> relationships = notationImpl.getUnderlyingNode().getRelationships(
+				DefaultRelationshipType.HAS_NOTATION, Direction.INCOMING);
+		for (Relationship relationship : relationships) {
+			concepts.add(new ConceptImpl(relationship.getStartNode()));
+		}
+		return concepts;
+	}
 }
