@@ -1,5 +1,8 @@
 package org.biosemantics.disambiguation.service.impl;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -7,19 +10,26 @@ import java.util.List;
 import org.biosemantics.conceptstore.common.domain.Concept;
 import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.Label;
+import org.biosemantics.conceptstore.common.domain.Notation;
 import org.biosemantics.conceptstore.common.service.ConceptQueryService;
+import org.biosemantics.conceptstore.utils.domain.impl.ErrorMessage;
 import org.biosemantics.disambiguation.domain.impl.ConceptImpl;
 import org.biosemantics.disambiguation.domain.impl.LabelImpl;
+import org.biosemantics.disambiguation.domain.impl.NotationImpl;
 import org.biosemantics.disambiguation.service.IndexService;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.util.CollectionUtils;
 
 public class ConceptQueryServiceImpl implements ConceptQueryService {
 
 	private IndexService indexService;
 	private GraphStorageTemplate graphStorageTemplate;
+	private static final Logger logger = LoggerFactory.getLogger(ConceptQueryServiceImpl.class);
 
 	@Required
 	public void setIndexService(IndexService indexService) {
@@ -44,21 +54,59 @@ public class ConceptQueryServiceImpl implements ConceptQueryService {
 	public Collection<Concept> getConceptsByLabel(Label label) {
 		Collection<Label> labels = indexService.getLabelsByText(label.getText());
 		Label found = null;
-		for (Label label2 : labels) {
-			if (label2.getLanguage() == label.getLanguage()) {
-				found = label;
+		for (Label existingLabel : labels) {
+			if (existingLabel.getLanguage() == label.getLanguage()) {
+				found = existingLabel;
 				break;
 			}
 		}
-		// FIXME should i throw an exception here?
+		if (found == null) {
+
+			logger.warn("no label found matching {}", label);
+			// FIXME should i throw an checked exception here instead of returning empty ArrayList
+			return new ArrayList<Concept>();
+		} else {
+			return getConceptsForLabel(found);
+		}
+	}
+
+	@Override
+	public Collection<Concept> getConceptsByLabelText(String text) {
+		checkArgument(!(checkNotNull(text).isEmpty()), ErrorMessage.EMPTY_STRING_MSG, "text");
+		Collection<Label> labels = indexService.getLabelsByText(text);
 		List<Concept> concepts = new ArrayList<Concept>();
-		if (found != null) {
-			LabelImpl labelImpl = (LabelImpl) found;
-			Iterable<Relationship> relationships = labelImpl.getUnderlyingNode().getRelationships(
-					DefaultRelationshipType.HAS_LABEL, Direction.INCOMING);
-			for (Relationship relationship : relationships) {
-				concepts.add(new ConceptImpl(relationship.getStartNode()));
+		if (CollectionUtils.isEmpty(labels)) {
+			logger.warn("no labels found for text {} ", text);
+		} else {
+			for (Label label : labels) {
+				concepts.addAll(getConceptsForLabel(label));
 			}
+		}
+		return concepts;
+	}
+
+	@Override
+	public Collection<Concept> getConceptsByNotationCode(String code) {
+		checkArgument(!(checkNotNull(code).isEmpty()), ErrorMessage.EMPTY_STRING_MSG, "code");
+		Collection<Notation> notations = indexService.getNotationByCode(code);
+		List<Concept> concepts = new ArrayList<Concept>();
+		if (CollectionUtils.isEmpty(notations)) {
+			logger.warn("no notations found for code {} ", code);
+		} else {
+			for (Notation notation : notations) {
+				concepts.addAll(getConceptsForNotation(notation));
+			}
+		}
+		return concepts;
+	}
+
+	private Collection<? extends Concept> getConceptsForNotation(Notation notation) {
+		List<Concept> concepts = new ArrayList<Concept>();
+		NotationImpl notationImpl = (NotationImpl) notation;
+		Iterable<Relationship> relationships = notationImpl.getUnderlyingNode().getRelationships(
+				DefaultRelationshipType.HAS_NOTATION, Direction.INCOMING);
+		for (Relationship relationship : relationships) {
+			concepts.add(new ConceptImpl(relationship.getStartNode()));
 		}
 		return concepts;
 	}
@@ -94,4 +142,16 @@ public class ConceptQueryServiceImpl implements ConceptQueryService {
 		}
 		return concepts;
 	}
+
+	private Collection<Concept> getConceptsForLabel(Label found) {
+		List<Concept> concepts = new ArrayList<Concept>();
+		LabelImpl labelImpl = (LabelImpl) found;
+		Iterable<Relationship> relationships = labelImpl.getUnderlyingNode().getRelationships(
+				DefaultRelationshipType.HAS_LABEL, Direction.INCOMING);
+		for (Relationship relationship : relationships) {
+			concepts.add(new ConceptImpl(relationship.getStartNode()));
+		}
+		return concepts;
+	}
+
 }
