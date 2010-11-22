@@ -29,7 +29,7 @@ import org.springframework.util.CollectionUtils;
 
 import ca.drugbank.generated.Drugs;
 
-public class DataSourceWriterImpl {
+public class DataSourceWriterImpl implements DataSourceWriter {
 	private boolean checkConceptExists = true;
 	private ConceptQueryService conceptQueryService;
 	private ConceptStorageService conceptStorageService;
@@ -54,7 +54,7 @@ public class DataSourceWriterImpl {
 
 	}
 
-	private void writeDomain(DrugbankDomain drugbankDomain) {
+	public void writeDomain(DrugbankDomain drugbankDomain) {
 		ConceptImpl conceptImpl = new ConceptImpl();
 		conceptImpl.addLabelByType(LabelType.PREFERRED, new LabelImpl(drugbankDomain.getOfficialName(), Language.EN));
 		List<Notation> notations = new ArrayList<Notation>();
@@ -65,6 +65,7 @@ public class DataSourceWriterImpl {
 		} else {
 			for (String uri : drugbankDomain.getUris()) {
 				// no notations for concept
+				notations.add(new NotationImpl(defaultDomain, drugbankDomain.name()));
 				notations.add(new NotationImpl(defaultDomain, uri));
 			}
 		}
@@ -78,19 +79,23 @@ public class DataSourceWriterImpl {
 		}
 	}
 
-	private void writeConcept(Drugs drugs) {
-		Concept found = null;
+	public void writeConcept(Drugs drugs) {
+		Collection<Concept> foundConcepts = null;
 		if (checkConceptExists) {
-			found = findConcept(drugs);
+			foundConcepts = findConcept(drugs);
 		}
-		if (found == null) {
+		if (CollectionUtils.isEmpty(foundConcepts)) {
 			// no luck create new
 			Concept concept = createConcept(drugs);
 			conceptStorageService.createConcept(ConceptType.CONCEPT, concept);
 		} else {
 			// found! update concept
 			Concept concept = createConcept(drugs);
-			conceptStorageService.appendConcept(found.getUuid(), concept);
+			for (Concept found : foundConcepts) {
+				logger.info("to concept uuid {} appending data ", found.getUuid());
+				conceptStorageService.appendConcept(found.getUuid(), concept);
+			}
+
 		}
 	}
 
@@ -105,23 +110,30 @@ public class DataSourceWriterImpl {
 		return conceptImpl;
 	}
 
-	private Concept findConcept(Drugs drugs) {
+	private Collection<Concept> findConcept(Drugs drugs) {
 		// to update get the concept first
 		Collection<Label> preferredLabels = getPreferredLabels(drugs);
-		Concept found = null;
-		for (Label label : preferredLabels) {
+		Collection<Label> alternateLabels = getAlternateLabels(drugs);
+		Set<Label> allLabels = new HashSet<Label>();
+		allLabels.addAll(preferredLabels);
+		allLabels.addAll(alternateLabels);
+		Collection<Concept> foundConcepts = new HashSet<Concept>();
+		for (Label label : allLabels) {
+			long start = System.currentTimeMillis();
 			Collection<Concept> concepts = conceptQueryService.getConceptsByLabel(label);
-			// if exact match found
-			if (!CollectionUtils.isEmpty(concepts) && concepts.size() == 1) {
+			logger.info("{} concepts found for preferred label {} in {} (ms) ", new Object[] { concepts.size(), label,
+					(System.currentTimeMillis() - start) });
+			if (!CollectionUtils.isEmpty(concepts)) {
 				for (Concept concept : concepts) {
-					found = concept;
+					foundConcepts.add(concept);
 				}
 			}
 		}
-		return found;
+		logger.info("{} unique concepts returned ", foundConcepts.size());
+		return foundConcepts;
 	}
 
-	public Collection<Notation> getNotations(Drugs drugs) {
+	private Collection<Notation> getNotations(Drugs drugs) {
 		List<Notation> notations = new ArrayList<Notation>();
 
 		// ATC can have multiple values
@@ -165,7 +177,7 @@ public class DataSourceWriterImpl {
 
 		if (drugs.hasDpdDrugIdNumber()) {
 			Concept domain = domainMap.get(Drugs.DPDDRUGIDNUMBER.toString());
-			Collection<String> codes = getStringLiterals(drugs.getAllChemicalIupacName_asNode());
+			Collection<String> codes = getStringLiterals(drugs.getAllDpdDrugIdNumber_asNode());
 			for (String code : codes) {
 				notations.add(createNotation(domain, code));
 			}
@@ -303,7 +315,7 @@ public class DataSourceWriterImpl {
 
 		if (drugs.hasPubchemSubstanceId()) {
 			Concept domain = domainMap.get(Drugs.PUBCHEMSUBSTANCEID.toString());
-			Collection<String> codes = getStringLiterals(drugs.getAllPubchemCompoundId_asNode());
+			Collection<String> codes = getStringLiterals(drugs.getAllPubchemSubstanceId_asNode());
 			for (String code : codes) {
 				notations.add(createNotation(domain, code));
 			}
@@ -342,12 +354,20 @@ public class DataSourceWriterImpl {
 				notations.add(createNotation(domain, code));
 			}
 		}
+
+		if (drugs.hasChemicalFormula()) {
+			Concept domain = domainMap.get(Drugs.CHEMICALFORMULA.toString());
+			Collection<String> codes = getStringLiterals(drugs.getAllChemicalFormula_asNode());
+			for (String code : codes) {
+				notations.add(createNotation(domain, code));
+			}
+		}
 		// FIXME: no WIKIPEDIA domain found in generated files? why?
 
 		return notations;
 	}
 
-	public Collection<Label> getAlternateLabels(Drugs drugs) {
+	private Collection<Label> getAlternateLabels(Drugs drugs) {
 		Set<Label> labels = new HashSet<Label>();
 		if (drugs.hasBrandName()) {
 			Collection<String> texts = getStringLiterals(drugs.getAllBrandName_asNode());
@@ -358,13 +378,6 @@ public class DataSourceWriterImpl {
 
 		if (drugs.hasSynonym()) {
 			Collection<String> texts = getStringLiterals(drugs.getAllSynonym_asNode());
-			for (String text : texts) {
-				labels.add(createLabel(text));
-			}
-		}
-
-		if (drugs.hasBrandName()) {
-			Collection<String> texts = getStringLiterals(drugs.getAllBrandName_asNode());
 			for (String text : texts) {
 				labels.add(createLabel(text));
 			}
@@ -390,7 +403,7 @@ public class DataSourceWriterImpl {
 		return labelImpl;
 	}
 
-	public Notation createNotation(Concept domain, String code) {
+	private Notation createNotation(Concept domain, String code) {
 		NotationImpl notationImpl = new NotationImpl(domain, code);
 		return notationImpl;
 	}
@@ -402,4 +415,5 @@ public class DataSourceWriterImpl {
 		}
 		return stringLiterals;
 	}
+
 }
