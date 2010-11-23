@@ -86,11 +86,11 @@ public class DataSourceWriterImpl implements DataSourceWriter {
 		}
 		if (CollectionUtils.isEmpty(foundConcepts)) {
 			// no luck create new
-			Concept concept = createConcept(drugs);
+			Concept concept = createConcept(drugs, false);
 			conceptStorageService.createConcept(ConceptType.CONCEPT, concept);
 		} else {
-			// found! update concept
-			Concept concept = createConcept(drugs);
+			// found! update concept: force all drugbank labels as alternate
+			Concept concept = createConcept(drugs, true);
 			for (Concept found : foundConcepts) {
 				logger.info("to concept uuid {} appending data ", found.getUuid());
 				conceptStorageService.appendConcept(found.getUuid(), concept);
@@ -99,14 +99,19 @@ public class DataSourceWriterImpl implements DataSourceWriter {
 		}
 	}
 
-	private Concept createConcept(Drugs drugs) {
+	private Concept createConcept(Drugs drugs, boolean forceAlternateLabels) {
 		ConceptImpl conceptImpl = new ConceptImpl();
 		Collection<Label> preferredLabels = getPreferredLabels(drugs);
 		Collection<Label> alternateLabels = getAlternateLabels(drugs);
 		Collection<Notation> notations = getNotations(drugs);
 		conceptImpl.setNotations(notations);
-		conceptImpl.addLabelByType(LabelType.PREFERRED, preferredLabels);
-		conceptImpl.addLabelByType(LabelType.ALTERNATE, alternateLabels);
+		if (forceAlternateLabels) {
+			conceptImpl.addLabelByType(LabelType.ALTERNATE, preferredLabels);
+			conceptImpl.addLabelByType(LabelType.ALTERNATE, alternateLabels);
+		} else {
+			conceptImpl.addLabelByType(LabelType.PREFERRED, preferredLabels);
+			conceptImpl.addLabelByType(LabelType.ALTERNATE, alternateLabels);
+		}
 		return conceptImpl;
 	}
 
@@ -121,15 +126,33 @@ public class DataSourceWriterImpl implements DataSourceWriter {
 		for (Label label : allLabels) {
 			long start = System.currentTimeMillis();
 			Collection<Concept> concepts = conceptQueryService.getConceptsByLabel(label);
-			logger.info("{} concepts found for preferred label {} in {} (ms) ", new Object[] { concepts.size(), label,
-					(System.currentTimeMillis() - start) });
+			logger.info("{} concepts found for label {} in {} (ms) ",
+					new Object[] { concepts.size(), label.getText(), (System.currentTimeMillis() - start) });
 			if (!CollectionUtils.isEmpty(concepts)) {
 				for (Concept concept : concepts) {
 					foundConcepts.add(concept);
 				}
 			}
 		}
-		logger.info("{} unique concepts returned ", foundConcepts.size());
+		StringBuilder preferredName = new StringBuilder();
+		for (Label label : preferredLabels) {
+			preferredName.append(label.getText()).append("|");
+		}
+		for (Concept concept : foundConcepts) {
+			String cui = null;
+			for (Notation notation : concept.getNotations()) {
+				if (notation.getDomain().getUuid().equals("75b8870d-8472-4a12-84e6-e4cae0baf5d9")) {
+					cui = notation.getCode();
+					break;
+				}
+			}
+			if (cui == null) {
+				logger.warn("no cui found for concept with uuid {}", concept.getUuid());
+			} else {
+				logger.info("drugbank drug with preferred name {} has same name as umls cui {} ", new Object[] {
+						preferredLabels, cui });
+			}
+		}
 		return foundConcepts;
 	}
 
