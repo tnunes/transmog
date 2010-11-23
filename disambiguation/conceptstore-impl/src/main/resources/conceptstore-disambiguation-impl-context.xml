@@ -91,5 +91,16 @@
 		<property name="indexService">
 			<ref local="indexService" />
 		</property>
+		<property name="graphStorageTemplate">
+			<ref local="graphStorageTemplate" />
+		</property>
 	</bean>
+	
+	<bean id="relationshipStorageService" class="org.biosemantics.disambiguation.service.impl.RelationshipStoreServiceImpl">
+		<property name="indexService">
+			<ref local="indexService" />
+		</property>
+		<property name="uuidGeneratorService" ref="uuidGeneratorService"></property>
+	</bean>
+	
 </beans>
