@@ -24,6 +24,10 @@ public class RelationshipImpl implements org.biosemantics.conceptstore.common.do
 		this.underlyingRelationship = relationship;
 	}
 
+	public Relationship getUnderlyingRelationship() {
+		return underlyingRelationship;
+	}
+
 	@Override
 	public ConceptRelationshipType getConceptRelationshipType() {
 		return ((ConceptRelationshipTypeImpl) underlyingRelationship.getType()).toConceptRelationshipType();
