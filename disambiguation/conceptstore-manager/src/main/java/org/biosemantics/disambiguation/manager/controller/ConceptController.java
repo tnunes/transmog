@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -42,6 +43,7 @@ public class ConceptController {
 		this.messageManager = messageManager;
 	}
 
+	@Transactional
 	@RequestMapping(value = "/concept/{uuid}", method = RequestMethod.GET)
 	public ModelAndView getConcept(@PathVariable("uuid") String uuid) {
 		checkArgument(!uuid.isEmpty());
