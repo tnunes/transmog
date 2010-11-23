@@ -38,6 +38,7 @@ public class PipeImpl {
 				dataSourceWriter.writeConcept(drugs);
 				logger.info("{} written in {}(ms)", new Object[] { ctr++, (System.currentTimeMillis() - start) });
 			}
+			logger.info("successfully parsed drugbank");
 			tx.success();
 		} catch (Exception e) {
 			logger.error("Error in drugbank parsing ", e);
@@ -48,6 +49,6 @@ public class PipeImpl {
 		}
 		logger.info("done");
 		graphStorageTemplateImpl.getGraphDatabaseService().shutdown();
-		logger.info("shutdown");
+		logger.info("shutdown called on graph db");
 	}
 }
