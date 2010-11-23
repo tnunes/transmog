@@ -37,6 +37,7 @@ public class ConceptQueryServiceImpl implements ConceptQueryService {
 		this.indexService = indexService;
 	}
 
+	@Required
 	public void setGraphStorageTemplate(GraphStorageTemplate graphStorageTemplate) {
 		this.graphStorageTemplate = graphStorageTemplate;
 	}
@@ -48,6 +49,7 @@ public class ConceptQueryServiceImpl implements ConceptQueryService {
 
 	@Override
 	public Concept getConceptByUuid(String uuid) {
+		checkArgument(!(checkNotNull(uuid).isEmpty()), ErrorMessage.EMPTY_STRING_MSG, "uuid");
 		return indexService.getConceptByUuid(uuid);
 	}
 
@@ -125,7 +127,7 @@ public class ConceptQueryServiceImpl implements ConceptQueryService {
 		}
 		Node node = graphStorageTemplate.getParentNode(defaultRelationshipType);
 		Set<Concept> concepts = new HashSet<Concept>();
-		Iterable<Relationship> relationships = node.getRelationships(DefaultRelationshipType.CONCEPTS,
+		Iterable<Relationship> relationships = node.getRelationships(DefaultRelationshipType.CONCEPT,
 				Direction.OUTGOING);
 		for (Relationship relationship : relationships) {
 			concepts.add(new ConceptImpl(relationship.getEndNode()));
