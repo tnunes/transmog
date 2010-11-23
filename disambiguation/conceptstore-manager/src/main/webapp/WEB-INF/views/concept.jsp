@@ -150,8 +150,6 @@
                 <tr>
                    <th><spring:message code="label.code"/></th>
                     <th><spring:message code="label.domain"/></th>
-                    <th><spring:message code="label.language"/></th>
-                    <th><spring:message code="label.edit"/></th>
                 </tr>
                 <c:forEach varStatus="status" var="notation" items="${conceptResultResponse.conceptResult.notations}">
                 		<c:choose> 
@@ -163,10 +161,8 @@
 	                		</c:otherwise>
 	                	</c:choose>
                 		<tr class="${trClass}">
-                			<td><c:out value="${notation.code}"/></a></td>
+                			<td width="70%"><c:out value="${notation.code}"/></a></td>
                 			<td><c:out value="${notation.domainLabel}"/></td>
-                			<td><spring:message code="language.${notation.domainLabelLanguage}"/></td>
-                			<td> (+) (-) (/) </td>
                 		</tr>
                 </c:forEach>
             </table>
