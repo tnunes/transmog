@@ -48,10 +48,21 @@
 			<ref local="messageManager" />
 		</property>
 	</bean>
+	
+	<bean id="relationshipController" class="org.biosemantics.disambiguation.manager.controller.RelationshipController">
+		<property name="conceptQueryService" ref="conceptQueryService"></property>
+		<property name="messageManager">
+			<ref local="messageManager" />
+		</property>
+		<property name="relationshipStoreService" ref="relationshipStoreService"></property>
+	</bean>
 
 	<!-- Adapter -->
 	<bean id="queryResultAdapter" class="org.biosemantics.disambiguation.manager.adapter.QueryResultAdapterImpl" />
 	<bean id="conceptAdapter" class="org.biosemantics.disambiguation.manager.adapter.ConceptAdapterImpl"></bean>
+	<bean id="relationshipAdapter" class="org.biosemantics.disambiguation.manager.adapter.RelationshipAdapterImpl">
+		<property name="conceptQueryService" ref="conceptQueryService"></property>
+	</bean>
 	<!-- Message manager -->
 	<bean id="messageManager" class="org.biosemantics.disambiguation.manager.common.MessageManagerImpl">
 		<property name="messageSource" ref="messageSource"></property>
