@@ -1,5 +1,7 @@
 package org.biosemantics.disambiguation.manager.adapter;
 
+import java.util.Collection;
+
 import org.biosemantics.conceptstore.common.domain.Concept;
 import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.common.domain.Label.LabelType;
@@ -18,8 +20,9 @@ public class QueryResultAdapterImpl implements QueryResultAdapter {
 		Label label = CommonUtility.getPreferredLabel(concept.getLabelsByType(LabelType.PREFERRED));
 		queryResult.setLabel(label.getText());
 		queryResult.setLanguage(label.getLanguage().name());
-		if (!CollectionUtils.isEmpty(concept.getNotes())) {
-			for (Note note : concept.getNotes()) {
+		Collection<Note> notes = concept.getNotes();
+		if (!CollectionUtils.isEmpty(notes)) {
+			for (Note note : notes) {
 				if (note.getNoteType() == NoteType.DEFINITION) {
 					queryResult.setDescription(note.getText());
 				}
