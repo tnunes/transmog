@@ -61,8 +61,6 @@ public class ConceptController {
 		ModelAndView mav = new ModelAndView();
 		mav.setViewName("concept");
 		mav.addObject("conceptResultResponse", conceptResultResponse);
-		long end = System.currentTimeMillis();
-		logger.info("time taken {}(ms)", end - start);
 		return mav;
 	}
 
