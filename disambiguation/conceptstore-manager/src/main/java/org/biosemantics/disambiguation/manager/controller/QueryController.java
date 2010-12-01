@@ -31,7 +31,7 @@ import org.springframework.web.servlet.ModelAndView;
 @Controller
 public class QueryController {
 	private static final Logger logger = LoggerFactory.getLogger(QueryController.class);
-	private static final int MAX_RESULTS = 50;
+	private static final int MAX_RESULTS = 20;
 	private ConceptQueryService conceptQueryService;
 	private QueryResultAdapter queryResultAdapter;
 	private MessageManager messageManager;
@@ -73,7 +73,6 @@ public class QueryController {
 			searchText = searchText.substring(NOTATION_PREFIX.length(), searchText.length());
 			concepts = conceptQueryService.getConceptsByNotationCode(searchText);
 		} else {
-			
 			concepts = conceptQueryService.fullTextSearch(searchText, MAX_RESULTS);
 		}
 		QueryResultResponse queryResultResponse = null;
@@ -84,12 +83,7 @@ public class QueryController {
 		} else {
 			List<QueryResult> queryResults = new ArrayList<QueryResult>(concepts.size());
 			for (Concept concept : concepts) {
-
-				if (CollectionUtils.isEmpty(concept.getLabels())) {
-					logger.warn("no preferred label for concept with uuid {} ", concept.getUuid());
-				} else {
-					queryResults.add(queryResultAdapter.adapt(concept));
-				}
+				queryResults.add(queryResultAdapter.adapt(concept));
 			}
 			queryResultResponse = new QueryResultResponse(queryResults, System.currentTimeMillis() - start);
 		}
@@ -100,11 +94,9 @@ public class QueryController {
 		ModelAndView mav = new ModelAndView();
 		mav.setViewName("search");
 		mav.addObject("queryResultResponse", queryResultResponse);
-		long end = System.currentTimeMillis();
-		logger.info("time taken {}(ms)", end - start);
 		return mav;
 	}
-	
+
 	@Transactional
 	@RequestMapping(value = "/conceptType/{txt}", method = RequestMethod.GET)
 	public ModelAndView getConceptsByType(@PathVariable("txt") String text) {
@@ -135,8 +127,6 @@ public class QueryController {
 		ModelAndView mav = new ModelAndView();
 		mav.setViewName("search");
 		mav.addObject("queryResultResponse", queryResultResponse);
-		long end = System.currentTimeMillis();
-		logger.info("time taken {}(ms)", end - start);
 		return mav;
 	}
 }
