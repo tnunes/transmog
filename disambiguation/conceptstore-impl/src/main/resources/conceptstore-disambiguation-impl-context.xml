@@ -38,6 +38,7 @@
 		<constructor-arg>
 			<ref local="graphStorageTemplate" />
 		</constructor-arg>
+		<property name="cacheSize" value="${index.cacheSize}"></property>
 	</bean>
 
 	<bean id="labelStorageService" class="org.biosemantics.disambiguation.service.impl.LabelStorageServiceImpl">

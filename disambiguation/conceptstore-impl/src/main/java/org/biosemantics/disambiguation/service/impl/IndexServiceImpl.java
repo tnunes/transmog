@@ -18,21 +18,37 @@ import org.biosemantics.disambiguation.service.IndexService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.index.lucene.LuceneFulltextIndexService;
 import org.neo4j.index.lucene.LuceneIndexService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.google.common.base.Preconditions;
 
 public class IndexServiceImpl implements IndexService {
 
 	private final GraphStorageTemplate graphStorageTemplate;
 	private final LuceneIndexService indexService;
 	private final LuceneFulltextIndexService fullTextIndexService;
+	private int cacheSize = 10000;
+	private static final Logger logger = LoggerFactory.getLogger(IndexServiceImpl.class);
 
 	// TODO implement configuration using a configuration class
-
 	public IndexServiceImpl(GraphStorageTemplate graphStorageTemplate) {
 		super();
 		this.graphStorageTemplate = checkNotNull(graphStorageTemplate);
 		indexService = new LuceneIndexService(this.graphStorageTemplate.getGraphDatabaseService());
 		fullTextIndexService = new LuceneFulltextIndexService(this.graphStorageTemplate.getGraphDatabaseService());
+	}
+
+	@Required
+	public void setCacheSize(int cacheSize) {
+		Preconditions.checkArgument(cacheSize > 0);
+		this.cacheSize = cacheSize;
+		indexService.enableCache(Index.LABEL_TXT_INDEX, this.cacheSize);
+		indexService.enableCache(Index.CONCEPT_ID_INDEX, this.cacheSize);
+		indexService.enableCache(Index.NOTATION_CODE_INDEX, this.cacheSize);
+		logger.info("set cache for indexing service to {}", this.cacheSize);
 	}
 
 	@Override
