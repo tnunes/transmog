@@ -44,9 +44,15 @@
 		lazy-init="true">
 		<property name="dataSource" ref="dataSource" />
 	</bean>
+	
+	<bean id="conceptConceptSchemeRelationshipIterator" class="org.biosemantics.disambiguation.datasource.umls.ConceptConceptSchemeRelationshipIterator"
+		lazy-init="true">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
 
 	<bean id="UmlsRdbmsDatasourceImporter" class="org.biosemantics.disambiguation.datasource.umls.UmlsRdbmsDatasourceImporter">
 		<property name="cleanImport" value="${umls.cleanImport}"></property>
+		<property name="conceptConceptSchemeRelationshipIterator" ref="conceptConceptSchemeRelationshipIterator"></property>
 		<property name="conceptCooccuranceRelationshipIterator" ref="conceptCooccuranceRelationshipIterator" />
 		<property name="conceptFactualRelationshipIterator" ref="conceptFactualRelationshipIterator" />
 		<property name="conceptIterator" ref="conceptIterator" />

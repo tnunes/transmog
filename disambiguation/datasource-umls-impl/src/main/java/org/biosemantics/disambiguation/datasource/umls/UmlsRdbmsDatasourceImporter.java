@@ -28,6 +28,7 @@ import org.neo4j.index.lucene.LuceneIndexBatchInserter;
 import org.neo4j.index.lucene.LuceneIndexBatchInserterImpl;
 import org.neo4j.kernel.impl.batchinsert.BatchInserter;
 import org.neo4j.kernel.impl.batchinsert.BatchInserterImpl;
+import org.neo4j.kernel.impl.batchinsert.SimpleRelationship;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
@@ -70,6 +71,7 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 	private ConceptIterator conceptIterator;
 	private ConceptFactualRelationshipIterator conceptFactualRelationshipIterator;
 	private ConceptCooccuranceRelationshipIterator conceptCooccuranceRelationshipIterator;
+	private ConceptConceptSchemeRelationshipIterator conceptConceptSchemeRelationshipIterator;
 
 	private Map<String, Long> existingLabelsMap = new HashMap<String, Long>();
 	private Map<NotationDetail, Long> existingNotationsMap = new HashMap<NotationDetail, Long>();
@@ -109,6 +111,12 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 	public void setConceptCooccuranceRelationshipIterator(
 			ConceptCooccuranceRelationshipIterator conceptCooccuranceRelationshipIterator) {
 		this.conceptCooccuranceRelationshipIterator = conceptCooccuranceRelationshipIterator;
+	}
+
+	@Required
+	public void setConceptConceptSchemeRelationshipIterator(
+			ConceptConceptSchemeRelationshipIterator conceptConceptSchemeRelationshipIterator) {
+		this.conceptConceptSchemeRelationshipIterator = conceptConceptSchemeRelationshipIterator;
 	}
 
 	@Required
@@ -213,9 +221,6 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 			}
 		}
 
-		// clear and de-refernce concept scheme map: not needed anymore (MIGHT free memory);
-		conceptSchemeMap.clear();
-		conceptSchemeMap = null;
 		int counter = 0;
 		while (conceptIterator.hasNext()) {
 			ConceptDetail conceptDetail = conceptIterator.next();
@@ -318,7 +323,29 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 						"same source and target concept for concept cooccurance rlsp. sourceName={} targetName={}",
 						new Object[] { relationshipDetail.getSourceConcept(), relationshipDetail.getTargetConcept() });
 			} else {
-
+				// check if a related relationship exists
+				for (SimpleRelationship simpleRelationship : inserter.getRelationships(sourceConceptNodeId)) {
+					if (simpleRelationship.getEndNode() == targetConceptNodeId
+							&& simpleRelationship.getType() == ConceptRelationshipTypeImpl.RELATED) {
+						// log and ignore
+						logger.debug(
+								"RELATED relationship type found between source concept {} and target concept {}. ignoring",
+								new Object[] { relationshipDetail.getSourceConcept(),
+										relationshipDetail.getTargetConcept() });
+						continue;
+					}
+				}
+				for (SimpleRelationship simpleRelationship : inserter.getRelationships(targetConceptNodeId)) {
+					if (simpleRelationship.getStartNode() == sourceConceptNodeId
+							&& simpleRelationship.getType() == ConceptRelationshipTypeImpl.RELATED) {
+						// log and ignore
+						logger.debug(
+								"RELATED relationship type found between source concept {} and target concept {}. ignoring",
+								new Object[] { relationshipDetail.getSourceConcept(),
+										relationshipDetail.getTargetConcept() });
+						continue;
+					}
+				}
 				properties.put(RelationshipImpl.RELATIONSHIP_CATEGORY_PROPERTY,
 						RelationshipCategory.AUTHORITATIVE.name());
 				properties.put(RelationshipImpl.SCORE_PROPERTY, relationshipDetail.getStrength());
@@ -329,6 +356,35 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 			counter++;
 			if (counter % LOG_SIZE == 0) {
 				logger.info("cooccurance record: {}", counter);
+			}
+		}
+		// concept to semantic type mapping
+		counter = 0;
+		while (conceptConceptSchemeRelationshipIterator.hasNext()) {
+			// clear reused map
+			properties.clear();
+			RelationshipDetail relationshipDetail = conceptConceptSchemeRelationshipIterator.next();
+			String semanticType = relationshipDetail.getSourceConcept();
+			String cui = relationshipDetail.getTargetConcept();
+			Long sourceNodeId = conceptSchemeMap.get(semanticType);
+			if (sourceNodeId == null) {
+				logger.debug("no entry found in concept scheme map for {}", relationshipDetail.getSourceConcept());
+				continue;
+			}
+			Long targetNodeId = conceptMap.get(cui);
+			if (targetNodeId == null) {
+				logger.debug("no entry found in concept map for {}", relationshipDetail.getTargetConcept());
+				continue;
+			}
+			properties.put(RelationshipImpl.RELATIONSHIP_CATEGORY_PROPERTY, RelationshipCategory.AUTHORITATIVE.name());
+			properties.put(RelationshipImpl.SCORE_PROPERTY, relationshipDetail.getStrength());
+			properties.put(RelationshipImpl.UUID_PROPERTY, uuidGeneratorService.generateRandomUuid());
+			inserter.createRelationship(sourceNodeId, targetNodeId, ConceptRelationshipTypeImpl.HAS_NARROWER_CONCEPT,
+					properties);
+			counter++;
+			if (counter % LOG_SIZE == 0) {
+				logger.info("concept_semanticType rlsp record: {}", counter);
+
 			}
 		}
 
