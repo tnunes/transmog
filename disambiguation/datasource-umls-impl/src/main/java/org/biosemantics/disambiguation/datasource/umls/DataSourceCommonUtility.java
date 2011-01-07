@@ -4,13 +4,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.biosemantics.conceptstore.common.domain.Language;
+import org.biosemantics.disambiguation.domain.impl.LanguageImpl;
 
 public class DataSourceCommonUtility {
 
-	public static final Map<String, Language> iso6392LanguageMap = new HashMap<String, Language>();
+	public static final Map<String, LanguageImpl> iso6392LanguageMap = new HashMap<String, LanguageImpl>();
 
 	static {
-		for (Language language : Language.values()) {
+		for (LanguageImpl language : LanguageImpl.values()) {
 			iso6392LanguageMap.put(language.getIso6392Code(), language);
 		}
 	}

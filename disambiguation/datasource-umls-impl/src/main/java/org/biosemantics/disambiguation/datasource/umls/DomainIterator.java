@@ -3,7 +3,7 @@ package org.biosemantics.disambiguation.datasource.umls;
 import java.util.Iterator;
 
 import org.biosemantics.conceptstore.common.domain.Label.LabelType;
-import org.biosemantics.conceptstore.common.domain.Language;
+import org.biosemantics.disambiguation.domain.impl.LanguageImpl;
 
 public class DomainIterator implements Iterator<ConceptDetail> {
 
@@ -144,7 +144,7 @@ public class DomainIterator implements Iterator<ConceptDetail> {
 		UmlsDomain umlsDomain = UmlsDomain.values()[counter];
 		counter++;
 		ConceptDetail conceptDetail = new ConceptDetail();
-		conceptDetail.addLabel(new LabelDetail(umlsDomain.getOfficialName().trim(), Language.EN, LabelType.PREFERRED));
+		conceptDetail.addLabel(new LabelDetail(umlsDomain.getOfficialName().trim(), LanguageImpl.EN, LabelType.PREFERRED));
 		conceptDetail.addNotation(new NotationDetail(umlsDomain.name(), UmlsDomain.getDefaultDomain().name()));
 		return conceptDetail;
 

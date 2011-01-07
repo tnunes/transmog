@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import org.biosemantics.conceptstore.common.domain.Label.LabelType;
 import org.biosemantics.conceptstore.common.domain.Language;
 import org.biosemantics.disambiguation.datasource.umls.DomainIterator.UmlsDomain;
+import org.biosemantics.disambiguation.domain.impl.LanguageImpl;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 
@@ -52,7 +53,7 @@ public class ConceptResultSetExtractor implements ResultSetExtractor<ConceptDeta
 		// http://www.loc.gov/standards/iso639-2/php/code_changes.php SCR has
 		// been deprecated
 		if (lat.equalsIgnoreCase(SCR)) {
-			lat = Language.HR.getIso6392Code();
+			lat = LanguageImpl.HR.getIso6392Code();
 		}
 		Language language = DataSourceCommonUtility.getLanguageByIso6392Code(lat);
 		return language;

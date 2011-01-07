@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.biosemantics.conceptstore.common.domain.Label.LabelType;
-import org.biosemantics.conceptstore.common.domain.Language;
 import org.biosemantics.disambiguation.datasource.umls.DomainIterator.UmlsDomain;
+import org.biosemantics.disambiguation.domain.impl.LanguageImpl;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
@@ -73,7 +73,7 @@ public class PredicateIterator implements Iterator<ConceptDetail> {
 		String code = predicateIterator.next();
 		String text = code.replace("_", " ");
 		ConceptDetail conceptDetail = new ConceptDetail();
-		conceptDetail.addLabel(new LabelDetail(text, Language.EN, LabelType.PREFERRED));
+		conceptDetail.addLabel(new LabelDetail(text, LanguageImpl.EN, LabelType.PREFERRED));
 		conceptDetail.addNotation(new NotationDetail(code, UmlsDomain.getDefaultDomain().name()));
 		return conceptDetail;
 	}

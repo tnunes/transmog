@@ -9,8 +9,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.biosemantics.conceptstore.common.domain.Label.LabelType;
-import org.biosemantics.conceptstore.common.domain.Language;
 import org.biosemantics.disambiguation.datasource.umls.DomainIterator.UmlsDomain;
+import org.biosemantics.disambiguation.domain.impl.LanguageImpl;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
@@ -51,7 +51,7 @@ public class ConceptSchemeIterator implements Iterator<ConceptDetail> {
 		String[] conceptScheme = conceptSchemes.get(counter);
 		counter++;// readability
 		ConceptDetail conceptDetail = new ConceptDetail();
-		conceptDetail.addLabel(new LabelDetail(conceptScheme[0], Language.EN, LabelType.PREFERRED));
+		conceptDetail.addLabel(new LabelDetail(conceptScheme[0], LanguageImpl.EN, LabelType.PREFERRED));
 		conceptDetail.addNotation(new NotationDetail(conceptScheme[1], UmlsDomain.getDefaultDomain().name()));
 		return conceptDetail;
 	}

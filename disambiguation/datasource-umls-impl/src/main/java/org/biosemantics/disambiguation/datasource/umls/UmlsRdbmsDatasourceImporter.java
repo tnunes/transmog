@@ -388,7 +388,7 @@ public class UmlsRdbmsDatasourceImporter implements RdbmsDataSourceImporter {
 				// create label node if none found
 				properties.clear();
 				properties.put(LabelImpl.TEXT_PROPERTY, labelDetail.getText());
-				properties.put(LabelImpl.LANGUAGE_PROPERTY, labelDetail.getLanguage().name());
+				properties.put(LabelImpl.LANGUAGE_PROPERTY, labelDetail.getLanguage().getLabel());
 				long labelNodeId = inserter.createNode(properties);
 				long parentNode = parentNodes.get(DefaultRelationshipType.LABELS);
 				inserter.createRelationship(parentNode, labelNodeId, DefaultRelationshipType.LABEL, null);
