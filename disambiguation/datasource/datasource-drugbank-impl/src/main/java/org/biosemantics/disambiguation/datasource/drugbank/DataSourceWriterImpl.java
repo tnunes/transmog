@@ -13,7 +13,6 @@ import org.biosemantics.conceptstore.common.domain.Concept;
 import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.common.domain.Label.LabelType;
-import org.biosemantics.conceptstore.common.domain.Language;
 import org.biosemantics.conceptstore.common.domain.Notation;
 import org.biosemantics.conceptstore.common.service.ConceptQueryService;
 import org.biosemantics.conceptstore.common.service.ConceptStorageService;
@@ -21,6 +20,7 @@ import org.biosemantics.conceptstore.utils.domain.impl.ConceptImpl;
 import org.biosemantics.conceptstore.utils.domain.impl.LabelImpl;
 import org.biosemantics.conceptstore.utils.domain.impl.NotationImpl;
 import org.biosemantics.disambiguation.datasource.drugbank.DomainIterator.DrugbankDomain;
+import org.biosemantics.disambiguation.domain.impl.LanguageImpl;
 import org.ontoware.rdf2go.model.node.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +56,7 @@ public class DataSourceWriterImpl implements DataSourceWriter {
 
 	public void writeDomain(DrugbankDomain drugbankDomain) {
 		ConceptImpl conceptImpl = new ConceptImpl();
-		conceptImpl.addLabelByType(LabelType.PREFERRED, new LabelImpl(drugbankDomain.getOfficialName(), Language.EN));
+		conceptImpl.addLabelByType(LabelType.PREFERRED, new LabelImpl(drugbankDomain.getOfficialName(), LanguageImpl.EN));
 		List<Notation> notations = new ArrayList<Notation>();
 		Concept defaultDomain = domainMap.get(DrugbankDomain.getDefaultDomain().getUris()[0]);
 		if (defaultDomain == null) {
@@ -386,7 +386,6 @@ public class DataSourceWriterImpl implements DataSourceWriter {
 			}
 		}
 		// FIXME: no WIKIPEDIA domain found in generated files? why?
-
 		return notations;
 	}
 
@@ -422,7 +421,7 @@ public class DataSourceWriterImpl implements DataSourceWriter {
 	}
 
 	private Label createLabel(String text) {
-		LabelImpl labelImpl = new LabelImpl(text, Language.EN);
+		LabelImpl labelImpl = new LabelImpl(text, LanguageImpl.EN);
 		return labelImpl;
 	}
 
