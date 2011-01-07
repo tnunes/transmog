@@ -73,12 +73,6 @@
 			<version>0.0.1-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
-		<!-- JRDF for parsing ntriples file -->
-		<dependency>
-			<groupId>org.jrdf</groupId>
-			<artifactId>jrdf</artifactId>
-			<version>0.5.6.1</version>
-		</dependency>
 		<!-- Logging -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
