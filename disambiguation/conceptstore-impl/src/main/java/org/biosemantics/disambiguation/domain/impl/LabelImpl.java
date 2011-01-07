@@ -22,12 +22,12 @@ public class LabelImpl implements Label {
 
 	@Override
 	public Language getLanguage() {
-		return Language.valueOf((String) underlyingNode.getProperty(LANGUAGE_PROPERTY));
+		return LanguageImpl.valueOf((String) underlyingNode.getProperty(LANGUAGE_PROPERTY));
 	}
 
 	public void setLanguage(Language language) {
 		checkNotNull(language);
-		underlyingNode.setProperty(LANGUAGE_PROPERTY, language.name());
+		underlyingNode.setProperty(LANGUAGE_PROPERTY, language.getLabel());
 	}
 
 	@Override

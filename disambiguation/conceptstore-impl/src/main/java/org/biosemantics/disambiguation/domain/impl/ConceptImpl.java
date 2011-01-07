@@ -17,13 +17,19 @@ import org.biosemantics.disambiguation.service.impl.DefaultRelationshipType;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConceptImpl implements Concept {
 
 	private static final long serialVersionUID = 851453341589506946L;
 	public static final String UUID_PROPERTY = "uuid";
 	public static final String LABEL_TYPE_PROPERTY = "labelType";
-
+	private static final Logger logger = LoggerFactory.getLogger(ConceptImpl.class);
 	private Node underlyingNode;
 
 	public ConceptImpl(Node node) {
@@ -55,17 +61,42 @@ public class ConceptImpl implements Concept {
 		return labels;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.biosemantics.conceptstore.common.domain.Concept#getLabelsByType(org.biosemantics.conceptstore.common.domain.Label.LabelType)
+	 * Need a way to speed up this method, the response time is unpredictable
+	 */
 	@Override
 	public Collection<Label> getLabelsByType(LabelType labelType) {
+		long start = System.currentTimeMillis();
 		List<Label> labels = new ArrayList<Label>();
 		Iterable<Relationship> relationships = underlyingNode.getRelationships(DefaultRelationshipType.HAS_LABEL,
 				Direction.OUTGOING);
 		for (Relationship relationship : relationships) {
-			if (LabelType.valueOf((String) relationship.getProperty(LABEL_TYPE_PROPERTY)) == labelType)
+			if (LabelType.valueOf((String) relationship.getProperty(LABEL_TYPE_PROPERTY)) == labelType) {
 				labels.add(new LabelImpl(relationship.getEndNode()));
+			}
 		}
+		logger.info("in getLabelsByType time taken: {}(ms)", (System.currentTimeMillis() - start));
 		return labels;
 	}
+
+	// @Override
+	// public Collection<Label> getLabelsByType(LabelType labelType) {
+	// List<Label> labels = new ArrayList<Label>();
+	// long start = System.currentTimeMillis();
+	//
+	// Traverser traverser = underlyingNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
+	// ReturnableEvaluator.ALL_BUT_START_NODE, DefaultRelationshipType.HAS_LABEL, Direction.OUTGOING);
+	// logger.info("to get HAS_LABEL rlsps for a concept{}(ms)",(System.currentTimeMillis()-start));
+	// start = System.currentTimeMillis();
+	// Collection<Node> nodes = traverser.getAllNodes();
+	// for (Node node : nodes) {
+	// labels.add(new LabelImpl(node));
+	// }
+	// logger.info("iterate over rlsps for a  concept {}(ms)", (System.currentTimeMillis() - start));
+	// return labels;
+	// }
 
 	public void setLabels(LabelType labelType, Collection<Label> labels) {
 		checkNotNull(labels);

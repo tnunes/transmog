@@ -46,8 +46,8 @@ public class RelationshipStoreServiceImpl implements RelationshipStoreService {
 			createdRelationship = findRelationship(relationship);
 		}
 		if (createdRelationship == null) {
-			ConceptImpl sourceConceptImpl = (ConceptImpl) relationship.getSource();
-			ConceptImpl targetConceptImpl = (ConceptImpl) relationship.getTarget();
+			ConceptImpl sourceConceptImpl = (ConceptImpl) relationship.getStartConcept();
+			ConceptImpl targetConceptImpl = (ConceptImpl) relationship.getEndConcept();
 
 			org.neo4j.graphdb.Relationship underlyingRelationship = sourceConceptImpl.getUnderlyingNode()
 					.createRelationshipTo(
@@ -70,7 +70,7 @@ public class RelationshipStoreServiceImpl implements RelationshipStoreService {
 	 */
 	private Relationship findRelationship(Relationship relationship) {
 		Relationship found = null;
-		ConceptImpl conceptImpl = (ConceptImpl) relationship.getSource();
+		ConceptImpl conceptImpl = (ConceptImpl) relationship.getStartConcept();
 		Iterable<org.neo4j.graphdb.Relationship> foundRlsps = conceptImpl.getUnderlyingNode().getRelationships(
 				ConceptRelationshipTypeImpl.fromConceptRelationshipType(relationship.getConceptRelationshipType()),
 				Direction.OUTGOING);

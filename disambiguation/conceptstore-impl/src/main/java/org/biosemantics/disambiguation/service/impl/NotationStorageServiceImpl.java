@@ -42,6 +42,7 @@ public class NotationStorageServiceImpl implements NotationStorageService {
 	@Override
 	@Transactional
 	public Notation createNotation(Notation notation) {
+		notationValidator.validate(notation);
 		Notation createdNotation = null;
 		if (checkExists) {
 			// check if node exits in data store

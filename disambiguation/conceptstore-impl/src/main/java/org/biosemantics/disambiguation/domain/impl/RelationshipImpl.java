@@ -65,12 +65,12 @@ public class RelationshipImpl implements org.biosemantics.conceptstore.common.do
 	}
 
 	@Override
-	public Concept getSource() {
+	public Concept getStartConcept() {
 		return new ConceptImpl(underlyingRelationship.getStartNode());
 	}
 
 	@Override
-	public Concept getTarget() {
+	public Concept getEndConcept() {
 		return new ConceptImpl(underlyingRelationship.getEndNode());
 	}
 

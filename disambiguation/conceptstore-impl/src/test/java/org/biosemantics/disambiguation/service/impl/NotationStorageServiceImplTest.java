@@ -9,7 +9,6 @@ import org.biosemantics.conceptstore.common.domain.Concept;
 import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.common.domain.Label.LabelType;
-import org.biosemantics.conceptstore.common.domain.Language;
 import org.biosemantics.conceptstore.common.domain.Notation;
 import org.biosemantics.conceptstore.common.service.ConceptStorageService;
 import org.biosemantics.conceptstore.common.service.LabelStorageService;
@@ -17,6 +16,7 @@ import org.biosemantics.conceptstore.common.service.NotationStorageService;
 import org.biosemantics.conceptstore.utils.domain.impl.ConceptImpl;
 import org.biosemantics.conceptstore.utils.domain.impl.LabelImpl;
 import org.biosemantics.conceptstore.utils.domain.impl.NotationImpl;
+import org.biosemantics.disambiguation.domain.impl.LanguageImpl;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -39,7 +39,7 @@ public class NotationStorageServiceImplTest extends AbstractTransactionalDataSou
 	}
 
 	private Concept createDomain() {
-		Label label = labelStorageService.createLabel(new LabelImpl("UMLS", Language.EN));
+		Label label = labelStorageService.createLabel(new LabelImpl("UMLS", LanguageImpl.EN));
 		ConceptImpl conceptImpl = new ConceptImpl();
 		conceptImpl.addLabelByType(LabelType.PREFERRED, label);
 		return conceptStorageService.createConcept(ConceptType.DOMAIN, conceptImpl);

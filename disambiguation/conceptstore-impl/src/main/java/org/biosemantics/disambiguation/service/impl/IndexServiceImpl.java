@@ -27,9 +27,9 @@ import com.google.common.base.Preconditions;
 
 public class IndexServiceImpl implements IndexService {
 
-	private final GraphStorageTemplate graphStorageTemplate;
-	private final LuceneIndexService indexService;
-	private final LuceneFulltextIndexService fullTextIndexService;
+	private GraphStorageTemplate graphStorageTemplate;
+	private  LuceneIndexService indexService;
+	private  LuceneFulltextIndexService fullTextIndexService;
 	private int cacheSize = 10000;
 	private static final Logger logger = LoggerFactory.getLogger(IndexServiceImpl.class);
 

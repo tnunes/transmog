@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 public class GraphStorageTemplateImpl implements GraphStorageTemplate {
 
 	private final String dataStore;
-	private final GraphDatabaseService graphDatabaseService;
+	private GraphDatabaseService graphDatabaseService;
 	private Map<String, String> configuration;
 	private Map<DefaultRelationshipType, Node> parentNodes;
 	private long nodeCount;
@@ -33,6 +33,7 @@ public class GraphStorageTemplateImpl implements GraphStorageTemplate {
 		graphDatabaseService = new EmbeddedGraphDatabase(this.dataStore, this.configuration);
 		logger.info("graph database data folder is \"{}\"",
 				((EmbeddedGraphDatabase) graphDatabaseService).getStoreDir());
+		logger.info("graph database configuration is \"{}\"", this.configuration);
 		parentNodes = new HashMap<DefaultRelationshipType, Node>();
 	}
 

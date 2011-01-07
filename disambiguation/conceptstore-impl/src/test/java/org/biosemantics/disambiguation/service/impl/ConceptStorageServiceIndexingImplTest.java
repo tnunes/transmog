@@ -10,6 +10,7 @@ import org.biosemantics.conceptstore.common.service.ConceptStorageService;
 import org.biosemantics.conceptstore.common.service.LabelStorageService;
 import org.biosemantics.conceptstore.utils.domain.impl.ConceptImpl;
 import org.biosemantics.conceptstore.utils.domain.impl.LabelImpl;
+import org.biosemantics.disambiguation.domain.impl.LanguageImpl;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -51,7 +52,7 @@ public class ConceptStorageServiceIndexingImplTest extends AbstractTransactional
 
 	@Test
 	public void testCreateConceptWithLabels() {
-		LabelImpl labelImpl = new LabelImpl(PREFERRED_TXT, Language.EN);
+		LabelImpl labelImpl = new LabelImpl(PREFERRED_TXT, LanguageImpl.EN);
 		Label label = labelStorageService.createLabel(labelImpl);
 		ConceptImpl conceptImpl = new ConceptImpl();
 		conceptImpl.addLabelByType(LabelType.PREFERRED, label);

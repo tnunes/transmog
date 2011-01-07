@@ -36,6 +36,7 @@ public class NotationImpl implements Notation {
 
 	@Override
 	public Concept getDomain() {
+		// the check not null will give an exception for all domains
 		Relationship relationship = checkNotNull(underlyingNode.getSingleRelationship(
 				DefaultRelationshipType.HAS_DOMAIN, Direction.OUTGOING));
 		return new ConceptImpl(relationship.getOtherNode(underlyingNode));

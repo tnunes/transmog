@@ -32,6 +32,16 @@
 
 	<bean id="graphStorageTemplate" class="org.biosemantics.disambiguation.service.impl.GraphStorageTemplateImpl">
 		<constructor-arg value="${data.store}" />
+<!--		<constructor-arg>-->
+<!--			<map>-->
+<!--				<entry key="neostore.nodestore.db.mapped_memory" value="550M"/>-->
+<!--				<entry key="neostore.relationshipstore.db.mapped_memory" value="500M"/>-->
+<!--				<entry key="neostore.propertystore.db.mapped_memory" value="100M"/>-->
+<!--				<entry key="neostore.propertystore.db.strings.mapped_memory" value="100M"/>-->
+<!--				<entry key="neostore.propertystore.db.arrays.mapped_memory" value="0M"/>-->
+<!--					-->
+<!--			</map>-->
+<!--		</constructor-arg>-->
 	</bean>
 
 	<bean id="indexService" class="org.biosemantics.disambiguation.service.impl.IndexServiceImpl">
@@ -96,12 +106,12 @@
 			<ref local="graphStorageTemplate" />
 		</property>
 	</bean>
-	
+
 	<bean id="relationshipStorageService" class="org.biosemantics.disambiguation.service.impl.RelationshipStoreServiceImpl">
 		<property name="indexService">
 			<ref local="indexService" />
 		</property>
 		<property name="uuidGeneratorService" ref="uuidGeneratorService"></property>
 	</bean>
-	
+
 </beans>
