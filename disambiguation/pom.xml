@@ -35,9 +35,9 @@
 		<junit.version>4.8.1</junit.version>
 		<org.jmock.version>2.5.1</org.jmock.version>
 		<joda.time.version>1.6.2</joda.time.version>
-		<org.neo4j>1.1</org.neo4j>
+		<org.neo4j>1.2</org.neo4j>
 		<hudson.server.url>http://office1.nbiceng.net:8080/hudson/</hudson.server.url>
-		<nexus.server.url>http://office1.nbiceng.net:8081/nexus/content/repositories</nexus.server.url>
+		<nexus.server.url>http://aneurist.erasmusmc.nl/nexus/content/repositories</nexus.server.url>
 	</properties>
 	<ciManagement>
 		<system>hudson</system>
@@ -161,12 +161,7 @@
 			</dependency>
 			<dependency>
 				<groupId>org.neo4j</groupId>
-				<artifactId>neo4j-kernel</artifactId>
-				<version>${org.neo4j}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.neo4j</groupId>
-				<artifactId>neo4j-index</artifactId>
+				<artifactId>neo4j</artifactId>
 				<version>${org.neo4j}</version>
 			</dependency>
 		</dependencies>
