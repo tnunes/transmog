@@ -6,9 +6,11 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.biosemantics.conceptstore.common.domain.Concept;
 import org.biosemantics.conceptstore.common.domain.Relationship;
-import org.biosemantics.conceptstore.common.service.RelationshipStoreService;
+import org.biosemantics.conceptstore.common.service.RelationshipStorageService;
+import org.biosemantics.conceptstore.utils.domain.impl.ErrorMessage;
 import org.biosemantics.conceptstore.utils.service.UuidGeneratorService;
 import org.biosemantics.disambiguation.domain.impl.ConceptImpl;
 import org.biosemantics.disambiguation.domain.impl.RelationshipImpl;
@@ -18,9 +20,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
-public class RelationshipStoreServiceImpl implements RelationshipStoreService {
+import com.google.common.base.Preconditions;
 
-	private static final Logger logger = LoggerFactory.getLogger(RelationshipStoreServiceImpl.class);
+public class RelationshipStorageServiceImpl implements RelationshipStorageService {
+
+	private static final Logger logger = LoggerFactory.getLogger(RelationshipStorageServiceImpl.class);
 	private UuidGeneratorService uuidGeneratorService;
 	private IndexService indexService;
 	private boolean checkExists = true;
@@ -56,10 +60,12 @@ public class RelationshipStoreServiceImpl implements RelationshipStoreService {
 									.getConceptRelationshipType()));
 			RelationshipImpl relationshipImpl = new RelationshipImpl(underlyingRelationship);
 			relationshipImpl.setUuid(uuidGeneratorService.generateRandomUuid());
-			relationshipImpl.setPredicateConceptId(relationship.getPredicateConceptUuid());
-			relationshipImpl.setScore(relationship.getWeight());
+			if (!StringUtils.isBlank(relationship.getPredicateConceptUuid()))
+				relationshipImpl.setPredicateConceptId(relationship.getPredicateConceptUuid());
+			relationshipImpl.setWeight(relationship.getWeight());
 			relationshipImpl.setRelationshipCategory(relationship.getRelationshipCategory());
 			createdRelationship = relationshipImpl;
+			indexService.indexRelationship(createdRelationship);
 		}
 		return createdRelationship;
 	}
@@ -89,8 +95,8 @@ public class RelationshipStoreServiceImpl implements RelationshipStoreService {
 
 	@Override
 	public Relationship getRelationshipByUuid(String uuid) {
-		throw new UnsupportedOperationException(
-				"getRelationshipByUuid not supported yet, will be supported when we move to neo4j 1.2");
+		Preconditions.checkArgument(!StringUtils.isBlank(uuid), ErrorMessage.EMPTY_STRING_MSG, "uuid");
+		return indexService.getRelationshipByUuid(uuid);
 	}
 
 	@Override

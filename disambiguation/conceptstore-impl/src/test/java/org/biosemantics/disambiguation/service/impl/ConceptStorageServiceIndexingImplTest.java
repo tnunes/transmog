@@ -5,7 +5,6 @@ import java.util.Collection;
 import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.common.domain.Label.LabelType;
-import org.biosemantics.conceptstore.common.domain.Language;
 import org.biosemantics.conceptstore.common.service.ConceptStorageService;
 import org.biosemantics.conceptstore.common.service.LabelStorageService;
 import org.biosemantics.conceptstore.utils.domain.impl.ConceptImpl;

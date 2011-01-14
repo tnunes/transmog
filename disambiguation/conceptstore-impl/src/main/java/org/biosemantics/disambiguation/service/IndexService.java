@@ -5,6 +5,7 @@ import java.util.Collection;
 import org.biosemantics.conceptstore.common.domain.Concept;
 import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.common.domain.Notation;
+import org.biosemantics.conceptstore.common.domain.Relationship;
 
 public interface IndexService {
 
@@ -23,4 +24,8 @@ public interface IndexService {
 	Collection<Concept> fullTextSearch(String text, int maxResults);
 
 	void updateFullTextIndex(Concept concept);
+	
+	void indexRelationship(Relationship relationship);
+	
+	Relationship getRelationshipByUuid(String uuid);
 }
