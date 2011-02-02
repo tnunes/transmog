@@ -181,8 +181,9 @@
 	</build>
 	<modules>
 		<module>conceptstore-impl</module>
-		<module>conceptstore-manager</module>
 		<module>datasource-umls-impl</module>
 		<module>datasource</module>
+		<module>conceptstore-viewer</module>
+		<module>conceptstore-impl-rmi-exporter</module>
 	</modules>
 </project>
