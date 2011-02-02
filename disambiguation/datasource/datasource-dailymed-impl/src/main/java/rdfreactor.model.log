@@ -1,0 +1,44 @@
+
+JModel
+  JPackage gov.nih.nlm.dailymed
+    JClass Thing -> http://www.w3.org/2000/01/rdf-schema#Class
+      extends: org.ontoware.rdfreactor.schema.rdfs.Class, 
+      comment: This class acts as a catch-all for all properties, for which no domain has specified.
+      ActiveIngredient (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/activeIngredient, types: 'Thing',. Inverse: ActiveIngredient.
+      ActiveMoiety (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/activeMoiety, types: 'Thing',. Inverse: ActiveMoiety.
+      AdverseReaction (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/adverseReaction, types: 'Thing',. Inverse: AdverseReaction.
+      BoxedWarning (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/boxedWarning, types: 'Thing',. Inverse: BoxedWarning.
+      ClinicalPharmacology (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/clinicalPharmacology, types: 'Thing',. Inverse: ClinicalPharmacology.
+      Contraindication (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/contraindication, types: 'Thing',. Inverse: Contraindication.
+      Description (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/description, types: 'Thing',. Inverse: Description.
+      Dosage (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/dosage, types: 'Thing',. Inverse: Dosage.
+      EquivalentClass (-1/-1)  -> http://www.w3.org/2002/07/owl#equivalentClass, types: 'Thing',. Inverse: EquivalentClass.
+      FullName (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/fullName, types: 'Thing',. Inverse: FullName.
+      GenericDrug (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/genericDrug, types: 'Thing',. Inverse: GenericDrug.
+      GenericMedicine (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/genericMedicine, types: 'Thing',. Inverse: GenericMedicine.
+      InactiveIngredient (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/inactiveIngredient, types: 'Thing',. Inverse: InactiveIngredient.
+      Indication (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/indication, types: 'Thing',. Inverse: Indication.
+      Name (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/name, types: 'Thing',. Inverse: Name.
+      Overdosage (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/overdosage, types: 'Thing',. Inverse: Overdosage.
+      PossibleDiseaseTarget (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/possibleDiseaseTarget, types: 'Thing',. Inverse: PossibleDiseaseTarget.
+      Precaution (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/precaution, types: 'Thing',. Inverse: Precaution.
+      ProducesDrug (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/producesDrug, types: 'Thing',. Inverse: ProducesDrug.
+      RepresentedOrganization (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/representedOrganization, types: 'Thing',. Inverse: RepresentedOrganization.
+      RouteOfAdministration (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/routeOfAdministration, types: 'Thing',. Inverse: RouteOfAdministration.
+      SameAs (-1/-1)  -> http://www.w3.org/2002/07/owl#sameAs, types: 'Thing',. Inverse: SameAs.
+      SideEffect (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/sideEffect, types: 'Thing',. Inverse: SideEffect.
+      SupplementalPatientMaterial (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/supplementalPatientMaterial, types: 'Thing',. Inverse: SupplementalPatientMaterial.
+      Supply (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/supply, types: 'Thing',. Inverse: Supply.
+      Warning (-1/-1)  -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/warning, types: 'Thing',. Inverse: Warning.
+    JClass Offer -> http://www4.wiwiss.fu-berlin.de/drugbank/vocab/resource/class/Offer
+      extends: org.ontoware.rdfreactor.schema.rdfs.Resource, Offer, 
+      comment: 
+    JClass Ingredients -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/ingredients
+      extends: org.ontoware.rdfreactor.schema.rdfs.Resource, Ingredients, 
+      comment: 
+    JClass Drugs -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/drugs
+      extends: org.ontoware.rdfreactor.schema.rdfs.Resource, Drugs, 
+      comment: 
+    JClass Organization -> http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/organization
+      extends: org.ontoware.rdfreactor.schema.rdfs.Resource, Organization, 
+      comment: 

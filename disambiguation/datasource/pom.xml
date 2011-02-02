@@ -13,5 +13,7 @@
   <description>A parent project for all datasource implementations.</description>
   <modules>
   	<module>datasource-drugbank-impl</module>
+  	<module>datasource-dailymed-impl</module>
+  	<module>umls-impl</module>
   </modules>
 </project>
