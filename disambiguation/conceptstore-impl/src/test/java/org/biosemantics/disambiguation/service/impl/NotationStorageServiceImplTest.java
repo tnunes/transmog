@@ -17,6 +17,7 @@ import org.biosemantics.conceptstore.utils.domain.impl.ConceptImpl;
 import org.biosemantics.conceptstore.utils.domain.impl.LabelImpl;
 import org.biosemantics.conceptstore.utils.domain.impl.NotationImpl;
 import org.biosemantics.disambiguation.domain.impl.LanguageImpl;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -26,31 +27,36 @@ public class NotationStorageServiceImplTest extends AbstractTransactionalDataSou
 	private static final String SPECIAL_CHARS_NOTATION_CODE = "@!#$#$%  ^&*() 3ŒÄ©´¬ ÂûÆ¾û¾M  <NKLJS";
 	private static final String OTHER_NOTATION_CODE = "C654321";
 	@Autowired
-	NotationStorageService notationStorageService;
+	private NotationStorageService notationStorageService;
 	@Autowired
-	ConceptStorageService conceptStorageService;
+	private ConceptStorageService conceptStorageService;
 	@Autowired
-	LabelStorageService labelStorageService;
+	private LabelStorageService labelStorageService;
 
-	@Test
-	public void testCreateNotation() {
-		NotationImpl notationImpl = new NotationImpl(createDomain(), NOTATION_CODE);
-		notationStorageService.createNotation(notationImpl);
-	}
+	private Concept concept1;
+	private Concept concept2;
 
-	private Concept createDomain() {
+	@Before
+	public void init() {
 		Label label = labelStorageService.createLabel(new LabelImpl("UMLS", LanguageImpl.EN));
 		ConceptImpl conceptImpl = new ConceptImpl();
 		conceptImpl.addLabelByType(LabelType.PREFERRED, label);
-		return conceptStorageService.createConcept(ConceptType.DOMAIN, conceptImpl);
+		concept1 = conceptStorageService.createConcept(ConceptType.DOMAIN, conceptImpl);
+		conceptImpl = new ConceptImpl();
+		conceptImpl.addLabelByType(LabelType.PREFERRED, label);
+		concept2 = conceptStorageService.createConcept(ConceptType.DOMAIN, conceptImpl);
+	}
 
+	@Test
+	public void testCreateNotation() {
+		NotationImpl notationImpl = new NotationImpl(concept1.getUuid(), NOTATION_CODE);
+		notationStorageService.createNotation(notationImpl);
 	}
 
 	@Test
 	public void testGetNotationByCode() {
-		Concept domain = createDomain();
-		NotationImpl notationImpl = new NotationImpl(domain, NOTATION_CODE);
-		NotationImpl other = new NotationImpl(createDomain(), OTHER_NOTATION_CODE);
+		NotationImpl notationImpl = new NotationImpl(concept1.getUuid(), NOTATION_CODE);
+		NotationImpl other = new NotationImpl(concept2.getUuid(), OTHER_NOTATION_CODE);
 		notationStorageService.createNotation(notationImpl);
 		notationStorageService.createNotation(other);
 
@@ -59,13 +65,13 @@ public class NotationStorageServiceImplTest extends AbstractTransactionalDataSou
 		assertTrue(notations.size() == 1);
 		for (Notation notation : notations) {
 			assertTrue(notation.getCode() == NOTATION_CODE);
-			assertTrue(notation.getDomain().equals(domain));
+			assertTrue(notation.getDomainUuid().equals(concept1.getUuid()));
 		}
 	}
 
 	@Test
 	public void testGetNotationByCodeEmpty() {
-		NotationImpl other = new NotationImpl(createDomain(), OTHER_NOTATION_CODE);
+		NotationImpl other = new NotationImpl(concept1.getUuid(), OTHER_NOTATION_CODE);
 		notationStorageService.createNotation(other);
 		Collection<Notation> notations = notationStorageService.getNotationsByCode(NOTATION_CODE);
 		assertNotNull(notations);
@@ -74,7 +80,7 @@ public class NotationStorageServiceImplTest extends AbstractTransactionalDataSou
 
 	@Test
 	public void testGetLabelByTextEquals() {
-		NotationImpl other = new NotationImpl(createDomain(), OTHER_NOTATION_CODE);
+		NotationImpl other = new NotationImpl(concept1.getUuid(), OTHER_NOTATION_CODE);
 		Notation createdOnce = notationStorageService.createNotation(other);
 		Notation createdTwice = notationStorageService.createNotation(other);
 		assertTrue(createdOnce.equals(createdTwice));
@@ -82,15 +88,14 @@ public class NotationStorageServiceImplTest extends AbstractTransactionalDataSou
 
 	@Test
 	public void testGetNotationByCodeWithSpecialCharacter() {
-		Concept domain = createDomain();
-		NotationImpl notationImpl = new NotationImpl(domain, SPECIAL_CHARS_NOTATION_CODE);
+		NotationImpl notationImpl = new NotationImpl(concept1.getUuid(), SPECIAL_CHARS_NOTATION_CODE);
 		notationStorageService.createNotation(notationImpl);
 		Collection<Notation> notations = notationStorageService.getNotationsByCode(SPECIAL_CHARS_NOTATION_CODE);
 		assertNotNull(notations);
 		assertTrue(notations.size() == 1);
 		for (Notation notation : notations) {
 			assertTrue(notation.getCode().equals(SPECIAL_CHARS_NOTATION_CODE));
-			assertTrue(notation.getDomain().equals(domain));
+			assertTrue(notation.getDomainUuid().equals(concept1.getUuid()));
 		}
 	}
 

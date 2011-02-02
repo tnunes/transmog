@@ -10,7 +10,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 // ApplicationContext will be loaded from files in the root of the classpath
-@ContextConfiguration({ "/conceptstore-disambiguation-test-context.xml" })
+@ContextConfiguration({ "/conceptstore-impl-test-context.xml" })
 public abstract class AbstractTransactionalDataSource {
 
 	@Autowired

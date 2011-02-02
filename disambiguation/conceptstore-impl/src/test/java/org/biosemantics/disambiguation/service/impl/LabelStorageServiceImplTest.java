@@ -17,6 +17,7 @@ public class LabelStorageServiceImplTest extends AbstractTransactionalDataSource
 	private static final String PREFERRED_TXT = "PREFERRED";
 	private static final String PREFERRED_TXT_SPACES = "PREFERRED MORE";
 	private static final String TEXT_WITH_SPACES = "This is a looong text    with some spaces";
+	private static final String TEXT_WITH_WHITE_SPACES = "This is a\tloo\n\n\non\tg text    with some spaces";
 	@Autowired
 	LabelStorageService labelStorageService;
 
@@ -64,11 +65,36 @@ public class LabelStorageServiceImplTest extends AbstractTransactionalDataSource
 	}
 
 	@Test
-	public void testGetLabelByTextEquals() {
-		LabelImpl labelImpl = new LabelImpl(TEXT_WITH_SPACES, LanguageImpl.EN);
+	public void testLabelEquals() {
+		LabelImpl labelImpl = new LabelImpl(TEXT_WITH_WHITE_SPACES, LanguageImpl.EN);
 		Label createdOnce = labelStorageService.createLabel(labelImpl);
 		Label createdTwice = labelStorageService.createLabel(labelImpl);
 		assertTrue(createdOnce.equals(createdTwice));
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testNullLabel() {
+		labelStorageService.createLabel(null);
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testBlankLabel() {
+		labelStorageService.createLabel(new LabelImpl());
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testNullLabelText() {
+		labelStorageService.createLabel(new LabelImpl(null, LanguageImpl.DE));
+	}
+
+	@Test(expected=IllegalArgumentException.class)
+	public void testBlankLabelText() {
+		labelStorageService.createLabel(new LabelImpl("   ", LanguageImpl.DE));
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testNullLanguage() {
+		labelStorageService.createLabel(new LabelImpl(TEXT_WITH_SPACES, null));
 	}
 
 }

@@ -47,7 +47,7 @@ public class IndexServiceImplTest extends AbstractTransactionalDataSource {
 		labelImpl = new LabelImpl(TEXT_WITH_SPACE, LanguageImpl.EN);
 		conceptImpl.addLabelByType(LabelType.ALTERNATE, labelImpl);
 		org.biosemantics.conceptstore.utils.domain.impl.NotationImpl notationImpl = new org.biosemantics.conceptstore.utils.domain.impl.NotationImpl(
-				concept2, NOTATION_CODE_SPL_CAHRS);
+				concept2.getUuid(), NOTATION_CODE_SPL_CAHRS);
 		conceptImpl.addNotations(notationImpl);
 		concept3 = conceptStorageService.createConcept(ConceptType.CONCEPT, conceptImpl);
 	}
@@ -96,7 +96,7 @@ public class IndexServiceImplTest extends AbstractTransactionalDataSource {
 		Assert.assertEquals(notations.size(), 1);
 		for (Notation notation : notations) {
 			Assert.assertEquals(notation.getCode(), NOTATION_CODE_SPL_CAHRS);
-			Assert.assertEquals(notation.getDomain(), concept2);
+			Assert.assertEquals(notation.getDomainUuid(), concept2.getUuid());
 		}
 	}
 
