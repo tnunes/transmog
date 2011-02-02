@@ -52,7 +52,7 @@ public class NotationStorageServiceImpl implements NotationStorageService {
 			// create new node if none exists
 			Node node = graphStorageTemplate.createNode();
 			graphStorageTemplate.createRelationship(notationParentNode, node, DefaultRelationshipType.NOTATION);
-			createdNotation = new NotationImpl(node).withCode(notation.getCode()).withDomain(notation.getDomain());
+			createdNotation = new NotationImpl(node).withCode(notation.getCode()).withDomainUuid(notation.getDomainUuid());
 			indexService.indexNotation(createdNotation);
 		}
 		return createdNotation;
@@ -63,7 +63,7 @@ public class NotationStorageServiceImpl implements NotationStorageService {
 		Iterable<Notation> notations = indexService.getNotationByCode(notation.getCode());
 		if (notations != null) {
 			for (Notation foundNotation : notations) {
-				if (foundNotation.getDomain().equals(notation.getDomain())) {
+				if (foundNotation.getDomainUuid().equals(notation.getDomainUuid())) {
 					found = foundNotation;
 					break;
 				}

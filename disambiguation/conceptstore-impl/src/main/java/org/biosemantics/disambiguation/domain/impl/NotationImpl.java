@@ -3,19 +3,16 @@ package org.biosemantics.disambiguation.domain.impl;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import org.biosemantics.conceptstore.common.domain.Concept;
 import org.biosemantics.conceptstore.common.domain.Notation;
 import org.biosemantics.conceptstore.utils.domain.impl.ErrorMessage;
-import org.biosemantics.disambiguation.service.impl.DefaultRelationshipType;
-import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
 
 public class NotationImpl implements Notation {
 
 	private static final long serialVersionUID = -8506731919995962487L;
 
 	public static final String CODE_PROPERTY = "code";
+	public static final String DOMAIN_UUID_PROPERTY = "domainUuid";
 
 	private Node underlyingNode;
 
@@ -35,16 +32,14 @@ public class NotationImpl implements Notation {
 	}
 
 	@Override
-	public Concept getDomain() {
-		// the check not null will give an exception for all domains
-		Relationship relationship = checkNotNull(underlyingNode.getSingleRelationship(
-				DefaultRelationshipType.HAS_DOMAIN, Direction.OUTGOING));
-		return new ConceptImpl(relationship.getOtherNode(underlyingNode));
+	public String getDomainUuid() {
+		return (String) underlyingNode.getProperty(DOMAIN_UUID_PROPERTY);
 	}
 
-	private void setDomain(Concept concept) {
-		ConceptImpl conceptImpl = (ConceptImpl) concept;
-		underlyingNode.createRelationshipTo(conceptImpl.getUnderlyingNode(), DefaultRelationshipType.HAS_DOMAIN);
+	private void setDomainUuid(String domainUuid) {
+		checkNotNull(domainUuid);
+		checkArgument(!domainUuid.isEmpty(), ErrorMessage.EMPTY_STRING_MSG, domainUuid);
+		underlyingNode.setProperty(DOMAIN_UUID_PROPERTY, domainUuid);
 	}
 
 	@Override
@@ -60,8 +55,8 @@ public class NotationImpl implements Notation {
 		return this.underlyingNode.hashCode();
 	}
 
-	public NotationImpl withDomain(Concept domain) {
-		setDomain(domain);
+	public NotationImpl withDomainUuid(String domainUuid) {
+		setDomainUuid(domainUuid);
 		return this;
 	}
 
