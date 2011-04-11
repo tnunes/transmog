@@ -29,12 +29,6 @@
 			<groupId>org.neo4j</groupId>
 			<artifactId>neo4j</artifactId>
 		</dependency>
-
-		<!-- validation -->
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava-collections</artifactId>
-		</dependency>
 		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework</groupId>
