@@ -35,7 +35,7 @@
 		<junit.version>4.8.1</junit.version>
 		<org.jmock.version>2.5.1</org.jmock.version>
 		<joda.time.version>1.6.2</joda.time.version>
-		<org.neo4j>1.2</org.neo4j>
+		<org.neo4j>1.3.M05</org.neo4j>
 		<hudson.server.url>http://office1.nbiceng.net:8080/hudson/</hudson.server.url>
 		<nexus.server.url>http://aneurist.erasmusmc.nl/nexus/content/repositories</nexus.server.url>
 	</properties>
@@ -181,9 +181,7 @@
 	</build>
 	<modules>
 		<module>conceptstore-impl</module>
-		<module>datasource-umls-impl</module>
 		<module>datasource</module>
-		<module>conceptstore-viewer</module>
 		<module>conceptstore-impl-rmi-exporter</module>
 	</modules>
 </project>
