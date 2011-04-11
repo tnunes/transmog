@@ -1,17 +1,14 @@
 package org.biosemantics.disambiguation.domain.impl;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.common.domain.Language;
-import org.biosemantics.conceptstore.utils.domain.impl.ErrorMessage;
 import org.neo4j.graphdb.Node;
 
 public class LabelImpl implements Label {
 
 	private static final long serialVersionUID = 2625024353276251601L;
+	public static final String UUID_PROPERTY = "uuid";
 	public static final String LANGUAGE_PROPERTY = "language";
 	public static final String TEXT_PROPERTY = "text";
 	private Node underlyingNode;
@@ -25,20 +22,20 @@ public class LabelImpl implements Label {
 		return LanguageImpl.valueOf((String) underlyingNode.getProperty(LANGUAGE_PROPERTY));
 	}
 
-	public void setLanguage(Language language) {
-		checkNotNull(language);
-		underlyingNode.setProperty(LANGUAGE_PROPERTY, language.getLabel());
-	}
-
 	@Override
 	public String getText() {
 		return (String) underlyingNode.getProperty(TEXT_PROPERTY);
 	}
 
-	public void setText(String text) {
-		checkNotNull(text);
-		checkArgument(!text.isEmpty(), ErrorMessage.EMPTY_STRING_MSG, text);
-		underlyingNode.setProperty(TEXT_PROPERTY, text);
+	@Override
+	public String getUuid() {
+		return (String) underlyingNode.getProperty(UUID_PROPERTY);
+	}
+
+	@Override
+	public String[] getSources() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	public Node getUnderlyingNode() {
@@ -63,13 +60,4 @@ public class LabelImpl implements Label {
 		return ToStringBuilder.reflectionToString(this);
 	}
 
-	public LabelImpl withLanguage(Language language) {
-		setLanguage(language);
-		return this;
-	}
-
-	public LabelImpl withText(String text) {
-		setText(text);
-		return this;
-	}
 }

@@ -29,7 +29,7 @@
 
 	<!-- SERVICES -->
 
-	<bean id="graphStorageTemplate" class="org.biosemantics.disambiguation.service.impl.GraphStorageTemplateImpl">
+	<bean id="graphStorageTemplate" class="org.biosemantics.disambiguation.service.local.impl.GraphStorageTemplateImpl">
 		<constructor-arg value="${data.store}" />
 		<!-- <constructor-arg> -->
 		<!-- <map> -->
@@ -43,74 +43,55 @@
 		<!-- </constructor-arg> -->
 	</bean>
 
-	<bean id="indexService" class="org.biosemantics.disambiguation.service.impl.IndexServiceImpl">
+	<bean id="labelStorageServiceLocal" class="org.biosemantics.disambiguation.service.local.impl.LabelStorageServiceLocalImpl">
 		<constructor-arg>
 			<ref local="graphStorageTemplate" />
 		</constructor-arg>
-		<property name="cacheSize" value="${index.cacheSize}"></property>
-	</bean>
-
-	<bean id="labelStorageService" class="org.biosemantics.disambiguation.service.impl.LabelStorageServiceImpl">
-		<constructor-arg>
-			<ref local="graphStorageTemplate" />
-		</constructor-arg>
-		<property name="indexService">
-			<ref local="indexService" />
-		</property>
-		<property name="labelValidator" ref="labelValidator"></property>
-	</bean>
-
-	<bean id="notationStorageService" class="org.biosemantics.disambiguation.service.impl.NotationStorageServiceImpl">
-		<constructor-arg>
-			<ref local="graphStorageTemplate" />
-		</constructor-arg>
-		<property name="indexService">
-			<ref local="indexService" />
-		</property>
-		<property name="notationValidator" ref="notationValidator"></property>
-	</bean>
-
-	<bean id="noteStorageService" class="org.biosemantics.disambiguation.service.impl.NoteStorageServiceImpl">
-		<constructor-arg>
-			<ref local="graphStorageTemplate" />
-		</constructor-arg>
-		<property name="checkExists" value="false"></property>
-		<property name="indexService" ref="indexService"></property>
-	</bean>
-
-	<bean id="conceptStorageService" class="org.biosemantics.disambiguation.service.impl.ConceptStorageServiceIndexingImpl">
-		<constructor-arg>
-			<bean class="org.biosemantics.disambiguation.service.impl.ConceptStorageServiceImpl">
-				<constructor-arg>
-					<ref local="graphStorageTemplate" />
-				</constructor-arg>
-				<property name="uuidGeneratorService" ref="uuidGeneratorService"></property>
-				<property name="labelStorageService" ref="labelStorageService"></property>
-				<property name="notationStorageService" ref="notationStorageService"></property>
-				<property name="noteStorageService" ref="noteStorageService"></property>
-				<property name="conceptValidator" ref="conceptValidator"></property>
-				<property name="indexService" ref="indexService"></property>
-			</bean>
-		</constructor-arg>
-		<property name="indexService">
-			<ref local="indexService" />
-		</property>
-	</bean>
-
-	<bean id="conceptQueryService" class="org.biosemantics.disambiguation.service.impl.ConceptQueryServiceImpl">
-		<property name="indexService">
-			<ref local="indexService" />
-		</property>
-		<property name="graphStorageTemplate">
-			<ref local="graphStorageTemplate" />
-		</property>
-	</bean>
-
-	<bean id="relationshipStorageService" class="org.biosemantics.disambiguation.service.impl.RelationshipStorageServiceImpl">
-		<property name="indexService">
-			<ref local="indexService" />
-		</property>
+		<property name="validationUtility" ref="validationUtility"></property>
 		<property name="uuidGeneratorService" ref="uuidGeneratorService"></property>
+	</bean>
+
+	<bean id="notationStorageServiceLocal" class="org.biosemantics.disambiguation.service.local.impl.NotationStorageServiceLocalImpl">
+		<constructor-arg>
+			<ref local="graphStorageTemplate" />
+		</constructor-arg>
+		<property name="validationUtility" ref="validationUtility"></property>
+		<property name="uuidGeneratorService" ref="uuidGeneratorService"></property>
+	</bean>
+
+	<bean id="noteStorageServiceLocal" class="org.biosemantics.disambiguation.service.local.impl.NoteStorageServiceLocalImpl">
+		<constructor-arg>
+			<ref local="graphStorageTemplate" />
+		</constructor-arg>
+		<property name="validationUtility" ref="validationUtility"></property>
+	</bean>
+
+	<bean id="sourceStorageServiceLocal" class="org.biosemantics.disambiguation.service.local.impl.SourceStorageServiceLocalImpl">
+		<constructor-arg>
+			<ref local="graphStorageTemplate" />
+		</constructor-arg>
+		<property name="uuidGeneratorService" ref="uuidGeneratorService"></property>
+		<property name="validationUtility" ref="validationUtility"></property>
+	</bean>
+
+	<bean id="conceptStorageServiceLocal" class="org.biosemantics.disambiguation.service.local.impl.ConceptStorageServiceLocalImpl">
+		<constructor-arg>
+			<ref local="graphStorageTemplate" />
+		</constructor-arg>
+		<property name="uuidGeneratorService" ref="uuidGeneratorService"></property>
+		<property name="labelStorageServiceLocal" ref="labelStorageServiceLocal"></property>
+		<property name="notationStorageServiceLocal" ref="notationStorageServiceLocal"></property>
+		<property name="noteStorageServiceLocal" ref="noteStorageServiceLocal"></property>
+		<property name="validationUtility" ref="validationUtility"></property>
+	</bean>
+
+	<bean id="relationshipStorageService" class="org.biosemantics.disambiguation.service.local.impl.ConceptRelationshipStorageServiceLocalImpl">
+		<constructor-arg>
+			<ref local="graphStorageTemplate" />
+		</constructor-arg>
+		<property name="uuidGeneratorService" ref="uuidGeneratorService"></property>
+		<property name="validationUtility" ref="validationUtility"></property>
+		<property name="conceptStorageServiceLocal" ref="conceptStorageServiceLocal"></property>
 	</bean>
 
 </beans>

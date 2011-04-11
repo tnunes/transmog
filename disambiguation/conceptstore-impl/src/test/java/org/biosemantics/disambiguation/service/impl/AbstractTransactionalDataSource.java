@@ -1,5 +1,6 @@
 package org.biosemantics.disambiguation.service.impl;
 
+import org.biosemantics.disambiguation.service.local.impl.GraphStorageTemplate;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
