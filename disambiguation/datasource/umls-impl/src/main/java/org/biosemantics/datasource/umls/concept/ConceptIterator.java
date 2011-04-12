@@ -7,6 +7,8 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.biosemantics.conceptstore.common.domain.Concept;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
@@ -19,6 +21,7 @@ public class ConceptIterator implements Iterator<Concept> {
 	private Collection<String> allCuis;
 	private static final String GET_ALL_CUI_SQL = "select DISTINCT(CUI) from MRCONSO";
 	private static final String GET_CUI_DETAILS_SQL = "select CUI, SUI, TS, ISPREF, STT, LAT, STR, SAB, CODE from MRCONSO WHERE CUI = ?";
+	private static final Logger logger = LoggerFactory.getLogger(ConceptIterator.class);
 
 	@Required
 	public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
@@ -32,6 +35,7 @@ public class ConceptIterator implements Iterator<Concept> {
 
 	public void init() {
 		allCuis = jdbcTemplate.query(GET_ALL_CUI_SQL, new CuiCountResultSetExtractor());
+		logger.info("all cuis {}", allCuis.size());
 		iterator = allCuis.iterator();
 	}
 
