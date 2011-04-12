@@ -11,4 +11,3 @@
 	<import resource="classpath:umls-impl-context.xml" />
 
 </beans>
-</beans>

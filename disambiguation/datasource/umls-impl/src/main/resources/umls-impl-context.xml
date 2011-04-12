@@ -21,6 +21,9 @@
 
 	<bean id="domainIterator" class="org.biosemantics.datasource.umls.concept.DomainIterator">
 		<property name="jdbcTemplate" ref="jdbcTemplate"></property>
+		<property name="domainResultSetExtractor">
+			<bean class="org.biosemantics.datasource.umls.concept.DomainResultSetExtractor"></bean>
+		</property>
 	</bean>
 
 	<bean id="conceptIterator" class="org.biosemantics.datasource.umls.concept.ConceptIterator">
