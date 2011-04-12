@@ -3,6 +3,7 @@ package org.biosemantics.disambiguation.bulkimport.service.impl;
 import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import org.biosemantics.conceptstore.common.domain.Concept;
@@ -20,6 +21,7 @@ import org.biosemantics.disambiguation.service.local.impl.LabelStorageServiceLoc
 import org.biosemantics.disambiguation.service.local.impl.NotationStorageServiceLocalImpl;
 import org.neo4j.graphdb.index.BatchInserterIndex;
 import org.neo4j.graphdb.index.BatchInserterIndexProvider;
+import org.neo4j.helpers.collection.MapUtil;
 import org.neo4j.index.impl.lucene.LuceneBatchInserterIndexProvider;
 import org.neo4j.kernel.impl.batchinsert.BatchInserter;
 import org.neo4j.kernel.impl.batchinsert.BatchInserterImpl;
@@ -39,6 +41,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 	// index
 	private BatchInserterIndexProvider indexService;
 	private BatchInserterIndex conceptNodeIndex;
+	private BatchInserterIndex conceptFullTextIndex;
 	private BatchInserterIndex labelNodeIndex;
 	private BatchInserterIndex notationNodeIndex;
 	// parentNodes
@@ -67,6 +70,8 @@ public class BulkImportServiceImpl implements BulkImportService {
 		logger.info("initing indexes");
 		this.indexService = new LuceneBatchInserterIndexProvider(batchInserter);
 		conceptNodeIndex = this.indexService.nodeIndex(ConceptStorageServiceLocalImpl.CONCEPT_INDEX, null);
+		conceptFullTextIndex = this.indexService.nodeIndex(ConceptStorageServiceLocalImpl.CONCEPT_FULLTEXT_INDEX,
+				MapUtil.stringMap("provider", "lucene", "type", "fulltext"));
 		labelNodeIndex = this.indexService.nodeIndex(LabelStorageServiceLocalImpl.LABEL_INDEX, null);
 		notationNodeIndex = this.indexService.nodeIndex(NotationStorageServiceLocalImpl.NOTATION_INDEX, null);
 		logger.info("creating parent nodes");
@@ -92,6 +97,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 		final String conceptUuid = uuidGeneratorService.generateRandomUuid();
 		// properties map is reused so make sure to clear it after each storage call
 		Map<String, Object> properties = new HashMap<String, Object>();
+		Collection<String> fullText = new HashSet<String>();
 		properties.put(ConceptImpl.UUID_PROPERTY, conceptUuid);
 		long conceptNode = batchInserter.createNode(properties);
 		switch (conceptType) {
@@ -112,6 +118,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 		for (ConceptLabel conceptLabel : labels) {
 			long labelNode = 0;
 			final String labelUuid = uuidGeneratorService.generateRandomUuid();
+			fullText.add(conceptLabel.getText());
 			if (labelMap.containsKey(conceptLabel)) {
 				labelNode = labelMap.get(conceptLabel);
 
@@ -140,6 +147,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 			for (Notation notation : notations) {
 				long notationNode = 0;
 				final String notationUuid = uuidGeneratorService.generateRandomUuid();
+				fullText.add(notation.getCode());
 				if (notationMap.containsKey(notation)) {
 					notationNode = notationMap.get(notation);
 				} else {
@@ -165,8 +173,17 @@ public class BulkImportServiceImpl implements BulkImportService {
 		properties.put(ConceptStorageServiceLocalImpl.UUID_INDEX_KEY, conceptUuid);
 		conceptNodeIndex.add(conceptNode, properties);
 		properties.clear();
+		
+		fullText.add(conceptUuid);
+		StringBuilder fullTextString = new StringBuilder();
+		for (String string : fullText) {
+			fullTextString.append(string).append(ConceptStorageServiceLocalImpl.DELIMITER);
+		}
+		properties.put(ConceptStorageServiceLocalImpl.FULLTEXT_INDEX_KEY, fullTextString.toString());
+		conceptFullTextIndex.add(conceptNode, properties);
+		properties.clear();
+		
 		return conceptUuid;
 
 	}
-
 }
