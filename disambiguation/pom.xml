@@ -183,5 +183,6 @@
 		<module>conceptstore-impl</module>
 		<module>datasource</module>
 		<module>conceptstore-impl-rmi-exporter</module>
+		<module>conceptstore-bulk-import-impl</module>
 	</modules>
 </project>
