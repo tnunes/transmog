@@ -36,7 +36,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 	private final String storeDir;
 	private final BatchInserter batchInserter;
 	private UuidGeneratorService uuidGeneratorService;
-	private Map<ConceptLabel, Long> labelMap = new HashMap<ConceptLabel, Long>();
+	private Map<org.biosemantics.conceptstore.utils.domain.impl.LabelImpl, Long> labelMap = new HashMap<org.biosemantics.conceptstore.utils.domain.impl.LabelImpl, Long>();
 	private Map<Notation, Long> notationMap = new HashMap<Notation, Long>();
 	// index
 	private BatchInserterIndexProvider indexService;
@@ -58,7 +58,6 @@ public class BulkImportServiceImpl implements BulkImportService {
 			throw new IllegalArgumentException("storeDir needs to be an existing empty directory");
 		}
 		this.batchInserter = new BatchInserterImpl(this.storeDir);
-
 	}
 
 	@Required
@@ -69,11 +68,14 @@ public class BulkImportServiceImpl implements BulkImportService {
 	public void init() {
 		logger.info("initing indexes");
 		this.indexService = new LuceneBatchInserterIndexProvider(batchInserter);
-		conceptNodeIndex = this.indexService.nodeIndex(ConceptStorageServiceLocalImpl.CONCEPT_INDEX, null);
+		conceptNodeIndex = this.indexService.nodeIndex(ConceptStorageServiceLocalImpl.CONCEPT_INDEX,
+				MapUtil.stringMap("provider", "lucene", "type", "exact"));
 		conceptFullTextIndex = this.indexService.nodeIndex(ConceptStorageServiceLocalImpl.CONCEPT_FULLTEXT_INDEX,
 				MapUtil.stringMap("provider", "lucene", "type", "fulltext"));
-		labelNodeIndex = this.indexService.nodeIndex(LabelStorageServiceLocalImpl.LABEL_INDEX, null);
-		notationNodeIndex = this.indexService.nodeIndex(NotationStorageServiceLocalImpl.NOTATION_INDEX, null);
+		labelNodeIndex = this.indexService.nodeIndex(LabelStorageServiceLocalImpl.LABEL_INDEX,
+				MapUtil.stringMap("provider", "lucene", "type", "exact"));
+		notationNodeIndex = this.indexService.nodeIndex(NotationStorageServiceLocalImpl.NOTATION_INDEX,
+				MapUtil.stringMap("provider", "lucene", "type", "exact"));
 		logger.info("creating parent nodes");
 		conceptParentNode = batchInserter.createNode(null);
 		batchInserter.createRelationship(batchInserter.getReferenceNode(), conceptParentNode,
@@ -119,8 +121,10 @@ public class BulkImportServiceImpl implements BulkImportService {
 			long labelNode = 0;
 			final String labelUuid = uuidGeneratorService.generateRandomUuid();
 			fullText.add(conceptLabel.getText());
-			if (labelMap.containsKey(conceptLabel)) {
-				labelNode = labelMap.get(conceptLabel);
+			org.biosemantics.conceptstore.utils.domain.impl.LabelImpl labelImpl = (org.biosemantics.conceptstore.utils.domain.impl.LabelImpl)conceptLabel;
+			if (labelMap.containsKey(labelImpl)) {
+				labelNode = labelMap.get(labelImpl);
+				logger.debug("Label found in map {}", labelImpl);
 
 			} else {
 				properties.put(LabelImpl.UUID_PROPERTY, labelUuid);
@@ -136,6 +140,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 				properties.put(LabelStorageServiceLocalImpl.TEXT_INDEX_KEY, conceptLabel.getText());
 				labelNodeIndex.add(labelNode, properties);
 				properties.clear();
+				labelMap.put(labelImpl, labelNode);
 			}
 			properties.put(ConceptImpl.LABEL_TYPE_RLSP_PROPERTY, conceptLabel.getLabelType().name());
 			batchInserter.createRelationship(conceptNode, labelNode, DefaultRelationshipType.HAS_LABEL, properties);
@@ -150,6 +155,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 				fullText.add(notation.getCode());
 				if (notationMap.containsKey(notation)) {
 					notationNode = notationMap.get(notation);
+					logger.debug("notation found in map {}", notation);
 				} else {
 					properties.put(NotationImpl.UUID_PROPERTY, notationUuid);
 					properties.put(NotationImpl.DOMAIN_UUID_PROPERTY, notation.getDomainUuid());
@@ -165,6 +171,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 					properties.put(NotationStorageServiceLocalImpl.CODE_INDEX_KEY, notation.getCode());
 					notationNodeIndex.add(notationNode, properties);
 					properties.clear();
+					notationMap.put(notation, notationNode);
 				}
 				batchInserter.createRelationship(conceptNode, notationNode, DefaultRelationshipType.HAS_NOTATION, null);
 				properties.clear();
@@ -173,7 +180,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 		properties.put(ConceptStorageServiceLocalImpl.UUID_INDEX_KEY, conceptUuid);
 		conceptNodeIndex.add(conceptNode, properties);
 		properties.clear();
-		
+
 		fullText.add(conceptUuid);
 		StringBuilder fullTextString = new StringBuilder();
 		for (String string : fullText) {
@@ -182,8 +189,18 @@ public class BulkImportServiceImpl implements BulkImportService {
 		properties.put(ConceptStorageServiceLocalImpl.FULLTEXT_INDEX_KEY, fullTextString.toString());
 		conceptFullTextIndex.add(conceptNode, properties);
 		properties.clear();
-		
 		return conceptUuid;
+	}
 
+	public void destroy() {
+		logger.info("invoking flush");
+		conceptNodeIndex.flush();
+		conceptFullTextIndex.flush();
+		labelNodeIndex.flush();
+		notationNodeIndex.flush();
+		logger.info("invoking shutdown");
+		indexService.shutdown();
+		batchInserter.shutdown();
+		logger.info("shutdown complete");
 	}
 }
