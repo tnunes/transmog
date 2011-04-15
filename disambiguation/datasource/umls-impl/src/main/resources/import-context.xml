@@ -7,7 +7,7 @@
 
 
 	<context:property-placeholder location="classpath:import-conf.properties" />
-	<import resource="classpath:conceptstore-impl-context.xml" />
+	<import resource="classpath:conceptstore-bulk-import-impl-context.xml" />
 	<import resource="classpath:umls-impl-context.xml" />
 
 </beans>

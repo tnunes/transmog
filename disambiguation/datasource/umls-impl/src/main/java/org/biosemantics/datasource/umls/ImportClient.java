@@ -10,34 +10,38 @@ import org.biosemantics.conceptstore.common.domain.ConceptLabel;
 import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.LabelType;
 import org.biosemantics.conceptstore.common.domain.Notation;
-import org.biosemantics.conceptstore.common.service.ConceptStorageService;
 import org.biosemantics.conceptstore.utils.domain.impl.NotationImpl;
 import org.biosemantics.datasource.umls.concept.ConceptIterator;
 import org.biosemantics.datasource.umls.concept.DomainIterator;
+import org.biosemantics.disambiguation.bulkimport.service.BulkImportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.transaction.annotation.Transactional;
 
 public class ImportClient {
 
 	private Map<String, String> domainMap = new HashMap<String, String>();
 	private static final String[] CONTEXTS = new String[] { "import-context.xml" };
 	private static final Logger logger = LoggerFactory.getLogger(ImportClient.class);
+	
+	private static final int BATCH = 1000;
 
 	public static void main(String[] args) {
 		ImportClient importClient = new ImportClient();
 		importClient.init();
 	}
 
+	@Transactional
 	public void init() {
 		ApplicationContext applicationContext = new ClassPathXmlApplicationContext(CONTEXTS);
 		DomainIterator domainIterator = applicationContext.getBean(DomainIterator.class);
-		ConceptStorageService conceptStorageService = applicationContext.getBean(ConceptStorageService.class);
+		BulkImportService bulkImportService = applicationContext.getBean(BulkImportService.class);
 
 		while (domainIterator.hasNext()) {
 			Concept concept = domainIterator.next();
-			String uuid = conceptStorageService.createConcept(ConceptType.DOMAIN, concept);
+			String uuid = bulkImportService.createConcept(ConceptType.DOMAIN, concept);
 			for (ConceptLabel label : concept.getLabels()) {
 				if (label.getLabelType() == LabelType.ALTERNATE) {
 					domainMap.put(label.getText(), uuid);
@@ -46,6 +50,7 @@ public class ImportClient {
 		}
 
 		ConceptIterator conceptIterator = applicationContext.getBean(ConceptIterator.class);
+		int ctr = 0;
 		while (conceptIterator.hasNext()) {
 			Concept concept = conceptIterator.next();
 			// update concepts with relevant domain uuids
@@ -59,7 +64,10 @@ public class ImportClient {
 			}
 			concept.getNotations().clear();
 			concept.getNotations().addAll(notations);
-			conceptStorageService.createConcept(ConceptType.CONCEPT, concept);
+			bulkImportService.createConcept(ConceptType.CONCEPT, concept);
+			if(++ctr % BATCH == 0){
+				logger.info("{}",ctr);
+			}
 		}
 
 	}
