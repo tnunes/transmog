@@ -11,6 +11,7 @@ import org.biosemantics.conceptstore.common.domain.ConceptLabel;
 import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.Notation;
 import org.biosemantics.conceptstore.utils.service.UuidGeneratorService;
+import org.biosemantics.disambiguation.bulkimport.service.BulkImportNodeCache;
 import org.biosemantics.disambiguation.bulkimport.service.BulkImportService;
 import org.biosemantics.disambiguation.domain.impl.ConceptImpl;
 import org.biosemantics.disambiguation.domain.impl.LabelImpl;
@@ -36,8 +37,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 	private final String storeDir;
 	private final BatchInserter batchInserter;
 	private UuidGeneratorService uuidGeneratorService;
-	private Map<org.biosemantics.conceptstore.utils.domain.impl.LabelImpl, Long> labelMap = new HashMap<org.biosemantics.conceptstore.utils.domain.impl.LabelImpl, Long>();
-	private Map<Notation, Long> notationMap = new HashMap<Notation, Long>();
+	private BulkImportNodeCache bulkImportNodeCache;
 	// index
 	private BatchInserterIndexProvider indexService;
 	private BatchInserterIndex conceptNodeIndex;
@@ -63,6 +63,11 @@ public class BulkImportServiceImpl implements BulkImportService {
 	@Required
 	public void setUuidGeneratorService(UuidGeneratorService uuidGeneratorService) {
 		this.uuidGeneratorService = uuidGeneratorService;
+	}
+
+	@Required
+	public void setBulkImportNodeCache(BulkImportNodeCache bulkImportNodeCache) {
+		this.bulkImportNodeCache = bulkImportNodeCache;
 	}
 
 	public void init() {
@@ -118,15 +123,12 @@ public class BulkImportServiceImpl implements BulkImportService {
 		properties.clear();
 		Collection<ConceptLabel> labels = concept.getLabels();
 		for (ConceptLabel conceptLabel : labels) {
-			long labelNode = 0;
 			final String labelUuid = uuidGeneratorService.generateRandomUuid();
 			fullText.add(conceptLabel.getText());
-			org.biosemantics.conceptstore.utils.domain.impl.LabelImpl labelImpl = (org.biosemantics.conceptstore.utils.domain.impl.LabelImpl)conceptLabel;
-			if (labelMap.containsKey(labelImpl)) {
-				labelNode = labelMap.get(labelImpl);
-				logger.debug("Label found in map {}", labelImpl);
-
-			} else {
+			org.biosemantics.conceptstore.utils.domain.impl.LabelImpl labelImpl = (org.biosemantics.conceptstore.utils.domain.impl.LabelImpl) conceptLabel;
+			long labelNode = bulkImportNodeCache.getLabelNodeId(conceptLabel.getText(), conceptLabel.getLanguage()
+					.getLabel());
+			if (labelNode < 0) {
 				properties.put(LabelImpl.UUID_PROPERTY, labelUuid);
 				properties.put(LabelImpl.TEXT_PROPERTY, conceptLabel.getText());
 				properties.put(LabelImpl.LANGUAGE_PROPERTY, conceptLabel.getLanguage().getLabel());
@@ -140,7 +142,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 				properties.put(LabelStorageServiceLocalImpl.TEXT_INDEX_KEY, conceptLabel.getText());
 				labelNodeIndex.add(labelNode, properties);
 				properties.clear();
-				labelMap.put(labelImpl, labelNode);
+				bulkImportNodeCache.addLabel(conceptLabel.getText(), conceptLabel.getLanguage().getLabel(), labelNode);
 			}
 			properties.put(ConceptImpl.LABEL_TYPE_RLSP_PROPERTY, conceptLabel.getLabelType().name());
 			batchInserter.createRelationship(conceptNode, labelNode, DefaultRelationshipType.HAS_LABEL, properties);
@@ -150,13 +152,12 @@ public class BulkImportServiceImpl implements BulkImportService {
 		Collection<Notation> notations = concept.getNotations();
 		if (!CollectionUtils.isEmpty(notations)) {
 			for (Notation notation : notations) {
-				long notationNode = 0;
+
 				final String notationUuid = uuidGeneratorService.generateRandomUuid();
 				fullText.add(notation.getCode());
-				if (notationMap.containsKey(notation)) {
-					notationNode = notationMap.get(notation);
-					logger.debug("notation found in map {}", notation);
-				} else {
+				long notationNode = bulkImportNodeCache.getNotationNodeId(notation.getDomainUuid(), notation.getCode());
+				if (notationNode < 0) {
+
 					properties.put(NotationImpl.UUID_PROPERTY, notationUuid);
 					properties.put(NotationImpl.DOMAIN_UUID_PROPERTY, notation.getDomainUuid());
 					properties.put(NotationImpl.CODE_PROPERTY, notation.getCode());
@@ -171,7 +172,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 					properties.put(NotationStorageServiceLocalImpl.CODE_INDEX_KEY, notation.getCode());
 					notationNodeIndex.add(notationNode, properties);
 					properties.clear();
-					notationMap.put(notation, notationNode);
+					bulkImportNodeCache.addNotation(notation.getDomainUuid(), notation.getCode(), notationNode);
 				}
 				batchInserter.createRelationship(conceptNode, notationNode, DefaultRelationshipType.HAS_NOTATION, null);
 				properties.clear();

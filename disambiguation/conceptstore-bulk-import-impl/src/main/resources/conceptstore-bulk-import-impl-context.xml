@@ -10,5 +10,10 @@
 	<bean id="bulkImportService" class="org.biosemantics.disambiguation.bulkimport.service.impl.BulkImportServiceImpl">
 		<constructor-arg value="${data.storeDir}"></constructor-arg>
 		<property name="uuidGeneratorService" ref="uuidGeneratorService"></property>
+		<property name="BulkImportNodeCache" ref="bulkImportNodeCache"></property>
+	</bean>
+	
+	<bean id="bulkImportNodeCache" class="org.biosemantics.disambiguation.bulkimport.service.impl.BulkImportNodeCacheDb4oImpl">
+		<property name="cacheDir" value="${data.cacheDir}"></property>
 	</bean>
 </beans>
