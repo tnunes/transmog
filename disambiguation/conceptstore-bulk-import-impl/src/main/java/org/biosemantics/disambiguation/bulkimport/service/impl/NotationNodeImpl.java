@@ -1,6 +1,10 @@
 package org.biosemantics.disambiguation.bulkimport.service.impl;
 
-public class NotationNodeImpl {
+import java.io.Serializable;
+
+public class NotationNodeImpl implements Serializable {
+
+	private static final long serialVersionUID = -1170461101283527453L;
 	private String domainUuid;
 	private String code;
 	private long nodeId;

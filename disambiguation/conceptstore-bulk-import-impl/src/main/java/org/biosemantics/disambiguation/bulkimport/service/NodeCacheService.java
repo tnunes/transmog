@@ -1,7 +1,7 @@
 package org.biosemantics.disambiguation.bulkimport.service;
 
 
-public interface BulkImportNodeCache {
+public interface NodeCacheService {
 
 	void addLabel(String text, String language, long nodeId);
 

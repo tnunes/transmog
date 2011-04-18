@@ -12,8 +12,12 @@
 		<property name="uuidGeneratorService" ref="uuidGeneratorService"></property>
 		<property name="BulkImportNodeCache" ref="bulkImportNodeCache"></property>
 	</bean>
-	
-	<bean id="bulkImportNodeCache" class="org.biosemantics.disambiguation.bulkimport.service.impl.BulkImportNodeCacheDb4oImpl">
-		<property name="cacheDir" value="${data.cacheDir}"></property>
+
+	<!-- Fastest implementation but with huge memory requirements: appox 20GB heap is recommended for umls2010 AB. Time to load 
+		all concepts ~ 2m is 56 minutes -->
+	<!-- <bean id="bulkImportNodeCache" class="org.biosemantics.disambiguation.bulkimport.service.impl.NodeCacheServiceHashmapImpl"> 
+		</bean> -->
+	<!-- Optimum implementation. Disk / Memory / Speed trade offs can be defined in the ehcache.xml configuration file. -->
+	<bean id="bulkImportNodeCache" class="org.biosemantics.disambiguation.bulkimport.service.impl.NodeCacheServiceEhCacheImpl">
 	</bean>
 </beans>

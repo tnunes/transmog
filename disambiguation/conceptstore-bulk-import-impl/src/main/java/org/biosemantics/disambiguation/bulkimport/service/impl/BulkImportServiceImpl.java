@@ -11,7 +11,7 @@ import org.biosemantics.conceptstore.common.domain.ConceptLabel;
 import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.Notation;
 import org.biosemantics.conceptstore.utils.service.UuidGeneratorService;
-import org.biosemantics.disambiguation.bulkimport.service.BulkImportNodeCache;
+import org.biosemantics.disambiguation.bulkimport.service.NodeCacheService;
 import org.biosemantics.disambiguation.bulkimport.service.BulkImportService;
 import org.biosemantics.disambiguation.domain.impl.ConceptImpl;
 import org.biosemantics.disambiguation.domain.impl.LabelImpl;
@@ -37,7 +37,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 	private final String storeDir;
 	private final BatchInserter batchInserter;
 	private UuidGeneratorService uuidGeneratorService;
-	private BulkImportNodeCache bulkImportNodeCache;
+	private NodeCacheService bulkImportNodeCache;
 	// index
 	private BatchInserterIndexProvider indexService;
 	private BatchInserterIndex conceptNodeIndex;
@@ -66,7 +66,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 	}
 
 	@Required
-	public void setBulkImportNodeCache(BulkImportNodeCache bulkImportNodeCache) {
+	public void setBulkImportNodeCache(NodeCacheService bulkImportNodeCache) {
 		this.bulkImportNodeCache = bulkImportNodeCache;
 	}
 
@@ -125,7 +125,6 @@ public class BulkImportServiceImpl implements BulkImportService {
 		for (ConceptLabel conceptLabel : labels) {
 			final String labelUuid = uuidGeneratorService.generateRandomUuid();
 			fullText.add(conceptLabel.getText());
-			org.biosemantics.conceptstore.utils.domain.impl.LabelImpl labelImpl = (org.biosemantics.conceptstore.utils.domain.impl.LabelImpl) conceptLabel;
 			long labelNode = bulkImportNodeCache.getLabelNodeId(conceptLabel.getText(), conceptLabel.getLanguage()
 					.getLabel());
 			if (labelNode < 0) {
