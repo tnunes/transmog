@@ -36,6 +36,9 @@
 		<org.jmock.version>2.5.1</org.jmock.version>
 		<joda.time.version>1.6.2</joda.time.version>
 		<org.neo4j>1.3.M05</org.neo4j>
+		<net.sf.opencsv>2.1</net.sf.opencsv>
+		<mysql-connector-java>5.1.15</mysql-connector-java>
+		<commons.dbcp>1.4</commons.dbcp>
 		<hudson.server.url>http://office1.nbiceng.net:8080/hudson/</hudson.server.url>
 		<nexus.server.url>http://aneurist.erasmusmc.nl/nexus/content/repositories</nexus.server.url>
 	</properties>
@@ -57,7 +60,7 @@
 			<uniqueVersion>false</uniqueVersion>
 		</snapshotRepository>
 	</distributionManagement>
-	
+
 	<repositories>
 		<repository>
 			<id>nexus-server-id</id>
@@ -184,5 +187,6 @@
 		<module>datasource</module>
 		<module>conceptstore-impl-rmi-exporter</module>
 		<module>conceptstore-bulk-import-impl</module>
+		<module>conceptstore-scripts</module>
 	</modules>
 </project>
