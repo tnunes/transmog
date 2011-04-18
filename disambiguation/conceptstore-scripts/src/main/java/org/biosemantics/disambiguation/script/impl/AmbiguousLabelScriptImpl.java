@@ -48,8 +48,7 @@ public class AmbiguousLabelScriptImpl implements AmbiguousLabelScript {
 			stopWatch.start();
 			Node labelNode = relationship.getOtherNode(labelParentNode);
 			// for each label
-			Iterable<Relationship> labelRelationships = labelNode.getRelationships(DefaultRelationshipType.HAS_LABEL,
-					Direction.INCOMING);
+			Iterable<Relationship> labelRelationships = labelNode.getRelationships(DefaultRelationshipType.HAS_LABEL);
 			List<String> conceptDetails = new ArrayList<String>();
 			for (Relationship labelRelationship : labelRelationships) {
 				Node conceptNode = labelRelationship.getOtherNode(labelNode);
@@ -58,18 +57,14 @@ public class AmbiguousLabelScriptImpl implements AmbiguousLabelScript {
 						getPreferredLabelText(conceptNode));
 				conceptDetails.add(conceptDetail.toString());
 			}
+			stopWatch.stop();
 			++totalLabelCounter;
-			//log where labels are ambiguous i.e. connected >1 concepts
+			// log where labels are ambiguous i.e. connected >1 concepts
 			if (conceptDetails.size() > 1) {
 				AmbiguousLabelOutputObject object = new AmbiguousLabelOutputObject(new LabelImpl(labelNode),
 						conceptDetails);
+				logger.debug("{},{},{}", new Object[]{totalLabelCounter, stopWatch.getTime(), conceptDetails.size()});
 				outputSink.write(object);
-				stopWatch.stop();
-				
-				if (stopWatch.getTime() > 5) {
-					logger.debug("time taken to process label number {} is {}(ms)", new Object[] { totalLabelCounter,
-							stopWatch.getTime() });
-				}
 			}
 		}
 	}
