@@ -58,13 +58,18 @@ public class AmbiguousLabelScriptImpl implements AmbiguousLabelScript {
 						getPreferredLabelText(conceptNode));
 				conceptDetails.add(conceptDetail.toString());
 			}
-			AmbiguousLabelOutputObject object = new AmbiguousLabelOutputObject(new LabelImpl(labelNode), conceptDetails);
-			outputSink.write(object);
-			stopWatch.stop();
 			++totalLabelCounter;
-			if (stopWatch.getTime() > 5) {
-				logger.debug("time taken to process label number {} is {}(ms)", new Object[] { totalLabelCounter,
-						stopWatch.getTime() });
+			//log where labels are ambiguous i.e. connected >1 concepts
+			if (conceptDetails.size() > 1) {
+				AmbiguousLabelOutputObject object = new AmbiguousLabelOutputObject(new LabelImpl(labelNode),
+						conceptDetails);
+				outputSink.write(object);
+				stopWatch.stop();
+				
+				if (stopWatch.getTime() > 5) {
+					logger.debug("time taken to process label number {} is {}(ms)", new Object[] { totalLabelCounter,
+							stopWatch.getTime() });
+				}
 			}
 		}
 	}
