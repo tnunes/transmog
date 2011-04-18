@@ -16,26 +16,23 @@ import org.biosemantics.datasource.umls.concept.DomainIterator;
 import org.biosemantics.disambiguation.bulkimport.service.BulkImportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.transaction.annotation.Transactional;
 
 public class ImportClient {
 
 	private Map<String, String> domainMap = new HashMap<String, String>();
 	private static final String[] CONTEXTS = new String[] { "import-context.xml" };
 	private static final Logger logger = LoggerFactory.getLogger(ImportClient.class);
-	
-	private static final int BATCH = 1000;
+
+	private static final int BATCH = 10000;
 
 	public static void main(String[] args) {
 		ImportClient importClient = new ImportClient();
 		importClient.init();
 	}
 
-	@Transactional
 	public void init() {
-		ApplicationContext applicationContext = new ClassPathXmlApplicationContext(CONTEXTS);
+		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext(CONTEXTS);
 		DomainIterator domainIterator = applicationContext.getBean(DomainIterator.class);
 		BulkImportService bulkImportService = applicationContext.getBean(BulkImportService.class);
 
@@ -65,10 +62,14 @@ public class ImportClient {
 			concept.getNotations().clear();
 			concept.getNotations().addAll(notations);
 			bulkImportService.createConcept(ConceptType.CONCEPT, concept);
-			if(++ctr % BATCH == 0){
-				logger.info("{}",ctr);
+			if (++ctr % BATCH == 0) {
+				logger.info("{}", ctr);
 			}
 		}
+
+		// explicitly closing application context making sure destroy is called on all beans
+		applicationContext.close();
+		logger.info("application context closed.");
 
 	}
 }
