@@ -12,12 +12,15 @@ public class NodeCacheServiceEhCacheImpl implements NodeCacheService {
 	private static final Logger logger = org.slf4j.LoggerFactory.getLogger(NodeCacheServiceEhCacheImpl.class);
 	private Cache labelCache;
 	private Cache notationCache;
+	private Cache conceptCache;
+	private Cache relationshipCache;
 
 	public void init() {
 		CacheManager.create();
 		labelCache = CacheManager.getInstance().getCache("labelCache");
 		notationCache = CacheManager.getInstance().getCache("notationCache");
-		logger.info("{} and {} caches initied on init()", new Object[] { labelCache, notationCache });
+		conceptCache = CacheManager.getInstance().getCache("conceptCache");
+		relationshipCache = CacheManager.getInstance().getCache("relationshipCache");
 	}
 
 	@Override
@@ -54,6 +57,35 @@ public class NodeCacheServiceEhCacheImpl implements NodeCacheService {
 	public void destroy() {
 		CacheManager.getInstance().shutdown();
 		logger.info("eh cache shutdown called on destroy()");
+	}
+
+	@Override
+	public void addConcept(String uuid, long nodeId) {
+		Element element = new Element(uuid, nodeId);
+		conceptCache.put(element);
+	}
+
+	@Override
+	public long getConceptNodeId(String uuid) {
+		Element element = notationCache.get(uuid);
+		// will throw null pointer if no element found?
+		return (Long) element.getValue();
+	}
+
+	@Override
+	public void addConceptRelationship(String key, long relationshipId) {
+		Element element = new Element(key, relationshipId);
+		relationshipCache.put(element);
+
+	}
+
+	@Override
+	public long getConceptRelationshipId(String key) {
+		Element element = relationshipCache.get(key);
+		if (element != null) {
+			return (Long) element.getValue();
+		}
+		return -1;
 	}
 
 }

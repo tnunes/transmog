@@ -10,10 +10,18 @@
 		memoryStoreEvictionPolicy="LRU" />
 
 	<cache name="labelCache" maxElementsInMemory="100000" maxElementsOnDisk="0" eternal="false" overflowToDisk="true"
-		diskPersistent="true" diskSpoolBufferSizeMB="2000" timeToIdleSeconds="300" timeToLiveSeconds="600"
+		diskPersistent="true" diskSpoolBufferSizeMB="200" timeToIdleSeconds="300" timeToLiveSeconds="600"
 		memoryStoreEvictionPolicy="LFU" transactionalMode="off" />
 
 	<cache name="notationCache" maxElementsInMemory="100000" maxElementsOnDisk="0" eternal="false" overflowToDisk="true"
-		diskPersistent="true" diskSpoolBufferSizeMB="2000" timeToIdleSeconds="300" timeToLiveSeconds="600"
+		diskPersistent="true" diskSpoolBufferSizeMB="200" timeToIdleSeconds="300" timeToLiveSeconds="600"
+		memoryStoreEvictionPolicy="LFU" transactionalMode="off" />
+
+	<cache name="conceptCache" maxElementsInMemory="100000" maxElementsOnDisk="0" eternal="false" overflowToDisk="true"
+		diskPersistent="true" diskSpoolBufferSizeMB="200" timeToIdleSeconds="300" timeToLiveSeconds="600"
+		memoryStoreEvictionPolicy="LFU" transactionalMode="off" />
+
+	<cache name="relationshipCache" maxElementsInMemory="100000" maxElementsOnDisk="0" eternal="false" overflowToDisk="true"
+		diskPersistent="true" diskSpoolBufferSizeMB="200" timeToIdleSeconds="300" timeToLiveSeconds="600"
 		memoryStoreEvictionPolicy="LFU" transactionalMode="off" />
 </ehcache>

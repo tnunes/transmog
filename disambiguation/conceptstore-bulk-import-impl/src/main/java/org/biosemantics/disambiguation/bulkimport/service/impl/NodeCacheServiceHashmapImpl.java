@@ -58,4 +58,27 @@ public class NodeCacheServiceHashmapImpl implements NodeCacheService {
 		logger.info("cache destroyed");
 	}
 
+	@Override
+	public void addConcept(String uuid, long nodeId) {
+		cache.put(uuid, nodeId);
+
+	}
+
+	@Override
+	public long getConceptNodeId(String uuid) {
+		return cache.get(uuid);
+	}
+
+	@Override
+	public void addConceptRelationship(String key, long relationshipId) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public long getConceptRelationshipId(String key) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 }

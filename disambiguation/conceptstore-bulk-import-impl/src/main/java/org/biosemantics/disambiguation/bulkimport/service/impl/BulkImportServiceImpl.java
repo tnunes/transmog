@@ -6,20 +6,26 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.biosemantics.conceptstore.common.domain.Concept;
 import org.biosemantics.conceptstore.common.domain.ConceptLabel;
+import org.biosemantics.conceptstore.common.domain.ConceptRelationship;
 import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.Notation;
+import org.biosemantics.conceptstore.common.domain.Note;
 import org.biosemantics.conceptstore.utils.service.UuidGeneratorService;
-import org.biosemantics.disambiguation.bulkimport.service.NodeCacheService;
 import org.biosemantics.disambiguation.bulkimport.service.BulkImportService;
+import org.biosemantics.disambiguation.bulkimport.service.NodeCacheService;
 import org.biosemantics.disambiguation.domain.impl.ConceptImpl;
+import org.biosemantics.disambiguation.domain.impl.ConceptRelationshipImpl;
 import org.biosemantics.disambiguation.domain.impl.LabelImpl;
 import org.biosemantics.disambiguation.domain.impl.NotationImpl;
+import org.biosemantics.disambiguation.domain.impl.NoteImpl;
 import org.biosemantics.disambiguation.service.local.impl.ConceptStorageServiceLocalImpl;
 import org.biosemantics.disambiguation.service.local.impl.DefaultRelationshipType;
 import org.biosemantics.disambiguation.service.local.impl.LabelStorageServiceLocalImpl;
 import org.biosemantics.disambiguation.service.local.impl.NotationStorageServiceLocalImpl;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.index.BatchInserterIndex;
 import org.neo4j.graphdb.index.BatchInserterIndexProvider;
 import org.neo4j.helpers.collection.MapUtil;
@@ -50,6 +56,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 	private long notationParentNode;
 	private long domainParentNode;
 	private long predicateParentNode;
+	private long noteParentNode;
 
 	public BulkImportServiceImpl(String storeDir) {
 		this.storeDir = storeDir;
@@ -97,6 +104,9 @@ public class BulkImportServiceImpl implements BulkImportService {
 		predicateParentNode = batchInserter.createNode(null);
 		batchInserter.createRelationship(batchInserter.getReferenceNode(), predicateParentNode,
 				DefaultRelationshipType.PREDICATES, null);
+		noteParentNode = batchInserter.createNode(null);
+		batchInserter.createRelationship(batchInserter.getReferenceNode(), noteParentNode,
+				DefaultRelationshipType.NOTES, null);
 	}
 
 	@Override
@@ -177,6 +187,18 @@ public class BulkImportServiceImpl implements BulkImportService {
 				properties.clear();
 			}
 		}
+		Collection<Note> notes = concept.getNotes();
+		if (!CollectionUtils.isEmpty(notes)) {
+			for (Note note : notes) {
+				properties.put(NoteImpl.DATE_TIME_PROPERTY, note.getCreatedDateTime());
+				properties.put(NoteImpl.LANGUAGE_PROPERTY, note.getLanguage().getLabel());
+				properties.put(NoteImpl.NOTE_TYPE_PROPERTY, note.getNoteType().name());
+				properties.put(NoteImpl.TEXT_PROPERTY, note.getText());
+				long noteNode = batchInserter.createNode(properties);
+				batchInserter.createRelationship(noteParentNode, noteNode, DefaultRelationshipType.NOTE, null);
+				properties.clear();
+			}
+		}
 		properties.put(ConceptStorageServiceLocalImpl.UUID_INDEX_KEY, conceptUuid);
 		conceptNodeIndex.add(conceptNode, properties);
 		properties.clear();
@@ -189,6 +211,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 		properties.put(ConceptStorageServiceLocalImpl.FULLTEXT_INDEX_KEY, fullTextString.toString());
 		conceptFullTextIndex.add(conceptNode, properties);
 		properties.clear();
+		bulkImportNodeCache.addConcept(conceptUuid, conceptNode);
 		return conceptUuid;
 	}
 
@@ -202,5 +225,40 @@ public class BulkImportServiceImpl implements BulkImportService {
 		indexService.shutdown();
 		batchInserter.shutdown();
 		logger.info("shutdown complete");
+	}
+
+	@Override
+	public String addRelationship(final ConceptRelationship conceptRelationship) {
+
+		String key = conceptRelationship.fromConcept() + conceptRelationship.toConcept()
+				+ conceptRelationship.getSemanticRelationshipCategory()
+				+ conceptRelationship.getConceptRelationshipCategory();
+		// create new rlsp if none is found
+		if (bulkImportNodeCache.getConceptRelationshipId(key) < 0) {
+			long fromNodeId = bulkImportNodeCache.getConceptNodeId(conceptRelationship.fromConcept());
+			long toNodeId = bulkImportNodeCache.getConceptNodeId(conceptRelationship.toConcept());
+			Map<String, Object> properties = new HashMap<String, Object>();
+			String uuid = uuidGeneratorService.generateRandomUuid();
+			properties.put(ConceptRelationshipImpl.UUID_PROPERTY, uuid);
+
+			String predicate = conceptRelationship.getPredicateConceptUuid();
+			if (!StringUtils.isBlank(predicate)) {
+				properties.put(ConceptRelationshipImpl.PREDICATE_CONCEPT_UUID_PROPERTY, predicate);
+			}
+			properties.put(ConceptRelationshipImpl.WEIGHT_PROERTY, conceptRelationship.getWeight());
+			properties.put(ConceptRelationshipImpl.RLSP_CATEGORY_PROPERTY, conceptRelationship
+					.getConceptRelationshipCategory().name());
+			long relationshipId = batchInserter.createRelationship(fromNodeId, toNodeId, new RelationshipType() {
+				@Override
+				public String name() {
+					return conceptRelationship.getSemanticRelationshipCategory().name();
+				}
+			}, properties);
+			bulkImportNodeCache.addConceptRelationship(key, relationshipId);
+			return uuid;
+		} else {
+			return "";
+		}
+
 	}
 }
