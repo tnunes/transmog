@@ -34,8 +34,9 @@ public class ConceptIterator implements Iterator<Concept> {
 	}
 
 	public void init() {
+		logger.info("init() called gettinga ll cuis, sql query {}", GET_ALL_CUI_SQL);
 		allCuis = jdbcTemplate.query(GET_ALL_CUI_SQL, new CuiCountResultSetExtractor());
-		logger.info("all cuis {}", allCuis.size());
+		logger.info("all cuis size is {}", allCuis.size());
 		iterator = allCuis.iterator();
 	}
 
@@ -61,6 +62,12 @@ public class ConceptIterator implements Iterator<Concept> {
 	public void remove() {
 		// TODO Auto-generated method stub
 
+	}
+
+	public void destroy() {
+		logger.info("destroy called setting datamembers to null explicitly");
+		iterator = null;
+		allCuis = null;
 	}
 
 }

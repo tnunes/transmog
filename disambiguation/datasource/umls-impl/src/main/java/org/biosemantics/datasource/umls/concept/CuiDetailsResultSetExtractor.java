@@ -14,7 +14,6 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 
 public class CuiDetailsResultSetExtractor implements ResultSetExtractor<Concept> {
 
-	private static final String DEFAULT_SAB = "MTH";
 	private static final String NOCODE = "NOCODE";
 	private Logger logger = LoggerFactory.getLogger(CuiDetailsResultSetExtractor.class);
 
@@ -44,7 +43,7 @@ public class CuiDetailsResultSetExtractor implements ResultSetExtractor<Concept>
 		if (cui == null) {
 			logger.error("cui is null");
 		} else {
-			NotationImpl notationImpl = new NotationImpl(DEFAULT_SAB, cui);
+			NotationImpl notationImpl = new NotationImpl(UmlsUtils.DEFAULT_SAB, cui);
 			conceptImpl.addNotations(notationImpl);
 		}
 		return conceptImpl;
