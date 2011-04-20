@@ -189,4 +189,16 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 		return concepts;
 	}
 
+	@Override
+	public Collection<String> getConceptsByNotation(Notation notation) {
+		Collection<String> uuids = new HashSet<String>();
+		Node node = notationStorageServiceLocal.getNotationNode(notation.getCode(), notation.getDomainUuid());
+		Iterable<Relationship> relationships = node.getRelationships(DefaultRelationshipType.HAS_NOTATION);
+		for (Relationship relationship : relationships) {
+			uuids.add((String)relationship.getOtherNode(node).getProperty(ConceptImpl.UUID_PROPERTY));
+		}
+		return uuids;
+		
+	}
+
 }
