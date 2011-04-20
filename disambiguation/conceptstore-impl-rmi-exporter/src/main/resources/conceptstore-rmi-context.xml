@@ -10,29 +10,12 @@
 	
 	<import resource="classpath:conceptstore-impl-context.xml" />
 	<context:property-placeholder location="conceptstore-rmi-conf.properties" />
-	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
-		<!-- does not necessarily have to be the same name as the bean to be exported -->
-		<property name="serviceName" value="indexService" />
-		<property name="service" ref="indexService" />
-		<property name="serviceInterface" value="org.biosemantics.disambiguation.service.IndexService" />
-		<!-- defaults to 1099 -->
-		<property name="registryPort" value="${rmi.port}" />
-	</bean>
-	
-	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
-		<!-- does not necessarily have to be the same name as the bean to be exported -->
-		<property name="serviceName" value="indexService" />
-		<property name="service" ref="indexService" />
-		<property name="serviceInterface" value="org.biosemantics.disambiguation.service.IndexService" />
-		<!-- defaults to 1099 -->
-		<property name="registryPort" value="${rmi.port}" />
-	</bean>
 	
 	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
 		<!-- does not necessarily have to be the same name as the bean to be exported -->
 		<property name="serviceName" value="labelStorageService" />
-		<property name="service" ref="labelStorageService" />
-		<property name="serviceInterface" value="org.biosemantics.conceptstore.common.service.LabelStorageService" />
+		<property name="service" ref="labelStorageServiceLocal" />
+		<property name="serviceInterface" value="org.biosemantics.disambiguation.service.local.LabelStorageServiceLocal" />
 		<!-- defaults to 1099 -->
 		<property name="registryPort" value="${rmi.port}" />
 	</bean>
@@ -40,8 +23,8 @@
 	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
 		<!-- does not necessarily have to be the same name as the bean to be exported -->
 		<property name="serviceName" value="notationStorageService" />
-		<property name="service" ref="notationStorageService" />
-		<property name="serviceInterface" value="org.biosemantics.conceptstore.common.service.NotationStorageService" />
+		<property name="service" ref="notationStorageServiceLocal" />
+		<property name="serviceInterface" value="org.biosemantics.disambiguation.service.local.NotationStorageServiceLocal" />
 		<!-- defaults to 1099 -->
 		<property name="registryPort" value="${rmi.port}" />
 	</bean>
@@ -49,8 +32,17 @@
 	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
 		<!-- does not necessarily have to be the same name as the bean to be exported -->
 		<property name="serviceName" value="noteStorageService" />
-		<property name="service" ref="noteStorageService" />
-		<property name="serviceInterface" value="org.biosemantics.conceptstore.common.service.NoteStorageService" />
+		<property name="service" ref="noteStorageServiceLocal" />
+		<property name="serviceInterface" value="org.biosemantics.disambiguation.service.local.NoteStorageServiceLocal" />
+		<!-- defaults to 1099 -->
+		<property name="registryPort" value="${rmi.port}" />
+	</bean>
+	
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<!-- does not necessarily have to be the same name as the bean to be exported -->
+		<property name="serviceName" value="sourceStorageService" />
+		<property name="service" ref="sourceStorageServiceLocal" />
+		<property name="serviceInterface" value="org.biosemantics.disambiguation.service.local.SourceStorageServiceLocal" />
 		<!-- defaults to 1099 -->
 		<property name="registryPort" value="${rmi.port}" />
 	</bean>
@@ -58,27 +50,20 @@
 	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
 		<!-- does not necessarily have to be the same name as the bean to be exported -->
 		<property name="serviceName" value="conceptStorageService" />
-		<property name="service" ref="conceptStorageService" />
-		<property name="serviceInterface" value="org.biosemantics.conceptstore.common.service.ConceptStorageService" />
+		<property name="service" ref="conceptStorageServiceLocal" />
+		<property name="serviceInterface" value="org.biosemantics.disambiguation.service.local.ConceptStorageServiceLocal" />
 		<!-- defaults to 1099 -->
 		<property name="registryPort" value="${rmi.port}" />
 	</bean>
 	
 	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
 		<!-- does not necessarily have to be the same name as the bean to be exported -->
-		<property name="serviceName" value="conceptQueryService" />
-		<property name="service" ref="conceptQueryService" />
-		<property name="serviceInterface" value="org.biosemantics.conceptstore.common.service.ConceptQueryService" />
+		<property name="serviceName" value="conceptRelationshipStorageService" />
+		<property name="service" ref="conceptRelationshipStorageServiceLocal" />
+		<property name="serviceInterface" value="org.biosemantics.disambiguation.service.local.ConceptRelationshipStorageServiceLocal" />
 		<!-- defaults to 1099 -->
 		<property name="registryPort" value="${rmi.port}" />
 	</bean>
 	
-	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
-		<!-- does not necessarily have to be the same name as the bean to be exported -->
-		<property name="serviceName" value="relationshipStorageService" />
-		<property name="service" ref="relationshipStorageService" />
-		<property name="serviceInterface" value="org.biosemantics.conceptstore.common.service.RelationshipStorageService" />
-		<!-- defaults to 1099 -->
-		<property name="registryPort" value="${rmi.port}" />
-	</bean>
+	
 </beans>
