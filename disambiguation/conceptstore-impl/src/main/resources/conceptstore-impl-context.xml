@@ -85,7 +85,7 @@
 		<property name="validationUtility" ref="validationUtility"></property>
 	</bean>
 
-	<bean id="relationshipStorageService" class="org.biosemantics.disambiguation.service.local.impl.ConceptRelationshipStorageServiceLocalImpl">
+	<bean id="conceptRelationshipStorageServiceLocal" class="org.biosemantics.disambiguation.service.local.impl.ConceptRelationshipStorageServiceLocalImpl">
 		<constructor-arg>
 			<ref local="graphStorageTemplate" />
 		</constructor-arg>
