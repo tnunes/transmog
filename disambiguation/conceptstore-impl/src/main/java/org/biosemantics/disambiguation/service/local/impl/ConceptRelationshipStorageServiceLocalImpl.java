@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashSet;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.biosemantics.conceptstore.common.domain.ConceptRelationship;
 import org.biosemantics.conceptstore.common.domain.SemanticRelationshipCategory;
 import org.biosemantics.conceptstore.utils.service.UuidGeneratorService;
@@ -58,6 +59,8 @@ public class ConceptRelationshipStorageServiceLocalImpl implements ConceptRelati
 	public String createRelationship(final ConceptRelationship conceptRelationship) {
 		// no optimisation new relationship created without any checks, calling code must ensure relationshipExists() is
 		// called to ensure uniqueness
+		StopWatch stopwatch = new StopWatch();
+		stopwatch.start();
 		validationUtility.validateRelationship(conceptRelationship);
 		Node startNode = conceptStorageServiceLocal.getConceptNode(conceptRelationship.fromConcept());
 		Node endNode = conceptStorageServiceLocal.getConceptNode(conceptRelationship.toConcept());
@@ -82,6 +85,8 @@ public class ConceptRelationshipStorageServiceLocalImpl implements ConceptRelati
 		}
 
 		index.add(relationship, UUID_INDEX_KEY, uuid);
+		stopwatch.stop();
+		logger.debug("getLabelNode() time: {}", stopwatch.getTime());
 		return uuid;
 
 	}

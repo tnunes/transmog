@@ -3,6 +3,7 @@ package org.biosemantics.disambiguation.service.local.impl;
 import java.util.Collection;
 import java.util.HashSet;
 
+import org.apache.commons.lang.time.StopWatch;
 import org.biosemantics.conceptstore.common.domain.Concept;
 import org.biosemantics.conceptstore.common.domain.ConceptLabel;
 import org.biosemantics.conceptstore.common.domain.ConceptType;
@@ -20,6 +21,8 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
 import org.neo4j.helpers.collection.MapUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -45,6 +48,7 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 	public static final String UUID_INDEX_KEY = "concept_uuid";
 	public static final String FULLTEXT_INDEX_KEY = "concept_all_text";
 	public static final String DELIMITER = " ";
+	private static final Logger logger = LoggerFactory.getLogger(ConceptStorageServiceLocalImpl.class);
 
 	public ConceptStorageServiceLocalImpl(GraphStorageTemplate graphStorageTemplate) {
 		// FIXME two enums relationshipTypes and ConceptTypes with certain overlap between them.
@@ -86,6 +90,8 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 	@Override
 	@Transactional
 	public String createConcept(ConceptType conceptType, Concept concept) {
+		StopWatch stopwatch = new StopWatch();
+		stopwatch.start();
 		validationUtility.validateConcept(concept);
 		final String uuid = uuidGeneratorService.generateRandomUuid();
 		Collection<String> fullTextStrings = new HashSet<String>();
@@ -141,6 +147,8 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 			fullText.append(string).append(DELIMITER);
 		}
 		fulltextIndex.add(conceptNode, FULLTEXT_INDEX_KEY, fullText.toString());
+		stopwatch.stop();
+		logger.debug("concept added uuid:{} time:{}", new Object[] { uuid, stopwatch.getTime() });
 		return uuid;
 	}
 
@@ -195,10 +203,10 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 		Node node = notationStorageServiceLocal.getNotationNode(notation.getCode(), notation.getDomainUuid());
 		Iterable<Relationship> relationships = node.getRelationships(DefaultRelationshipType.HAS_NOTATION);
 		for (Relationship relationship : relationships) {
-			uuids.add((String)relationship.getOtherNode(node).getProperty(ConceptImpl.UUID_PROPERTY));
+			uuids.add((String) relationship.getOtherNode(node).getProperty(ConceptImpl.UUID_PROPERTY));
 		}
 		return uuids;
-		
+
 	}
 
 }
