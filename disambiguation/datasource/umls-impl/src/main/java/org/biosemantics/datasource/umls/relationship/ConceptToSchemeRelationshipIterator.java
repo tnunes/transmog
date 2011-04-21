@@ -25,7 +25,7 @@ public class ConceptToSchemeRelationshipIterator implements Iterator<UmlsRelatio
 	}
 
 	public void init() {
-		logger.info("init() called getting all concepts-to-concept scheme relationships, making sql query {} ",
+		logger.info("init() called getting all concepts-to-concept scheme relationships, SQL: {} ",
 				GET_CONCEPT_TO_SCHEME_RELATIONS_SQL);
 		jdbcTemplate.query(GET_CONCEPT_TO_SCHEME_RELATIONS_SQL, new ResultSetExtractor<List<String[]>>() {
 			@Override

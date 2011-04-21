@@ -34,7 +34,7 @@ public class ConceptSchemeIterator implements Iterator<Concept> {
 	}
 
 	public void init() {
-		logger.info("init called, geting all concept schemes using query {}", GET_ALL_CONCEPT_SCHEME_SQL);
+		logger.info("init called, geting all concept schemes SQL: {}", GET_ALL_CONCEPT_SCHEME_SQL);
 		jdbcTemplate.query(GET_ALL_CONCEPT_SCHEME_SQL, new ResultSetExtractor<List<String[]>>() {
 			@Override
 			public List<String[]> extractData(ResultSet rs) throws SQLException, DataAccessException {

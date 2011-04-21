@@ -34,10 +34,10 @@ public class ConceptIterator implements Iterator<Concept> {
 	}
 
 	public void init() {
-		logger.info("init() called gettinga ll cuis, sql query {}", GET_ALL_CUI_SQL);
+		logger.info("init() called getting all cuis, SQL: {}", GET_ALL_CUI_SQL);
 		allCuis = jdbcTemplate.query(GET_ALL_CUI_SQL, new CuiCountResultSetExtractor());
-		logger.info("all cuis size is {}", allCuis.size());
 		iterator = allCuis.iterator();
+		logger.info("all cuis size is {}", allCuis.size());
 	}
 
 	@Override

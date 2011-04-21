@@ -31,7 +31,7 @@ public class FactualRealtionshipIterator implements Iterator<UmlsRelationship> {
 		try {
 			// lazy loading
 			if (resultSet == null) {
-				logger.info("Getting all Factual Relationships. SQL query {}", GET_ALL_FACTUAL_RLSP_SQL);
+				logger.info("Getting all Factual Relationships. SQL: {}", GET_ALL_FACTUAL_RLSP_SQL);
 				statement = dataSource.getConnection().createStatement(ResultSet.TYPE_FORWARD_ONLY,
 						ResultSet.CONCUR_READ_ONLY);
 				statement.setFetchSize(Integer.MIN_VALUE);

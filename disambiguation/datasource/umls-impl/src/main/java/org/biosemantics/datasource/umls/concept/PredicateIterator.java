@@ -38,19 +38,16 @@ public class PredicateIterator implements Iterator<String> {
 	}
 
 	public void init() throws IOException {
-		allPredicates.addAll(jdbcTemplate.query(GET_CONCEPT_SCHEME_PREDICATES_SQL,
-				new ResultSetExtractor<Collection<String>>() {
-					Collection<String> predicates = new HashSet<String>();
+		jdbcTemplate.query(GET_CONCEPT_SCHEME_PREDICATES_SQL, new ResultSetExtractor<Collection<String>>() {
+			@Override
+			public Collection<String> extractData(ResultSet rs) throws SQLException, DataAccessException {
+				while (rs.next()) {
+					allPredicates.add(rs.getString("RL"));
+				}
+				return allPredicates;
+			}
 
-					@Override
-					public Collection<String> extractData(ResultSet rs) throws SQLException, DataAccessException {
-						while (rs.next()) {
-							predicates.add(rs.getString("RL"));
-						}
-						return predicates;
-					}
-
-				}));
+		});
 		List<String[]> otherPredicates = readTsvFileContents();
 		for (String[] row : otherPredicates) {
 			// using the values with "_"

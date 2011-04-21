@@ -15,7 +15,7 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 public class ConceptSchemeRelationshipIterator implements Iterator<UmlsRelationship> {
 
 	private final JdbcTemplate jdbcTemplate;
-	private static final String GET_CONCEPT_SCHEME_RELATIONS_SQL = "select STY1, RL, STY2 from SRSTRE2 order by STY1";
+	private static final String GET_CONCEPT_SCHEME_RELATIONS_SQL = "select STY1, RL, STY2 from SRSTRE2  where STY1 != STY2 order by STY1";
 	private List<UmlsRelationship> relationships = new ArrayList<UmlsRelationship>();
 	private Iterator<UmlsRelationship> iterator;
 	private Logger logger = LoggerFactory.getLogger(ConceptSchemeRelationshipIterator.class);
@@ -25,7 +25,7 @@ public class ConceptSchemeRelationshipIterator implements Iterator<UmlsRelations
 	}
 
 	public void init() {
-		logger.info("init() called getting all concept scheme relationships, making sql query {} ",
+		logger.info("init() called getting all concept scheme relationships, SQL {} ",
 				GET_CONCEPT_SCHEME_RELATIONS_SQL);
 		jdbcTemplate.query(GET_CONCEPT_SCHEME_RELATIONS_SQL, new ResultSetExtractor<List<UmlsRelationship>>() {
 			@Override

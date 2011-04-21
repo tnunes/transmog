@@ -24,4 +24,11 @@ public class UmlsRelationship {
 		return object;
 	}
 
+	@Override
+	public String toString() {
+		return "UmlsRelationship [subject=" + subject + ", predicate=" + predicate + ", object=" + object + "]";
+	}
+	
+	
+
 }
