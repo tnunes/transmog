@@ -46,7 +46,6 @@ public class ConceptImpl implements Concept {
 	 * Need a way to speed up this method, the response time is unpredictable
 	 */
 	@Override
-	@Transactional
 	public Collection<ConceptLabel> getLabels() {
 		long start = System.currentTimeMillis();
 		Collection<ConceptLabel> labels = new HashSet<ConceptLabel>();

@@ -51,7 +51,7 @@ public class SourceStorageServiceLocalImpl implements SourceStorageServiceLocal 
 			index.add(sourceNode, SOURCE_UUID_INDEX_KEY, uuid);
 			index.add(sourceNode, SOURCE_VALUE_INDEX_KEY, source.getValue());
 		}
-		graphStorageTemplate.createRelationship(sourceParentNode, sourceNode, DefaultRelationshipType.SOURCE);
+		sourceParentNode.createRelationshipTo(sourceNode, DefaultRelationshipType.SOURCE);
 		return uuid;
 	}
 

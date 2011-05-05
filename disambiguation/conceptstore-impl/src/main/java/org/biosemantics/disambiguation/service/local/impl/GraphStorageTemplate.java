@@ -4,8 +4,6 @@ import java.util.Map;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.index.IndexManager;
 
 public interface GraphStorageTemplate {
@@ -17,13 +15,6 @@ public interface GraphStorageTemplate {
 
 	public Node getParentNode(DefaultRelationshipType defaultRelationshipType);
 
-	public Node createNode();
-
-	public long getNodeCount();
-
-	public Relationship createRelationship(Node from, Node to, RelationshipType relationshipType);
-
-	public long getRelationshipCount();
 
 	public IndexManager getIndexManager();
 

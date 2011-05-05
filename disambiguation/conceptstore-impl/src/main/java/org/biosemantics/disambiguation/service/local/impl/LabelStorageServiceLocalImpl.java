@@ -3,7 +3,6 @@ package org.biosemantics.disambiguation.service.local.impl;
 import java.util.Collection;
 import java.util.HashSet;
 
-import org.apache.commons.lang.time.StopWatch;
 import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.common.domain.Language;
 import org.biosemantics.conceptstore.utils.service.UuidGeneratorService;
@@ -13,6 +12,7 @@ import org.biosemantics.disambiguation.service.local.LabelStorageServiceLocal;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
+import org.neo4j.index.impl.lucene.LuceneIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
@@ -34,6 +34,8 @@ public class LabelStorageServiceLocalImpl implements LabelStorageServiceLocal {
 		this.graphStorageTemplate = graphStorageTemplate;
 		this.labelParentNode = this.graphStorageTemplate.getParentNode(DefaultRelationshipType.LABELS);
 		this.index = graphStorageTemplate.getIndexManager().forNodes(LABEL_INDEX);
+		((LuceneIndex<Node>) this.index).setCacheCapacity(TEXT_INDEX_KEY, 300000);
+		logger.info("setting cache for label-text index to 300000");
 	}
 
 	@Required
@@ -55,18 +57,14 @@ public class LabelStorageServiceLocalImpl implements LabelStorageServiceLocal {
 	}
 
 	public Node createLabelNode(Label label) {
-		StopWatch stopwatch = new StopWatch();
-		stopwatch.start();
 		String uuid = uuidGeneratorService.generateRandomUuid();
 		Node labelNode = graphStorageTemplate.getGraphDatabaseService().createNode();
-		graphStorageTemplate.createRelationship(labelParentNode, labelNode, DefaultRelationshipType.LABEL);
+		labelParentNode.createRelationshipTo(labelNode, DefaultRelationshipType.LABEL);
 		labelNode.setProperty(LabelImpl.UUID_PROPERTY, uuid);
 		labelNode.setProperty(LabelImpl.LANGUAGE_PROPERTY, label.getLanguage().getLabel());
 		labelNode.setProperty(LabelImpl.TEXT_PROPERTY, label.getText());
 		index.add(labelNode, UUID_INDEX_KEY, uuid);
 		index.add(labelNode, TEXT_INDEX_KEY, label.getText());
-		stopwatch.stop();
-		logger.debug("createLabelNode() time: {}", stopwatch.getTime());
 		return labelNode;
 	}
 
@@ -97,19 +95,19 @@ public class LabelStorageServiceLocalImpl implements LabelStorageServiceLocal {
 
 	@Override
 	public Node getLabelNode(String text, Language language) {
-		StopWatch stopwatch = new StopWatch();
-		stopwatch.start();
 		Node found = null;
 		IndexHits<Node> nodes = index.get(TEXT_INDEX_KEY, text);
-		for (Node node : nodes) {
-			if (((String) node.getProperty(LabelImpl.TEXT_PROPERTY)).equals(text)
-					&& language.getLabel().equals((String) node.getProperty(LabelImpl.LANGUAGE_PROPERTY))) {
-				found = node;
-				break;
+		try {
+			for (Node node : nodes) {
+				if (((String) node.getProperty(LabelImpl.TEXT_PROPERTY)).equals(text)
+						&& language.getLabel().equals((String) node.getProperty(LabelImpl.LANGUAGE_PROPERTY))) {
+					found = node;
+					break;
+				}
 			}
+		} finally {
+			nodes.close();
 		}
-		stopwatch.stop();
-		logger.debug("getLabelNode() time: {}", stopwatch.getTime());
 		return found;
 	}
 

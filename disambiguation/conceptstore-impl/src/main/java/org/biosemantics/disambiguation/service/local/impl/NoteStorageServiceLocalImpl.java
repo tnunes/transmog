@@ -32,7 +32,7 @@ public class NoteStorageServiceLocalImpl implements NoteStorageServiceLocal {
 	@Override
 	public Node createNoteNode(Note note) {
 		Node noteNode = graphStorageTemplate.getGraphDatabaseService().createNode();
-		graphStorageTemplate.createRelationship(noteParentNode, noteNode, DefaultRelationshipType.NOTE);
+		noteParentNode.createRelationshipTo(noteNode, DefaultRelationshipType.NOTE);
 		noteNode.setProperty(NoteImpl.NOTE_TYPE_PROPERTY, note.getNoteType().name());
 		noteNode.setProperty(NoteImpl.LANGUAGE_PROPERTY, note.getLanguage().getLabel());
 		noteNode.setProperty(NoteImpl.TEXT_PROPERTY, note.getText());

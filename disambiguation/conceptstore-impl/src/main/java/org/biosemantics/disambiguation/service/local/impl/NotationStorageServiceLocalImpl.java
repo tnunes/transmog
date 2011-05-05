@@ -3,7 +3,6 @@ package org.biosemantics.disambiguation.service.local.impl;
 import java.util.Collection;
 import java.util.HashSet;
 
-import org.apache.commons.lang.time.StopWatch;
 import org.biosemantics.conceptstore.common.domain.Notation;
 import org.biosemantics.conceptstore.utils.service.UuidGeneratorService;
 import org.biosemantics.conceptstore.utils.validation.ValidationUtility;
@@ -12,6 +11,7 @@ import org.biosemantics.disambiguation.service.local.NotationStorageServiceLocal
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
+import org.neo4j.index.impl.lucene.LuceneIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
@@ -35,6 +35,8 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 		this.graphStorageTemplate = graphStorageTemplate;
 		this.notationParentNode = this.graphStorageTemplate.getParentNode(DefaultRelationshipType.NOTATIONS);
 		this.index = graphStorageTemplate.getIndexManager().forNodes(NOTATION_INDEX);
+		((LuceneIndex<Node>) this.index).setCacheCapacity(CODE_INDEX_KEY, 300000);
+		logger.info("setting cache for notation-code index to 300000");
 	}
 
 	@Required
@@ -57,19 +59,15 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 
 	@Override
 	public Node createNotationNode(Notation notation) {
-		StopWatch stopwatch = new StopWatch();
-		stopwatch.start();
 		String uuid = uuidGeneratorService.generateRandomUuid();
 		// create new node if none exists
-		Node notationNode = graphStorageTemplate.createNode();
-		graphStorageTemplate.createRelationship(notationParentNode, notationNode, DefaultRelationshipType.NOTATION);
+		Node notationNode = graphStorageTemplate.getGraphDatabaseService().createNode();
+		notationParentNode.createRelationshipTo(notationNode, DefaultRelationshipType.NOTATION);
 		notationNode.setProperty(NotationImpl.UUID_PROPERTY, uuid);
 		notationNode.setProperty(NotationImpl.DOMAIN_UUID_PROPERTY, notation.getDomainUuid());
 		notationNode.setProperty(NotationImpl.CODE_PROPERTY, notation.getCode());
 		index.add(notationNode, UUID_INDEX_KEY, uuid);
 		index.add(notationNode, CODE_INDEX_KEY, notation.getCode());
-		stopwatch.stop();
-		logger.debug("createNotationNode() time: {}", stopwatch.getTime());
 		return notationNode;
 	}
 
@@ -99,19 +97,19 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 
 	@Override
 	public Node getNotationNode(String code, String domainUuid) {
-		StopWatch stopwatch = new StopWatch();
-		stopwatch.start();
 		Node found = null;
 		IndexHits<Node> nodes = index.get(CODE_INDEX_KEY, code);
-		for (Node node : nodes) {
-			if (((String) node.getProperty(NotationImpl.CODE_PROPERTY)).equals(code)
-					&& domainUuid.equals((String) node.getProperty(NotationImpl.DOMAIN_UUID_PROPERTY))) {
-				found = node;
-				break;
+		try {
+			for (Node node : nodes) {
+				if (((String) node.getProperty(NotationImpl.CODE_PROPERTY)).equals(code)
+						&& domainUuid.equals((String) node.getProperty(NotationImpl.DOMAIN_UUID_PROPERTY))) {
+					found = node;
+					break;
+				}
 			}
+		} finally {
+			nodes.close();
 		}
-		stopwatch.stop();
-		logger.debug("getNotationNode() time: {}", stopwatch.getTime());
 		return found;
 	}
 

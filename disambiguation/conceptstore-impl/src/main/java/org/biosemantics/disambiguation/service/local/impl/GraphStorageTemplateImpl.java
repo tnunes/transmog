@@ -9,7 +9,6 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.IndexManager;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
@@ -22,8 +21,6 @@ public class GraphStorageTemplateImpl implements GraphStorageTemplate {
 	private GraphDatabaseService graphDatabaseService;
 	private Map<String, String> configuration;
 	private Map<DefaultRelationshipType, Node> parentNodes;
-	private long nodeCount;
-	private long rlspCount;
 
 	private static final Logger logger = LoggerFactory.getLogger(GraphStorageTemplateImpl.class);
 
@@ -118,29 +115,6 @@ public class GraphStorageTemplateImpl implements GraphStorageTemplate {
 		return parentNodes.get(defaultRelationshipType);
 	}
 
-	@Override
-	public Node createNode() {
-		nodeCount++;
-		return graphDatabaseService.createNode();
-	}
-
-	@Override
-	public long getNodeCount() {
-		return nodeCount;
-	}
-
-	@Override
-	public Relationship createRelationship(Node from, Node to, RelationshipType relationshipType) {
-		rlspCount++;
-		return from.createRelationshipTo(to, relationshipType);
-
-	}
-
-	@Override
-	public long getRelationshipCount() {
-		return rlspCount;
-	}
-	
 	
 	public IndexManager getIndexManager(){
 		return this.graphDatabaseService.index();
