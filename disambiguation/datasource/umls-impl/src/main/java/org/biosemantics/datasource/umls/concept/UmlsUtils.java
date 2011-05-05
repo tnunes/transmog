@@ -9,7 +9,10 @@ public abstract class UmlsUtils {
 
 	private static final String SCR = "scr";
 	public static final String DEFAULT_SAB = "MTH";
-
+	public static final String SEPERATOR = " ";
+	public static final String NOCODE = "NOCODE";
+	public static final int BATCH_SIZE = 10000;
+	
 	public static Language getLanguage(String lat) {
 		lat = lat.toLowerCase();
 		// http://www.loc.gov/standards/iso639-2/php/code_changes.php SCR has
