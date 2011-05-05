@@ -1,5 +1,8 @@
 package org.biosemantics.disambiguation.service.local.impl;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.biosemantics.conceptstore.common.domain.Note;
 import org.biosemantics.conceptstore.utils.validation.ValidationUtility;
 import org.biosemantics.disambiguation.domain.impl.NoteImpl;
@@ -12,6 +15,7 @@ public class NoteStorageServiceLocalImpl implements NoteStorageServiceLocal {
 	private final GraphStorageTemplate graphStorageTemplate;
 	private final Node noteParentNode;
 	private ValidationUtility validationUtility;
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
 	public NoteStorageServiceLocalImpl(GraphStorageTemplate graphStorageTemplate) {
 		this.graphStorageTemplate = graphStorageTemplate;
@@ -36,6 +40,8 @@ public class NoteStorageServiceLocalImpl implements NoteStorageServiceLocal {
 		noteNode.setProperty(NoteImpl.NOTE_TYPE_PROPERTY, note.getNoteType().name());
 		noteNode.setProperty(NoteImpl.LANGUAGE_PROPERTY, note.getLanguage().getLabel());
 		noteNode.setProperty(NoteImpl.TEXT_PROPERTY, note.getText());
+		String nowDateTime = sdf.format(new Date());
+		noteNode.setProperty(NoteImpl.DATE_TIME_PROPERTY, nowDateTime);
 		return noteNode;
 	}
 }
