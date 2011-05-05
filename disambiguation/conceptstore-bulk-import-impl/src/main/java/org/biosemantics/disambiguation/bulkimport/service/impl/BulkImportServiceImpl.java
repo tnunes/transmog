@@ -1,30 +1,30 @@
 package org.biosemantics.disambiguation.bulkimport.service.impl;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.biosemantics.conceptstore.common.domain.Concept;
 import org.biosemantics.conceptstore.common.domain.ConceptLabel;
 import org.biosemantics.conceptstore.common.domain.ConceptRelationship;
 import org.biosemantics.conceptstore.common.domain.ConceptType;
+import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.common.domain.Notation;
-import org.biosemantics.conceptstore.common.domain.Note;
+import org.biosemantics.conceptstore.common.domain.SemanticRelationshipCategory;
 import org.biosemantics.conceptstore.utils.service.UuidGeneratorService;
 import org.biosemantics.disambiguation.bulkimport.service.BulkImportService;
-import org.biosemantics.disambiguation.bulkimport.service.NodeCacheService;
 import org.biosemantics.disambiguation.domain.impl.ConceptImpl;
 import org.biosemantics.disambiguation.domain.impl.ConceptRelationshipImpl;
 import org.biosemantics.disambiguation.domain.impl.LabelImpl;
 import org.biosemantics.disambiguation.domain.impl.NotationImpl;
-import org.biosemantics.disambiguation.domain.impl.NoteImpl;
 import org.biosemantics.disambiguation.service.local.impl.ConceptStorageServiceLocalImpl;
 import org.biosemantics.disambiguation.service.local.impl.DefaultRelationshipType;
 import org.biosemantics.disambiguation.service.local.impl.LabelStorageServiceLocalImpl;
 import org.biosemantics.disambiguation.service.local.impl.NotationStorageServiceLocalImpl;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.index.BatchInserterIndex;
 import org.neo4j.graphdb.index.BatchInserterIndexProvider;
@@ -35,15 +35,20 @@ import org.neo4j.kernel.impl.batchinsert.BatchInserterImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.util.CollectionUtils;
 
 public class BulkImportServiceImpl implements BulkImportService {
 
 	private static final Logger logger = LoggerFactory.getLogger(BulkImportServiceImpl.class);
-	private final String storeDir;
+	private final String dataDir;
 	private final BatchInserter batchInserter;
+	private GraphDatabaseService graphDatabaseService;
 	private UuidGeneratorService uuidGeneratorService;
-	private NodeCacheService bulkImportNodeCache;
+
+	@Required
+	public void setUuidGeneratorService(UuidGeneratorService uuidGeneratorService) {
+		this.uuidGeneratorService = uuidGeneratorService;
+	}
+
 	// index
 	private BatchInserterIndexProvider indexService;
 	private BatchInserterIndex conceptNodeIndex;
@@ -58,23 +63,47 @@ public class BulkImportServiceImpl implements BulkImportService {
 	private long predicateParentNode;
 	private long noteParentNode;
 
-	public BulkImportServiceImpl(String storeDir) {
-		this.storeDir = storeDir;
-		File file = new File(this.storeDir);
+	// relationships
+	RelationshipType relatedRlspType = new RelationshipType() {
+
+		@Override
+		public String name() {
+			return SemanticRelationshipCategory.RELATED.name();
+		}
+	};
+	RelationshipType hasBroaderRlspType = new RelationshipType() {
+
+		@Override
+		public String name() {
+			return SemanticRelationshipCategory.HAS_BROADER_CONCEPT.name();
+		}
+	};
+	RelationshipType hasNarrowerRlspType = new RelationshipType() {
+
+		@Override
+		public String name() {
+			return SemanticRelationshipCategory.HAS_NARROWER_CONCEPT.name();
+		}
+	};
+
+	public BulkImportServiceImpl(String dataDir) {
+		this.dataDir = dataDir;
+		File file = new File(this.dataDir);
 		if (!file.exists() || !file.isDirectory()) {
 			throw new IllegalArgumentException("storeDir needs to be an existing empty directory");
 		}
-		this.batchInserter = new BatchInserterImpl(this.storeDir);
+		this.batchInserter = new BatchInserterImpl(this.dataDir);
+		this.graphDatabaseService = batchInserter.getGraphDbService();
 	}
 
-	@Required
-	public void setUuidGeneratorService(UuidGeneratorService uuidGeneratorService) {
-		this.uuidGeneratorService = uuidGeneratorService;
-	}
-
-	@Required
-	public void setBulkImportNodeCache(NodeCacheService bulkImportNodeCache) {
-		this.bulkImportNodeCache = bulkImportNodeCache;
+	public BulkImportServiceImpl(String dataDir, Map<String, String> configuration) {
+		this.dataDir = dataDir;
+		File file = new File(this.dataDir);
+		if (!file.exists() || !file.isDirectory()) {
+			throw new IllegalArgumentException("storeDir needs to be an existing empty directory");
+		}
+		this.batchInserter = new BatchInserterImpl(this.dataDir, configuration);
+		this.graphDatabaseService = batchInserter.getGraphDbService();
 	}
 
 	public void init() {
@@ -109,112 +138,6 @@ public class BulkImportServiceImpl implements BulkImportService {
 				DefaultRelationshipType.NOTES, null);
 	}
 
-	@Override
-	public String createConcept(ConceptType conceptType, Concept concept) {
-		final String conceptUuid = uuidGeneratorService.generateRandomUuid();
-		// properties map is reused so make sure to clear it after each storage call
-		Map<String, Object> properties = new HashMap<String, Object>();
-		Collection<String> fullText = new HashSet<String>();
-		properties.put(ConceptImpl.UUID_PROPERTY, conceptUuid);
-		long conceptNode = batchInserter.createNode(properties);
-		switch (conceptType) {
-		case CONCEPT:
-			batchInserter.createRelationship(conceptParentNode, conceptNode, DefaultRelationshipType.CONCEPT, null);
-			break;
-		case DOMAIN:
-			batchInserter.createRelationship(domainParentNode, conceptNode, DefaultRelationshipType.CONCEPT, null);
-			break;
-		case PREDICATE:
-			batchInserter.createRelationship(predicateParentNode, conceptNode, DefaultRelationshipType.CONCEPT, null);
-			break;
-		default:
-			break;
-		}
-		properties.clear();
-		Collection<ConceptLabel> labels = concept.getLabels();
-		for (ConceptLabel conceptLabel : labels) {
-			final String labelUuid = uuidGeneratorService.generateRandomUuid();
-			fullText.add(conceptLabel.getText());
-			long labelNode = bulkImportNodeCache.getLabelNodeId(conceptLabel.getText(), conceptLabel.getLanguage()
-					.getLabel());
-			if (labelNode < 0) {
-				properties.put(LabelImpl.UUID_PROPERTY, labelUuid);
-				properties.put(LabelImpl.TEXT_PROPERTY, conceptLabel.getText());
-				properties.put(LabelImpl.LANGUAGE_PROPERTY, conceptLabel.getLanguage().getLabel());
-				labelNode = batchInserter.createNode(properties);
-				batchInserter.createRelationship(labelParentNode, labelNode, DefaultRelationshipType.LABEL, null);
-				properties.clear();
-				// index
-				properties.put(LabelStorageServiceLocalImpl.UUID_INDEX_KEY, labelUuid);
-				labelNodeIndex.add(labelNode, properties);
-				properties.clear();
-				properties.put(LabelStorageServiceLocalImpl.TEXT_INDEX_KEY, conceptLabel.getText());
-				labelNodeIndex.add(labelNode, properties);
-				properties.clear();
-				bulkImportNodeCache.addLabel(conceptLabel.getText(), conceptLabel.getLanguage().getLabel(), labelNode);
-			}
-			properties.put(ConceptImpl.LABEL_TYPE_RLSP_PROPERTY, conceptLabel.getLabelType().name());
-			batchInserter.createRelationship(conceptNode, labelNode, DefaultRelationshipType.HAS_LABEL, properties);
-			properties.clear();
-
-		}
-		Collection<Notation> notations = concept.getNotations();
-		if (!CollectionUtils.isEmpty(notations)) {
-			for (Notation notation : notations) {
-
-				final String notationUuid = uuidGeneratorService.generateRandomUuid();
-				fullText.add(notation.getCode());
-				long notationNode = bulkImportNodeCache.getNotationNodeId(notation.getDomainUuid(), notation.getCode());
-				if (notationNode < 0) {
-
-					properties.put(NotationImpl.UUID_PROPERTY, notationUuid);
-					properties.put(NotationImpl.DOMAIN_UUID_PROPERTY, notation.getDomainUuid());
-					properties.put(NotationImpl.CODE_PROPERTY, notation.getCode());
-					notationNode = batchInserter.createNode(properties);
-					batchInserter.createRelationship(notationParentNode, notationNode,
-							DefaultRelationshipType.NOTATION, null);
-					properties.clear();
-					// index
-					properties.put(NotationStorageServiceLocalImpl.UUID_INDEX_KEY, notationUuid);
-					notationNodeIndex.add(notationNode, properties);
-					properties.clear();
-					properties.put(NotationStorageServiceLocalImpl.CODE_INDEX_KEY, notation.getCode());
-					notationNodeIndex.add(notationNode, properties);
-					properties.clear();
-					bulkImportNodeCache.addNotation(notation.getDomainUuid(), notation.getCode(), notationNode);
-				}
-				batchInserter.createRelationship(conceptNode, notationNode, DefaultRelationshipType.HAS_NOTATION, null);
-				properties.clear();
-			}
-		}
-		Collection<Note> notes = concept.getNotes();
-		if (!CollectionUtils.isEmpty(notes)) {
-			for (Note note : notes) {
-				properties.put(NoteImpl.DATE_TIME_PROPERTY, note.getCreatedDateTime());
-				properties.put(NoteImpl.LANGUAGE_PROPERTY, note.getLanguage().getLabel());
-				properties.put(NoteImpl.NOTE_TYPE_PROPERTY, note.getNoteType().name());
-				properties.put(NoteImpl.TEXT_PROPERTY, note.getText());
-				long noteNode = batchInserter.createNode(properties);
-				batchInserter.createRelationship(noteParentNode, noteNode, DefaultRelationshipType.NOTE, null);
-				properties.clear();
-			}
-		}
-		properties.put(ConceptStorageServiceLocalImpl.UUID_INDEX_KEY, conceptUuid);
-		conceptNodeIndex.add(conceptNode, properties);
-		properties.clear();
-
-		fullText.add(conceptUuid);
-		StringBuilder fullTextString = new StringBuilder();
-		for (String string : fullText) {
-			fullTextString.append(string).append(ConceptStorageServiceLocalImpl.DELIMITER);
-		}
-		properties.put(ConceptStorageServiceLocalImpl.FULLTEXT_INDEX_KEY, fullTextString.toString());
-		conceptFullTextIndex.add(conceptNode, properties);
-		properties.clear();
-		bulkImportNodeCache.addConcept(conceptUuid, conceptNode);
-		return conceptUuid;
-	}
-
 	public void destroy() {
 		logger.info("invoking flush");
 		conceptNodeIndex.flush();
@@ -228,37 +151,206 @@ public class BulkImportServiceImpl implements BulkImportService {
 	}
 
 	@Override
-	public String addRelationship(final ConceptRelationship conceptRelationship) {
+	public long validateAndCreateRelationship(final ConceptRelationship conceptRelationship) {
+		if (relationshipExists(conceptRelationship)) {
+			return -1;
+		} else {
+			return createRelationship(conceptRelationship);
+		}
+	}
 
-		String key = conceptRelationship.fromConcept() + conceptRelationship.toConcept()
-				+ conceptRelationship.getSemanticRelationshipCategory()
-				+ conceptRelationship.getConceptRelationshipCategory();
-		// create new rlsp if none is found
-		if (bulkImportNodeCache.getConceptRelationshipId(key) < 0) {
-			long fromNodeId = bulkImportNodeCache.getConceptNodeId(conceptRelationship.fromConcept());
-			long toNodeId = bulkImportNodeCache.getConceptNodeId(conceptRelationship.toConcept());
-			Map<String, Object> properties = new HashMap<String, Object>();
-			String uuid = uuidGeneratorService.generateRandomUuid();
-			properties.put(ConceptRelationshipImpl.UUID_PROPERTY, uuid);
-
-			String predicate = conceptRelationship.getPredicateConceptUuid();
-			if (!StringUtils.isBlank(predicate)) {
-				properties.put(ConceptRelationshipImpl.PREDICATE_CONCEPT_UUID_PROPERTY, predicate);
+	@Override
+	public boolean relationshipExists(final ConceptRelationship conceptRelationship) {
+		boolean found = false;
+		long startNodeId = Long.valueOf(conceptRelationship.fromConcept());
+		long endNodeId = Long.valueOf(conceptRelationship.toConcept());
+		Node startNode = graphDatabaseService.getNodeById(startNodeId);
+		Node endNode = graphDatabaseService.getNodeById(endNodeId);
+		if (startNode == null || endNode == null) {
+			logger.error("nodes not found. start:{} end:{} conceptRelationship:{}", new Object[] { startNode, endNode,
+					conceptRelationship });
+		} else {
+			long start = System.currentTimeMillis();
+			switch (conceptRelationship.getSemanticRelationshipCategory()) {
+			case RELATED:
+				found = isRelated(startNode, endNode);
+				break;
+			case HAS_BROADER_CONCEPT:
+				found = isBroader(startNode, endNode);
+				break;
+			case HAS_NARROWER_CONCEPT:
+				found = isNarrower(startNode, endNode);
+				break;
 			}
-			properties.put(ConceptRelationshipImpl.WEIGHT_PROERTY, conceptRelationship.getWeight());
+			long time = System.currentTimeMillis() - start;
+			logger.debug("is-related time:{} for conceptRelationship:{}", new Object[] { time, conceptRelationship });
+		}
+		return found;
+	}
+
+	private boolean isRelated(Node startNode, Node endNode) {
+		// simplest case simply look for a related relationship between 2 concepts in both directions
+		Iterable<Relationship> rlsps = startNode.getRelationships(relatedRlspType);
+		for (Relationship rlsp : rlsps) {
+			if ((rlsp.getStartNode().equals(startNode) && rlsp.getEndNode().equals(endNode))
+					|| (rlsp.getStartNode().equals(endNode) && rlsp.getEndNode().equals(startNode))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean isBroader(Node startNode, Node endNode) {
+		// we look for HAS_BROADER in primary direction and HAS_NARROWER in opposite direction
+		Iterable<Relationship> rlsps = startNode.getRelationships(hasBroaderRlspType, hasNarrowerRlspType);
+		for (Relationship rlsp : rlsps) {
+			if ((rlsp.getStartNode().equals(startNode) && rlsp.getEndNode().equals(endNode) && rlsp.getType().name()
+					.equals(hasBroaderRlspType.name()))
+					|| (rlsp.getStartNode().equals(endNode) && rlsp.getEndNode().equals(startNode) && rlsp.getType()
+							.name().equals(hasNarrowerRlspType.name()))) {
+				return true;
+			}
+		}
+		return false;
+
+	}
+
+	private boolean isNarrower(Node startNode, Node endNode) {
+		// we look for HAS_NARROWER in primary direction and HAS_BROADER in opposite direction
+		Iterable<Relationship> rlsps = startNode.getRelationships(hasBroaderRlspType, hasNarrowerRlspType);
+		for (Relationship rlsp : rlsps) {
+			if ((rlsp.getStartNode().equals(startNode) && rlsp.getEndNode().equals(endNode) && rlsp.getType().name()
+					.equals(hasNarrowerRlspType.name()))
+					|| (rlsp.getStartNode().equals(endNode) && rlsp.getEndNode().equals(startNode) && rlsp.getType()
+							.name().equals(hasBroaderRlspType.name()))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public long createRelationship(final ConceptRelationship conceptRelationship) {
+		long fromNodeId = Long.valueOf(conceptRelationship.fromConcept());
+		long toNodeId = Long.valueOf(conceptRelationship.toConcept());
+		if (fromNodeId <= 0 || toNodeId <= 0) {
+			// Houston we have a problem!
+			logger.error("we didnt find nodes from:{} or to:{} for conceptrelationship:{}", new Object[] { fromNodeId,
+					toNodeId, conceptRelationship });
+			throw new IllegalStateException();
+		} else {
+			Map<String, Object> properties = new HashMap<String, Object>();
+			String relationshipUuid = uuidGeneratorService.generateRandomUuid();
+			properties.put(ConceptRelationshipImpl.UUID_PROPERTY, relationshipUuid);
 			properties.put(ConceptRelationshipImpl.RLSP_CATEGORY_PROPERTY, conceptRelationship
 					.getConceptRelationshipCategory().name());
+			if (!StringUtils.isBlank(conceptRelationship.getPredicateConceptUuid())) {
+				properties.put(ConceptRelationshipImpl.PREDICATE_CONCEPT_UUID_PROPERTY,
+						getUuidforNodeId(Long.valueOf(conceptRelationship.getPredicateConceptUuid())));
+			}
+			properties.put(ConceptRelationshipImpl.WEIGHT_PROERTY, conceptRelationship.getWeight());
 			long relationshipId = batchInserter.createRelationship(fromNodeId, toNodeId, new RelationshipType() {
 				@Override
 				public String name() {
 					return conceptRelationship.getSemanticRelationshipCategory().name();
 				}
 			}, properties);
-			bulkImportNodeCache.addConceptRelationship(key, relationshipId);
-			return uuid;
-		} else {
-			return "";
+			return relationshipId;
 		}
 
 	}
+
+	@Override
+	public long createLabel(Label label) {
+		Map<String, Object> properties = new HashMap<String, Object>();
+		final String labelUuid = uuidGeneratorService.generateRandomUuid();
+		properties.put(LabelImpl.UUID_PROPERTY, labelUuid);
+		properties.put(LabelImpl.TEXT_PROPERTY, label.getText());
+		properties.put(LabelImpl.LANGUAGE_PROPERTY, label.getLanguage().getLabel());
+		long labelNode = batchInserter.createNode(properties);
+		batchInserter.createRelationship(labelParentNode, labelNode, DefaultRelationshipType.LABEL, null);
+		properties.clear();
+		// index uuid
+		properties.put(LabelStorageServiceLocalImpl.UUID_INDEX_KEY, labelUuid);
+		labelNodeIndex.add(labelNode, properties);
+		properties.clear();
+		// index text
+		properties.put(LabelStorageServiceLocalImpl.TEXT_INDEX_KEY, label.getText());
+		labelNodeIndex.add(labelNode, properties);
+		properties.clear();
+		return labelNode;
+	}
+
+	@Override
+	public long createNotation(Notation notation) {
+		Map<String, Object> properties = new HashMap<String, Object>();
+		final String notationUuid = uuidGeneratorService.generateRandomUuid();
+		properties.put(NotationImpl.UUID_PROPERTY, notationUuid);
+		properties.put(NotationImpl.DOMAIN_UUID_PROPERTY, notation.getDomainUuid());
+		properties.put(NotationImpl.CODE_PROPERTY, notation.getCode());
+		long notationNodeId = batchInserter.createNode(properties);
+		batchInserter.createRelationship(notationParentNode, notationNodeId, DefaultRelationshipType.NOTATION, null);
+		properties.clear();
+		// index uuid
+		properties.put(NotationStorageServiceLocalImpl.UUID_INDEX_KEY, notationUuid);
+		notationNodeIndex.add(notationNodeId, properties);
+		properties.clear();
+		// index code
+		properties.put(NotationStorageServiceLocalImpl.CODE_INDEX_KEY, notation.getCode());
+		notationNodeIndex.add(notationNodeId, properties);
+		properties.clear();
+		return notationNodeId;
+	}
+
+	@Override
+	public long createUmlsConcept(ConceptType conceptType, List<ConceptLabel> conceptLabels, List<Long> notations,
+			String fullText) {
+		Map<String, Object> properties = new HashMap<String, Object>();
+		final String conceptUuid = uuidGeneratorService.generateRandomUuid();
+		// properties map is reused so make sure to clear it after each storage call
+		properties.put(ConceptImpl.UUID_PROPERTY, conceptUuid);
+		long conceptNodeId = batchInserter.createNode(properties);
+		properties.clear();
+		switch (conceptType) {
+		case CONCEPT:
+			batchInserter.createRelationship(conceptParentNode, conceptNodeId, DefaultRelationshipType.CONCEPT, null);
+			break;
+		case DOMAIN:
+			batchInserter.createRelationship(domainParentNode, conceptNodeId, DefaultRelationshipType.CONCEPT, null);
+			break;
+		case PREDICATE:
+			batchInserter.createRelationship(predicateParentNode, conceptNodeId, DefaultRelationshipType.CONCEPT, null);
+			break;
+		default:
+			break;
+		}
+		// indexing uuid
+		properties.put(ConceptStorageServiceLocalImpl.UUID_INDEX_KEY, conceptUuid);
+		conceptNodeIndex.add(conceptNodeId, properties);
+		properties.clear();
+		// indexing full text
+		properties.put(ConceptStorageServiceLocalImpl.FULLTEXT_INDEX_KEY, fullText);
+		conceptFullTextIndex.add(conceptNodeId, properties);
+		properties.clear();
+		// creating rlsp to labels
+		for (ConceptLabel conceptLabel : conceptLabels) {
+			properties.put(ConceptImpl.LABEL_TYPE_RLSP_PROPERTY, conceptLabel.getLabelType().name());
+			batchInserter.createRelationship(conceptNodeId, Long.valueOf(conceptLabel.getText()),
+					DefaultRelationshipType.HAS_LABEL, properties);
+			properties.clear();
+		}
+		// create rlsp to notations
+		if (notations != null) {
+			for (Long notationNodeId : notations) {
+				batchInserter.createRelationship(conceptNodeId, notationNodeId, DefaultRelationshipType.HAS_NOTATION,
+						null);
+			}
+		}
+		return conceptNodeId;
+	}
+
+	private String getUuidforNodeId(long nodeId) {
+		return (String) batchInserter.getNodeProperties(nodeId).get(ConceptRelationshipImpl.UUID_PROPERTY);
+	}
+
 }
