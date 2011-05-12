@@ -47,7 +47,7 @@ public class ConceptImpl implements Concept {
 	 */
 	@Override
 	public Collection<ConceptLabel> getLabels() {
-		long start = System.currentTimeMillis();
+		//long start = System.currentTimeMillis();
 		Collection<ConceptLabel> labels = new HashSet<ConceptLabel>();
 		Iterable<Relationship> relationships = underlyingNode.getRelationships(DefaultRelationshipType.HAS_LABEL,
 				Direction.OUTGOING);
@@ -57,7 +57,7 @@ public class ConceptImpl implements Concept {
 			LabelType labelType = LabelType.valueOf((String) relationship.getProperty(LABEL_TYPE_RLSP_PROPERTY));
 			labels.add(new ConceptLabelImpl(new LabelImpl(relationship.getEndNode()), labelType));
 		}
-		logger.info("in getLabelsByType time taken: {}(ms)", (System.currentTimeMillis() - start));
+		//logger.info("in getLabelsByType time taken: {}(ms)", (System.currentTimeMillis() - start));
 		return labels;
 	}
 
