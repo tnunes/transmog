@@ -2,8 +2,10 @@ package org.biosemantics.disambiguation.service.local.impl;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.biosemantics.conceptstore.common.domain.ConceptRelationship;
@@ -32,6 +34,28 @@ public class ConceptRelationshipStorageServiceLocalImpl implements ConceptRelati
 	private final RelationshipIndex index;
 	private ConceptStorageServiceLocal conceptStorageServiceLocal;
 	private ValidationUtility validationUtility;
+
+	private static final RelationshipType relatedRlspType = new RelationshipType() {
+
+		@Override
+		public String name() {
+			return SemanticRelationshipCategory.RELATED.name();
+		}
+	};
+	private static final RelationshipType hasBroaderRlspType = new RelationshipType() {
+
+		@Override
+		public String name() {
+			return SemanticRelationshipCategory.HAS_BROADER_CONCEPT.name();
+		}
+	};
+	private static final RelationshipType hasNarrowerRlspType = new RelationshipType() {
+
+		@Override
+		public String name() {
+			return SemanticRelationshipCategory.HAS_NARROWER_CONCEPT.name();
+		}
+	};
 
 	public ConceptRelationshipStorageServiceLocalImpl(GraphStorageTemplate graphStorageTemplate) {
 		this.graphStorageTemplate = graphStorageTemplate;
@@ -96,8 +120,14 @@ public class ConceptRelationshipStorageServiceLocalImpl implements ConceptRelati
 	@Transactional
 	@Override
 	public Collection<ConceptRelationship> getAllRelationshipsForConcept(String uuid) {
-		// TODO Auto-generated method stub
-		return null;
+		Node node = conceptStorageServiceLocal.getConceptNode(uuid);
+		Iterable<Relationship> relationships = node.getRelationships(relatedRlspType, hasNarrowerRlspType,
+				hasBroaderRlspType);
+		List<ConceptRelationship> conceptRelationships = new ArrayList<ConceptRelationship>();
+		for (Relationship relationship : relationships) {
+			conceptRelationships.add(new ConceptRelationshipImpl(relationship));
+		}
+		return conceptRelationships;
 	}
 
 	@Transactional
