@@ -33,7 +33,7 @@ public class ConceptRelationshipImpl implements ConceptRelationship {
 
 	@Override
 	public int getWeight() {
-		return Integer.valueOf((String) underlyingRelationship.getProperty(WEIGHT_PROERTY));
+		return (Integer)underlyingRelationship.getProperty(WEIGHT_PROERTY);
 	}
 
 	@Override
