@@ -4,33 +4,43 @@ import org.biosemantics.disambiguation.conceptstore.web.listener.ListenerControl
 
 import com.vaadin.terminal.ThemeResource;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.themes.Runo;
 
 public class TabbedView extends TabSheet {
 
-	private static final ThemeResource icon1 = new ThemeResource("../transmog-web/icons/action_save.gif");
-	private static final ThemeResource icon2 = new ThemeResource("../transmog-web/icons/comment_yellow.gif");
-	private static final ThemeResource icon3 = new ThemeResource("../transmog-web/icons/icon_info.gif");
-	private Panel conceptsTab = new Panel();
-	private Panel relationsTab = new Panel();
-	private Panel algorithmsTab = new Panel();
+	private static final ThemeResource icon1 = new ThemeResource("../runo/icons/16/arrow-down.png");
+	private Panel homeTab = new Panel();
+	private Panel searchTab = new Panel();
+	private Panel conceptTab = new Panel();
+	private Panel relationTab = new Panel();
+	private Panel algorithmTab = new Panel();
 
 	public TabbedView() {
 		this.setHeight("100%");
 
-		conceptsTab.setStyleName(Runo.PANEL_LIGHT);
-		conceptsTab.setHeight("100%");
-		addTab(conceptsTab, WidgetConstants.TAB_CONCEPTS, icon1);
+		homeTab.setStyleName(Runo.PANEL_LIGHT);
+		homeTab.setHeight("100%");
+		addTab(homeTab, WidgetConstants.TAB_HOME, icon1);
+		homeTab.addComponent(new Label(WidgetConstants.HOME_PAGE_HTML_TEXT, Label.CONTENT_XHTML));
 
-		relationsTab.setStyleName(Runo.PANEL_LIGHT);
-		relationsTab.setHeight("100%");
-		addTab(relationsTab, WidgetConstants.TAB_RELATIONS, icon2);
+		searchTab.setStyleName(Runo.PANEL_LIGHT);
+		searchTab.setHeight("100%");
+		addTab(searchTab, WidgetConstants.TAB_SEARCH, icon1);
 
-		algorithmsTab.setStyleName(Runo.PANEL_LIGHT);
-		algorithmsTab.setHeight("100%");
-		addTab(algorithmsTab, WidgetConstants.TAB_ALGORITHMS, icon3);
+		conceptTab.setStyleName(Runo.PANEL_LIGHT);
+		conceptTab.setHeight("100%");
+		addTab(conceptTab, WidgetConstants.TAB_CONCEPT, icon1);
+
+		relationTab.setStyleName(Runo.PANEL_LIGHT);
+		relationTab.setHeight("100%");
+		addTab(relationTab, WidgetConstants.TAB_RELATION, icon1);
+
+		algorithmTab.setStyleName(Runo.PANEL_LIGHT);
+		algorithmTab.setHeight("100%");
+		addTab(algorithmTab, WidgetConstants.TAB_ALGORITHM, icon1);
 		this.addListener(ListenerControllerImpl.getInstance());
 
 	}
@@ -42,12 +52,24 @@ public class TabbedView extends TabSheet {
 	}
 
 	public void setSelectedTab(int position) {
-		if (position == 0) {
-			this.setSelectedTab(conceptsTab);
-		} else if (position == 1) {
-			this.setSelectedTab(relationsTab);
-		} else if (position == 3) {
-			this.setSelectedTab(algorithmsTab);
+		switch (position) {
+		case 0:
+			this.setSelectedTab(homeTab);
+			break;
+		case 1:
+			this.setSelectedTab(searchTab);
+			break;
+		case 2:
+			this.setSelectedTab(conceptTab);
+			break;
+		case 3:
+			this.setSelectedTab(relationTab);
+			break;
+		case 4:
+			this.setSelectedTab(algorithmTab);
+			break;
+		default:
+			break;
 		}
 	}
 }

@@ -45,7 +45,6 @@ public class ConceptDetail extends VerticalLayout {
 			Object label = labelTable.addItem(new Object[] { conceptLabel.getText(),
 					conceptLabel.getLanguage().getIso6392Code(), conceptLabel.getLabelType().name() },
 					conceptLabel.getUuid());
-			System.err.println("lable: " + label);
 		}
 		return labelTable;
 	}
@@ -59,7 +58,6 @@ public class ConceptDetail extends VerticalLayout {
 		for (Notation notation : notations) {
 			Object not = notationTable.addItem(new Object[] { notation.getCode(), notation.getDomainUuid() },
 					notation.getUuid());
-			System.err.println("not: " + not);
 		}
 		return notationTable;
 	}

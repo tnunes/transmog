@@ -5,9 +5,10 @@ import java.util.Collection;
 import org.apache.commons.lang.StringUtils;
 import org.biosemantics.conceptstore.common.domain.Concept;
 import org.biosemantics.disambiguation.conceptstore.web.ConceptStoreApplication;
+import org.biosemantics.disambiguation.conceptstore.web.common.StorageUtility;
 import org.biosemantics.disambiguation.conceptstore.web.widget.ConceptDetail;
 import org.biosemantics.disambiguation.conceptstore.web.widget.ConceptHtmlLabel;
-import org.biosemantics.disambiguation.conceptstore.web.widget.ConceptRelations;
+import org.biosemantics.disambiguation.conceptstore.web.widget.ConceptRelation;
 import org.biosemantics.disambiguation.conceptstore.web.widget.ConceptResultList;
 import org.biosemantics.disambiguation.conceptstore.web.widget.WidgetConstants;
 import org.slf4j.Logger;
@@ -31,8 +32,8 @@ public class ListenerControllerImpl implements ClickListener, SelectedTabChangeL
 
 	private static ListenerControllerImpl instance;
 	private ConceptStoreApplication application;
-	private ConceptDetail conceptDetail;
-	private ConceptRelations conceptRelations;
+	private Concept selectedConcept;
+	private Concept existingRelationsConcept;
 	private static final Logger logger = LoggerFactory.getLogger(ListenerControllerImpl.class);
 
 	public static ListenerControllerImpl getInstance() {
@@ -47,30 +48,30 @@ public class ListenerControllerImpl implements ClickListener, SelectedTabChangeL
 	}
 
 	public void buttonClick(ClickEvent event) {
+		long start = System.currentTimeMillis();
 		String btnCaption = event.getComponent().getCaption();
-
 		if (btnCaption.equals(WidgetConstants.BTN_GO)) {
 			search(event);
 		} else {
 			application.getWindow().showNotification(btnCaption);
 		}
+		logger.debug("search: {}(ms)", System.currentTimeMillis() - start);
 	}
 
 	private void search(ClickEvent event) {
-
 		Object value = application.getHeader().getSearchText();
 		if (value == null || StringUtils.isBlank(value.toString())) {
 			application.getWindow().showNotification("Invalid search text", Notification.TYPE_WARNING_MESSAGE);
 		} else {
 			// application.getWindow().showNotification("fetching results for search text '" + value + "'");
 			Collection<Concept> concepts = application.getSpringServiceLocator().getConceptStorageService()
-					.getConceptsByFullTextQuery(value.toString(), 50);
+					.getConceptsByFullTextQuery(value.toString(), 30);
 			if (CollectionUtils.isEmpty(concepts)) {
 				application.getWindow().showNotification("No results found for search text '" + value.toString() + "'");
 			} else {
 				ConceptResultList conceptResultList = new ConceptResultList(concepts);
-				application.getTabbedView().setTabPanel(0, conceptResultList);
-				application.getTabbedView().setSelectedTab(0);
+				application.getTabbedView().setTabPanel(1, conceptResultList);
+				application.getTabbedView().setSelectedTab(1);
 				application.getNavigationTree().addToSearchHistory(value.toString());
 			}
 		}
@@ -80,37 +81,46 @@ public class ListenerControllerImpl implements ClickListener, SelectedTabChangeL
 		TabSheet tabsheet = event.getTabSheet();
 		Tab tab = tabsheet.getTab(tabsheet.getSelectedTab());
 		if (tab != null) {
-			if (tab.getCaption().equals(WidgetConstants.TAB_RELATIONS) && conceptDetail != null
-					&& conceptDetail.getConcept() != null) {
-				if (conceptRelations == null || ! conceptRelations.getConcept().equals(conceptDetail.getConcept())) {
-					application.getWindow().showNotification("fetching relations for concept");
-					getRelations(conceptDetail.getConcept());
+			if (tab.getCaption().equals(WidgetConstants.TAB_RELATION)) {
+				long start = System.currentTimeMillis();
+				// check if we already have the relations for the currently selected concept
+				if (existingRelationsConcept == null || !existingRelationsConcept.equals(selectedConcept)) {
+					getRelations(selectedConcept);
 				}
+				logger.debug("relations: {}(ms)", System.currentTimeMillis() - start);
 			}
+
 		}
 	}
 
 	private void getRelations(Concept concept) {
-		conceptRelations = new ConceptRelations();
-		// HACk added first as otherwise we get the getApplication() as null in Conceptrelations
-		application.getTabbedView().setTabPanel(1, conceptRelations);
-		conceptRelations.build(concept);
+		ConceptRelation conceptRelation = new ConceptRelation();
+		// HACK this component needs to be added first as otherwise the getApplication() call in the component will give
+		// a null and we need it to get a reference to our spring service
+		application.getTabbedView().setTabPanel(3, conceptRelation);
+		conceptRelation.build(concept);
+		existingRelationsConcept = concept;
 	}
 
 	public void layoutClick(LayoutClickEvent event) {
 		if (event.getClickedComponent() instanceof ConceptHtmlLabel) {
+			long start = System.currentTimeMillis();
 			getConceptDetails(event);
+			logger.debug("details: {}(ms)", System.currentTimeMillis() - start);
 		}
+
 	}
 
 	private void getConceptDetails(LayoutClickEvent event) {
 		ConceptHtmlLabel conceptHtmlLabel = (ConceptHtmlLabel) event.getClickedComponent();
 		String uuid = conceptHtmlLabel.getUuid();
 		application.getWindow().showNotification("fetching details for concept");
-		Concept concept = application.getSpringServiceLocator().getConceptStorageService().getConcept(uuid);
-		conceptDetail = new ConceptDetail(concept);
-		application.getTabbedView().setTabPanel(0, conceptDetail);
-
+		selectedConcept = application.getSpringServiceLocator().getConceptStorageService().getConcept(uuid);
+		ConceptDetail conceptDetail = new ConceptDetail(selectedConcept);
+		application.getTabbedView().setTabPanel(2, conceptDetail);
+		application.getTabbedView().setSelectedTab(2);
+		application.getNavigationTree().addToConceptHistory(selectedConcept.getUuid(),
+				StorageUtility.getPreferredLabel(selectedConcept, null).getText());
 	}
 
 	public void itemClick(ItemClickEvent event) {
