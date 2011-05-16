@@ -7,6 +7,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.TabSheet;
+import com.vaadin.ui.VerticalSplitPanel;
 import com.vaadin.ui.themes.Runo;
 
 public class TabbedView extends TabSheet {
@@ -16,7 +17,8 @@ public class TabbedView extends TabSheet {
 	private Panel searchTab = new Panel();
 	private Panel conceptTab = new Panel();
 	private Panel relationTab = new Panel();
-	private Panel algorithmTab = new Panel();
+	private VerticalSplitPanel pathAlgorithmTab = new VerticalSplitPanel();
+	private PathAlgorithmInputForm pathAlgorithmInputForm = new PathAlgorithmInputForm();
 
 	public TabbedView() {
 		this.setHeight("100%");
@@ -38,14 +40,21 @@ public class TabbedView extends TabSheet {
 		relationTab.setHeight("100%");
 		addTab(relationTab, WidgetConstants.TAB_RELATION, icon1);
 
-		algorithmTab.setStyleName(Runo.PANEL_LIGHT);
-		algorithmTab.setHeight("100%");
-		addTab(algorithmTab, WidgetConstants.TAB_ALGORITHM, icon1);
+		pathAlgorithmTab.setSplitPosition(20);
+		pathAlgorithmTab.setFirstComponent(pathAlgorithmInputForm);
+		addTab(pathAlgorithmTab, WidgetConstants.TAB__PATH_ALGORITHM, icon1);
 		this.addListener(ListenerControllerImpl.getInstance());
-
 	}
 
-	public void setTabPanel(int position, Component component) {
+	public VerticalSplitPanel getPathAlgorithmTab() {
+		return pathAlgorithmTab;
+	}
+
+	public PathAlgorithmInputForm getPathAlgorithmInputForm() {
+		return pathAlgorithmInputForm;
+	}
+
+	public void setTabComponent(int position, Component component) {
 		Panel panel = ((Panel) this.getTab(position).getComponent());
 		panel.removeAllComponents();
 		panel.addComponent(component);
@@ -66,7 +75,7 @@ public class TabbedView extends TabSheet {
 			this.setSelectedTab(relationTab);
 			break;
 		case 4:
-			this.setSelectedTab(algorithmTab);
+			this.setSelectedTab(pathAlgorithmTab);
 			break;
 		default:
 			break;

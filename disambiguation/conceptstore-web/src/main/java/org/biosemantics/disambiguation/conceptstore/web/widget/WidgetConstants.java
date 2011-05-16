@@ -4,10 +4,12 @@ package org.biosemantics.disambiguation.conceptstore.web.widget;
 public abstract class WidgetConstants {
 
 	public static final String BTN_GO = "Go";
+	public static final String BTN_SUBMIT = "Submit";
+	public static final String BTN_RESET = "Reset";
 
 	public static final String TAB_CONCEPT = "Concept Details";
 	public static final String TAB_RELATION = "Concept Relations";
-	public static final String TAB_ALGORITHM = "Other Algorithms";
+	public static final String TAB__PATH_ALGORITHM = "Path Algorithms";
 	public static final String TAB_HOME = "Home";
 	public static final String TAB_SEARCH = "Search Results";
 
@@ -25,4 +27,5 @@ public abstract class WidgetConstants {
 			+ " Someone once told me the term was short for transmogrification.</p>"
 			+ " <p>\"Is there such a word?\"</p><p>\"I don’t know,\" said Horton.</p> <p>\"Well, anyhow,\" said Nicodemus, "
 			+ "\"I have a chef transmog and a physician transmog and a biochemist transmog — well, you get the idea.\"</p>";
+
 }

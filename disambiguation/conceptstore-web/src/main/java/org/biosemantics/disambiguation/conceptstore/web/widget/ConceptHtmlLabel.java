@@ -10,8 +10,7 @@ public class ConceptHtmlLabel extends Label {
 	public ConceptHtmlLabel(String uuid, ConceptLabel conceptLabel) {
 		this.uuid = uuid;
 		this.setContentMode(Label.CONTENT_XHTML);
-		StringBuilder html = new StringBuilder(conceptLabel.getText()).append(" [")
-				.append(conceptLabel.getLanguage().getLabel()).append("]");
+		StringBuilder html = new StringBuilder(conceptLabel.getText());
 		this.setValue(html.toString());
 	}
 

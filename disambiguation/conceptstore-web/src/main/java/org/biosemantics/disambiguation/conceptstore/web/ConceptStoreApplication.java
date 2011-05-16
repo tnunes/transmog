@@ -16,6 +16,7 @@
 package org.biosemantics.disambiguation.conceptstore.web;
 
 import org.biosemantics.disambiguation.conceptstore.web.common.SpringServiceLocator;
+import org.biosemantics.disambiguation.conceptstore.web.common.StorageCache;
 import org.biosemantics.disambiguation.conceptstore.web.listener.ListenerControllerImpl;
 import org.biosemantics.disambiguation.conceptstore.web.widget.Header;
 import org.biosemantics.disambiguation.conceptstore.web.widget.NavigationTree;
@@ -38,6 +39,7 @@ public class ConceptStoreApplication extends Application {
 	private NavigationTree navigationTree;
 	private TabbedView tabbedView;
 	private SpringServiceLocator springServiceLocator;
+	private StorageCache storageCache = new StorageCache();
 
 	public Window getWindow() {
 		return window;
@@ -57,6 +59,10 @@ public class ConceptStoreApplication extends Application {
 
 	public NavigationTree getNavigationTree() {
 		return navigationTree;
+	}
+
+	public StorageCache getStorageCache() {
+		return storageCache;
 	}
 
 	@Override

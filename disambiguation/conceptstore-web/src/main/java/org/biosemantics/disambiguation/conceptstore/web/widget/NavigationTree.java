@@ -34,13 +34,15 @@ public class NavigationTree extends Tree {
 
 	public void addToConceptHistory(String uuid, String conceptLabel) {
 		this.addItem(conceptLabel);
+		this.setValue(conceptLabel);
 		this.setParent(conceptLabel, NavigationTree.CONCEPT_HISTORY);
 		// mark the saved search as a leaf (cannot have children)
 		this.setChildrenAllowed(conceptLabel, false);
 		// make sure "Search" is expanded
 		this.expandItem(NavigationTree.CONCEPT_HISTORY);
 		// select the saved search
-		this.setValue(conceptLabel);
 	}
+	
+	
 
 }
