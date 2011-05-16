@@ -94,4 +94,8 @@
 		<property name="conceptStorageServiceLocal" ref="conceptStorageServiceLocal"></property>
 	</bean>
 
+	<bean id="algorithmServiceLocal" class="org.biosemantics.disambiguation.service.local.impl.AlgorithmServiceLocalImpl">
+		<property name="conceptStorageServiceLocal" ref="conceptStorageServiceLocal"></property>
+	</bean>
+
 </beans>

@@ -35,22 +35,19 @@ public class ConceptRelationshipStorageServiceLocalImpl implements ConceptRelati
 	private ConceptStorageServiceLocal conceptStorageServiceLocal;
 	private ValidationUtility validationUtility;
 
-	private static final RelationshipType relatedRlspType = new RelationshipType() {
-
+	public static final RelationshipType relatedRlspType = new RelationshipType() {
 		@Override
 		public String name() {
 			return SemanticRelationshipCategory.RELATED.name();
 		}
 	};
-	private static final RelationshipType hasBroaderRlspType = new RelationshipType() {
-
+	public static final RelationshipType hasBroaderRlspType = new RelationshipType() {
 		@Override
 		public String name() {
 			return SemanticRelationshipCategory.HAS_BROADER_CONCEPT.name();
 		}
 	};
-	private static final RelationshipType hasNarrowerRlspType = new RelationshipType() {
-
+	public static final RelationshipType hasNarrowerRlspType = new RelationshipType() {
 		@Override
 		public String name() {
 			return SemanticRelationshipCategory.HAS_NARROWER_CONCEPT.name();
