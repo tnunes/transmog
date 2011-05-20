@@ -73,10 +73,11 @@ public class DomainWriter {
 				long rsabLabelId = bulkImportService.createLabel(rsabLabel);
 				conceptLabels.add(new ConceptLabelImpl(new LabelImpl(null, String.valueOf(rsabLabelId)),
 						LabelType.ALTERNATE));
-				umlsCacheService.add(new KeyValue(rsab, String.valueOf(rsabLabelId)));
+				//umlsCacheService.add(new KeyValue(rsab, String.valueOf(rsabLabelId)));
 				// FIXME: get other labels as well from RCUI and VCUI
 				StringBuilder fullText = new StringBuilder(son).append(UmlsUtils.SEPERATOR).append(rsab);
-				bulkImportService.createUmlsConcept(ConceptType.DOMAIN, conceptLabels, null, fullText.toString());
+				long id = bulkImportService.createUmlsConcept(ConceptType.DOMAIN, conceptLabels, null, fullText.toString());
+				umlsCacheService.add(new KeyValue(rsab, String.valueOf(id)));
 				ctr++;
 			}
 			logger.info("{} domains created", ctr);

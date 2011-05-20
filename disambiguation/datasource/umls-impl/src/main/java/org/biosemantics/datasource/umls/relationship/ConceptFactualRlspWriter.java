@@ -8,7 +8,9 @@ import java.sql.Statement;
 import javax.sql.DataSource;
 
 import org.biosemantics.conceptstore.common.domain.ConceptRelationshipCategory;
+import org.biosemantics.conceptstore.common.domain.SemanticRelationshipCategory;
 import org.biosemantics.conceptstore.utils.domain.impl.ConceptRelationshipImpl;
+import org.biosemantics.datasource.umls.cache.KeyValue;
 import org.biosemantics.datasource.umls.cache.UmlsCacheService;
 import org.biosemantics.datasource.umls.concept.UmlsUtils;
 import org.biosemantics.disambiguation.bulkimport.service.BulkImportService;
@@ -55,16 +57,22 @@ public class ConceptFactualRlspWriter {
 				String cui1 = rs.getString("CUI1");
 				String cui2 = rs.getString("CUI2");
 				String rel = rs.getString("REL");
-				// factual relationships are stored in the form cyi2->rel->cui1 hence inverting subject object here
+				// factual relationships are stored in the form cui2->rel->cui1 hence inverting subject object here
 				String subjectValue = umlsCacheService.getValue(cui2);
 				String objectValue = umlsCacheService.getValue(cui1);
+				SemanticRelationshipCategory semanticRelationshipCategory = UmlsUtils.getConceptRelationshipType(rel);
 				if (subjectValue != null && objectValue != null) {
-					ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(subjectValue,
-							objectValue, null, UmlsUtils.getConceptRelationshipType(rel),
-							ConceptRelationshipCategory.AUTHORITATIVE, 1);
-					bulkImportService.validateAndCreateRelationship(conceptRelationshipImpl);
-					if (++ctr % UmlsUtils.BATCH_SIZE == 0) {
-						logger.info("inserted concept-concept rlsp: {}", ctr);
+					if (!checkExists(subjectValue, objectValue, semanticRelationshipCategory)) {
+						ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(subjectValue,
+								objectValue, null, semanticRelationshipCategory,
+								ConceptRelationshipCategory.AUTHORITATIVE, 1);
+						bulkImportService.createRelationship(conceptRelationshipImpl);
+						// add to cache
+						umlsCacheService.add(new KeyValue(subjectValue + objectValue
+								+ semanticRelationshipCategory.name(), subjectValue));
+						if (++ctr % UmlsUtils.BATCH_SIZE == 0) {
+							logger.info("inserted concept-concept rlsp: {}", ctr);
+						}
 					}
 				} else {
 					logger.error("subject:{} object:{} for cui1:{} cui2:{}", new Object[] { subjectValue, objectValue,
@@ -74,6 +82,49 @@ public class ConceptFactualRlspWriter {
 		} finally {
 			rs.close();
 		}
+	}
+
+	private boolean checkExists(String subjectValue, String objectValue,
+			SemanticRelationshipCategory semanticRelationshipCategory) {
+		switch (semanticRelationshipCategory) {
+		case RELATED:
+			if (umlsCacheService.getValue(subjectValue + objectValue + semanticRelationshipCategory.name()) == null) {
+				if (umlsCacheService.getValue(objectValue + subjectValue + semanticRelationshipCategory.name()) == null) {
+					return false;
+				} else {
+					return true;
+				}
+			} else {
+				return true;
+			}
+		case HAS_BROADER_CONCEPT:
+			if (umlsCacheService.getValue(subjectValue + objectValue
+					+ SemanticRelationshipCategory.HAS_BROADER_CONCEPT.name()) == null) {
+				if (umlsCacheService.getValue(objectValue + subjectValue
+						+ SemanticRelationshipCategory.HAS_NARROWER_CONCEPT.name()) == null) {
+					return false;
+				} else {
+					return true;
+				}
+			} else {
+				return true;
+			}
+		case HAS_NARROWER_CONCEPT:
+			if (umlsCacheService.getValue(subjectValue + objectValue
+					+ SemanticRelationshipCategory.HAS_NARROWER_CONCEPT.name()) == null) {
+				if (umlsCacheService.getValue(objectValue + subjectValue
+						+ SemanticRelationshipCategory.HAS_BROADER_CONCEPT.name()) == null) {
+					return false;
+				} else {
+					return true;
+				}
+			} else {
+				return true;
+			}
+		default:
+			throw new IllegalStateException("semantic relation not found");
+		}
+
 	}
 
 	public void destroy() throws SQLException {
