@@ -19,7 +19,7 @@ public class AmbiguousLabelOutputObject implements OutputObject {
 	@Override
 	public String[] toStringArray() {
 		String[] output = new String[5];
-		output[0] = label.getUuid();
+		output[0] = "" + label.getId();
 		output[1] = label.getLanguage().getLabel();
 		output[2] = label.getText();
 		output[3] = String.valueOf(concepts.size());
