@@ -18,7 +18,7 @@ public class PathAlgorithmInputForm extends Form {
 	private ComboBox toConcept = new ComboBox("Concept 2");
 	private ComboBox comboPathAlgorithms = new ComboBox("Algorithm");
 	// private static final String[] pathAlgorithms = new String[] { "Shortest Path", "All Paths" };
-	private static final String[] pathAlgorithms = new String[] { "Shortest Path" };
+	private static final String[] pathAlgorithms = new String[] { "All Paths (max 5 hops)" };
 
 	public Button getSubmit() {
 		return submit;

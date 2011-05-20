@@ -42,7 +42,7 @@ public class TabbedView extends TabSheet {
 
 		pathAlgorithmTab.setSplitPosition(20);
 		pathAlgorithmTab.setFirstComponent(pathAlgorithmInputForm);
-		addTab(pathAlgorithmTab, WidgetConstants.TAB__PATH_ALGORITHM, icon1);
+		addTab(pathAlgorithmTab, WidgetConstants.TAB_PATH_ALGORITHM, icon1);
 		this.addListener(ListenerControllerImpl.getInstance());
 	}
 

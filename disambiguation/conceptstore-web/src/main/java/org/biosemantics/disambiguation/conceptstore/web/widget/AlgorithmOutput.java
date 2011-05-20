@@ -1,41 +1,52 @@
 package org.biosemantics.disambiguation.conceptstore.web.widget;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Collection;
+import org.biosemantics.disambiguation.conceptstore.web.common.StorageUtility;
+import org.biosemantics.disambiguation.domain.impl.ConceptImpl;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.PropertyContainer;
+import org.neo4j.graphdb.Relationship;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.vaadin.terminal.ExternalResource;
-import com.vaadin.ui.Embedded;
-import com.vaadin.ui.Label;
+import com.vaadin.ui.Table;
 import com.vaadin.ui.VerticalLayout;
 
 public class AlgorithmOutput extends VerticalLayout {
 
-	public AlgorithmOutput(Collection<String> conceptLabelTexts) {
-		StringBuilder googleChartApiUrl = new StringBuilder(
-				"http://chart.googleapis.com/chart?cht=gv&chs=620x480&chl=digraph{");
-		StringBuilder txt = new StringBuilder();
-		int ctr = 0;
-		for (String string : conceptLabelTexts) {
-			txt.append(string);
-			try {
-				googleChartApiUrl.append("\"").append(URLEncoder.encode(string, "UTF-8")).append("\"");
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
+	private static final Logger logger = LoggerFactory.getLogger(AlgorithmOutput.class);
+
+	public AlgorithmOutput(Iterable<Path> paths) {
+		this.setMargin(true);
+		Table pathTable = new Table();
+		// pathTable.setPageLength(10);
+		pathTable.setWidth("100%");
+		pathTable.addContainerProperty("Length", Integer.class, null);
+		pathTable.addContainerProperty("Path", String.class, null);
+		int numberOfPaths = 0;
+		for (Path path : paths) {
+			StringBuilder stringBuilder = new StringBuilder();
+			// Iterator<PropertyContainer> propertyContainerIterator = path.iterator();
+			Node previousNode = null;
+			for (PropertyContainer propertyContainer : path) {
+				if (propertyContainer instanceof Node) {
+					Node node = (Node) propertyContainer;
+					previousNode = node;
+					String labeltext = StorageUtility.getPreferredLabel(new ConceptImpl(node), null).getText();
+					stringBuilder.append(labeltext);
+				} else if (propertyContainer instanceof Relationship) {
+					Relationship rlsp = (Relationship) propertyContainer;
+					if (rlsp.getStartNode().equals(previousNode)) {
+						stringBuilder.append("--").append(rlsp.getType().name()).append("->");
+					} else {
+						stringBuilder.append("<-").append(rlsp.getType().name()).append("--");
+					}
+				}
 			}
-			if (++ctr < conceptLabelTexts.size()) {
-				txt.append("->");
-				googleChartApiUrl.append("->");
-			}
+			pathTable.addItem(new Object[] { path.length(), stringBuilder.toString() }, ++numberOfPaths);
 		}
-		this.addComponent(new Label("<h3>Textual Representation:</h3>", Label.CONTENT_XHTML));
-		this.addComponent(new Label(txt.toString(), Label.CONTENT_TEXT));
-		ExternalResource externalResource = new ExternalResource(googleChartApiUrl.toString());
-		Embedded embeddedImage = new Embedded("", externalResource);
-		embeddedImage.setType(Embedded.TYPE_IMAGE);
-		this.addComponent(new Label("<h3>Visual Representation:</h3>", Label.CONTENT_XHTML));
-		this.addComponent(embeddedImage);
-
+		pathTable.setCaption(numberOfPaths +" paths available. Summary:");
+		logger.debug("{} paths found.", numberOfPaths);
+		this.addComponent(pathTable);
 	}
-
 }

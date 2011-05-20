@@ -79,6 +79,7 @@ public class ConceptRelation extends VerticalLayout {
 					conceptCache.put(retrievedConcept.getUuid(), toConceptPrefLabel);
 				}
 				try {
+					
 					googleChartApiUrl.append("\"").append(URLEncoder.encode(fromConceptPrefLabel, "UTF-8"))
 							.append("\"").append("->").append("\"")
 							.append(URLEncoder.encode(toConceptPrefLabel, "UTF-8")).append("\"");

@@ -42,9 +42,8 @@ public class ConceptDetail extends VerticalLayout {
 		labelTable.addContainerProperty("Language", String.class, null);
 		labelTable.addContainerProperty("Label Type", String.class, null);
 		for (ConceptLabel conceptLabel : conceptLabels) {
-			Object label = labelTable.addItem(new Object[] { conceptLabel.getText(),
-					conceptLabel.getLanguage().getIso6392Code(), conceptLabel.getLabelType().name() },
-					conceptLabel.getUuid());
+			labelTable.addItem(new Object[] { conceptLabel.getText(), conceptLabel.getLanguage().getIso6392Code(),
+					conceptLabel.getLabelType().name() }, conceptLabel.getId());
 		}
 		return labelTable;
 	}
@@ -56,9 +55,9 @@ public class ConceptDetail extends VerticalLayout {
 		notationTable.addContainerProperty("Notation Code", String.class, null);
 		notationTable.addContainerProperty("Domain", String.class, null);
 		for (Notation notation : notations) {
-			Object not = notationTable.addItem(new Object[] { notation.getCode(), notation.getDomainUuid() },
-					notation.getUuid());
+			notationTable.addItem(new Object[] { notation.getCode(), notation.getDomainUuid() }, notation.getId());
 		}
+		System.err.println(this.getApplication());
 		return notationTable;
 	}
 

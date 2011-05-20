@@ -9,7 +9,7 @@ public abstract class WidgetConstants {
 
 	public static final String TAB_CONCEPT = "Concept Details";
 	public static final String TAB_RELATION = "Concept Relations";
-	public static final String TAB__PATH_ALGORITHM = "Path Algorithms";
+	public static final String TAB_PATH_ALGORITHM = "Path Algorithms";
 	public static final String TAB_HOME = "Home";
 	public static final String TAB_SEARCH = "Search Results";
 
