@@ -100,7 +100,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 		this.dataDir = dataDir;
 		File file = new File(this.dataDir);
 		if (!file.exists() || !file.isDirectory()) {
-			throw new IllegalArgumentException("storeDir needs to be an existing empty directory");
+			throw new IllegalArgumentException("\""+dataDir+"\" needs to be an existing empty directory");
 		}
 		this.batchInserter = new BatchInserterImpl(this.dataDir, configuration);
 		this.graphDatabaseService = batchInserter.getGraphDbService();
@@ -243,7 +243,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 			String relationshipUuid = uuidGeneratorService.generateRandomUuid();
 			properties.put(ConceptRelationshipImpl.UUID_PROPERTY, relationshipUuid);
 			properties.put(ConceptRelationshipImpl.RLSP_CATEGORY_PROPERTY, conceptRelationship
-					.getConceptRelationshipCategory().name());
+					.getConceptRelationshipCategory().getId());
 			if (!StringUtils.isBlank(conceptRelationship.getPredicateConceptUuid())) {
 				properties.put(ConceptRelationshipImpl.PREDICATE_CONCEPT_UUID_PROPERTY,
 						getUuidforNodeId(Long.valueOf(conceptRelationship.getPredicateConceptUuid())));
@@ -263,16 +263,10 @@ public class BulkImportServiceImpl implements BulkImportService {
 	@Override
 	public long createLabel(Label label) {
 		Map<String, Object> properties = new HashMap<String, Object>();
-		final String labelUuid = uuidGeneratorService.generateRandomUuid();
-		properties.put(LabelImpl.UUID_PROPERTY, labelUuid);
 		properties.put(LabelImpl.TEXT_PROPERTY, label.getText());
 		properties.put(LabelImpl.LANGUAGE_PROPERTY, label.getLanguage().getLabel());
 		long labelNode = batchInserter.createNode(properties);
 		batchInserter.createRelationship(labelParentNode, labelNode, DefaultRelationshipType.LABEL, null);
-		properties.clear();
-		// index uuid
-		properties.put(LabelStorageServiceLocalImpl.UUID_INDEX_KEY, labelUuid);
-		labelNodeIndex.add(labelNode, properties);
 		properties.clear();
 		// index text
 		properties.put(LabelStorageServiceLocalImpl.TEXT_INDEX_KEY, label.getText());
@@ -284,17 +278,11 @@ public class BulkImportServiceImpl implements BulkImportService {
 	@Override
 	public long createNotation(Notation notation) {
 		Map<String, Object> properties = new HashMap<String, Object>();
-		final String notationUuid = uuidGeneratorService.generateRandomUuid();
-		properties.put(NotationImpl.UUID_PROPERTY, notationUuid);
 		String domainUuid = (String)batchInserter.getGraphDbService().getNodeById(Long.valueOf(notation.getDomainUuid())).getProperty(ConceptImpl.UUID_PROPERTY);
 		properties.put(NotationImpl.DOMAIN_UUID_PROPERTY, domainUuid);
 		properties.put(NotationImpl.CODE_PROPERTY, notation.getCode());
 		long notationNodeId = batchInserter.createNode(properties);
 		batchInserter.createRelationship(notationParentNode, notationNodeId, DefaultRelationshipType.NOTATION, null);
-		properties.clear();
-		// index uuid
-		properties.put(NotationStorageServiceLocalImpl.UUID_INDEX_KEY, notationUuid);
-		notationNodeIndex.add(notationNodeId, properties);
 		properties.clear();
 		// index code
 		properties.put(NotationStorageServiceLocalImpl.CODE_INDEX_KEY, notation.getCode());
@@ -335,7 +323,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 		properties.clear();
 		// creating rlsp to labels
 		for (ConceptLabel conceptLabel : conceptLabels) {
-			properties.put(ConceptImpl.LABEL_TYPE_RLSP_PROPERTY, conceptLabel.getLabelType().name());
+			properties.put(ConceptImpl.LABEL_TYPE_RLSP_PROPERTY, conceptLabel.getLabelType().getId());
 			batchInserter.createRelationship(conceptNodeId, Long.valueOf(conceptLabel.getText()),
 					DefaultRelationshipType.HAS_LABEL, properties);
 			properties.clear();
