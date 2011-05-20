@@ -3,6 +3,7 @@ package org.biosemantics.disambiguation.domain.impl;
 import org.biosemantics.conceptstore.common.domain.ConceptRelationship;
 import org.biosemantics.conceptstore.common.domain.ConceptRelationshipCategory;
 import org.biosemantics.conceptstore.common.domain.SemanticRelationshipCategory;
+import org.biosemantics.conceptstore.common.domain.Source;
 import org.neo4j.graphdb.Relationship;
 
 import com.google.common.base.Objects;
@@ -32,8 +33,8 @@ public class ConceptRelationshipImpl implements ConceptRelationship {
 	}
 
 	@Override
-	public int getWeight() {
-		return (Integer)underlyingRelationship.getProperty(WEIGHT_PROERTY);
+	public double getWeight() {
+		return (Double) underlyingRelationship.getProperty(WEIGHT_PROERTY);
 	}
 
 	@Override
@@ -78,11 +79,11 @@ public class ConceptRelationshipImpl implements ConceptRelationship {
 
 	@Override
 	public ConceptRelationshipCategory getConceptRelationshipCategory() {
-		return ConceptRelationshipCategory.valueOf((String) underlyingRelationship.getProperty(RLSP_CATEGORY_PROPERTY));
+		return ConceptRelationshipCategory.fromId((Integer) underlyingRelationship.getProperty(RLSP_CATEGORY_PROPERTY));
 	}
 
 	@Override
-	public String[] getSources() {
+	public Source[] getSources() {
 		// TODO Auto-generated method stub
 		return null;
 	}

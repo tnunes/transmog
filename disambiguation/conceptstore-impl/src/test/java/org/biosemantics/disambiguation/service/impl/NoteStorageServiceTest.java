@@ -2,7 +2,6 @@ package org.biosemantics.disambiguation.service.impl;
 
 import junit.framework.Assert;
 
-import org.biosemantics.conceptstore.common.domain.Note;
 import org.biosemantics.conceptstore.common.domain.Note.NoteType;
 import org.biosemantics.conceptstore.utils.domain.impl.NoteImpl;
 import org.biosemantics.disambiguation.domain.impl.LanguageImpl;
@@ -17,12 +16,12 @@ public class NoteStorageServiceTest extends AbstractTransactionalDataSource {
 
 	@Test
 	public void createNote() {
-		Note note = noteStorageServiceLocal
+		long id = noteStorageServiceLocal
 				.createNote(new NoteImpl(
 						NoteType.DEFINITION,
 						LanguageImpl.EN,
 						"an environment or material in which something develops; a surrounding medium or structure : free choices become the matrix of human life."));
-		Assert.assertNotNull(note);
+		Assert.assertTrue(id > 0);
 	}
 
 	@Test(expected = NullPointerException.class)

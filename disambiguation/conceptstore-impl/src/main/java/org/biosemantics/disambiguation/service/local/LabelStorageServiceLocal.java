@@ -7,7 +7,7 @@ import org.neo4j.graphdb.Node;
 
 public interface LabelStorageServiceLocal extends LabelStorageService {
 
-	Node getLabelNode(String uuid);
+	Node getLabelNode(long id);
 	
 	Node createLabelNode(Label label);
 	

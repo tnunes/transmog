@@ -48,7 +48,6 @@
 			<ref local="graphStorageTemplate" />
 		</constructor-arg>
 		<property name="validationUtility" ref="validationUtility"></property>
-		<property name="uuidGeneratorService" ref="uuidGeneratorService"></property>
 	</bean>
 
 	<bean id="notationStorageServiceLocal" class="org.biosemantics.disambiguation.service.local.impl.NotationStorageServiceLocalImpl">
@@ -56,7 +55,6 @@
 			<ref local="graphStorageTemplate" />
 		</constructor-arg>
 		<property name="validationUtility" ref="validationUtility"></property>
-		<property name="uuidGeneratorService" ref="uuidGeneratorService"></property>
 	</bean>
 
 	<bean id="noteStorageServiceLocal" class="org.biosemantics.disambiguation.service.local.impl.NoteStorageServiceLocalImpl">
@@ -70,7 +68,6 @@
 		<constructor-arg>
 			<ref local="graphStorageTemplate" />
 		</constructor-arg>
-		<property name="uuidGeneratorService" ref="uuidGeneratorService"></property>
 		<property name="validationUtility" ref="validationUtility"></property>
 	</bean>
 

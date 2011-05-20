@@ -4,6 +4,7 @@ import org.biosemantics.conceptstore.common.domain.ConceptLabel;
 import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.common.domain.LabelType;
 import org.biosemantics.conceptstore.common.domain.Language;
+import org.biosemantics.conceptstore.common.domain.Source;
 
 public class ConceptLabelImpl implements ConceptLabel {
 
@@ -17,8 +18,8 @@ public class ConceptLabelImpl implements ConceptLabel {
 	}
 
 	@Override
-	public String getUuid() {
-		return label.getUuid();
+	public long getId() {
+		return label.getId();
 	}
 
 	@Override
@@ -32,7 +33,7 @@ public class ConceptLabelImpl implements ConceptLabel {
 	}
 
 	@Override
-	public String[] getSources() {
+	public Source[] getSources() {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.HashSet;
 
 import org.biosemantics.conceptstore.common.domain.Notation;
-import org.biosemantics.conceptstore.utils.service.UuidGeneratorService;
 import org.biosemantics.conceptstore.utils.validation.ValidationUtility;
 import org.biosemantics.disambiguation.domain.impl.NotationImpl;
 import org.biosemantics.disambiguation.service.local.NotationStorageServiceLocal;
@@ -23,9 +22,7 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 	private final Node notationParentNode;
 	private final Index<Node> index;
 	private ValidationUtility validationUtility;
-	private UuidGeneratorService uuidGeneratorService;
 	public static final String NOTATION_INDEX = "notation";
-	public static final String UUID_INDEX_KEY = "notation_uuid";
 	public static final String CODE_INDEX_KEY = "notation_code";
 
 	private static final Logger logger = LoggerFactory.getLogger(NotationStorageServiceLocalImpl.class);
@@ -36,7 +33,7 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 		this.notationParentNode = this.graphStorageTemplate.getParentNode(DefaultRelationshipType.NOTATIONS);
 		this.index = graphStorageTemplate.getIndexManager().forNodes(NOTATION_INDEX);
 		((LuceneIndex<Node>) this.index).setCacheCapacity(CODE_INDEX_KEY, 300000);
-		logger.info("setting cache for notation-code index to 300000");
+		logger.debug("setting cache for notation-code index to 300000");
 	}
 
 	@Required
@@ -44,37 +41,29 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 		this.validationUtility = validationUtility;
 	}
 
-	@Required
-	public void setUuidGeneratorService(UuidGeneratorService uuidGeneratorService) {
-		this.uuidGeneratorService = uuidGeneratorService;
-	}
-
 	@Override
 	@Transactional
-	public String createNotation(Notation notation) {
+	public long createNotation(Notation notation) {
 		validationUtility.validateNotation(notation);
 		Node node = createNotationNode(notation);
-		return (String) node.getProperty(NotationImpl.UUID_PROPERTY);
+		return node.getId();
 	}
 
 	@Override
 	public Node createNotationNode(Notation notation) {
-		String uuid = uuidGeneratorService.generateRandomUuid();
 		// create new node if none exists
 		Node notationNode = graphStorageTemplate.getGraphDatabaseService().createNode();
 		notationParentNode.createRelationshipTo(notationNode, DefaultRelationshipType.NOTATION);
-		notationNode.setProperty(NotationImpl.UUID_PROPERTY, uuid);
 		notationNode.setProperty(NotationImpl.DOMAIN_UUID_PROPERTY, notation.getDomainUuid());
 		notationNode.setProperty(NotationImpl.CODE_PROPERTY, notation.getCode());
-		index.add(notationNode, UUID_INDEX_KEY, uuid);
 		index.add(notationNode, CODE_INDEX_KEY, notation.getCode());
 		return notationNode;
 	}
 
 	@Override
-	public Notation getNotation(String uuid) {
-		validationUtility.validateString(uuid, "uuid");
-		return new NotationImpl(getNotationNode(uuid));
+	public Notation getNotation(long id) {
+		validationUtility.validateId(id);
+		return new NotationImpl(this.graphStorageTemplate.getGraphDatabaseService().getNodeById(id));
 	}
 
 	@Override
@@ -91,8 +80,8 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 	}
 
 	@Override
-	public Node getNotationNode(String uuid) {
-		return index.get(UUID_INDEX_KEY, uuid).getSingle();
+	public Node getNotationNode(long id) {
+		return this.graphStorageTemplate.getGraphDatabaseService().getNodeById(id);
 	}
 
 	@Override

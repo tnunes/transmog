@@ -6,7 +6,7 @@ import org.neo4j.graphdb.Node;
 
 public interface NotationStorageServiceLocal extends NotationStorageService {
 
-	Node getNotationNode(String uuid);
+	Node getNotationNode(long id);
 
 	Node createNotationNode(Notation notation);
 

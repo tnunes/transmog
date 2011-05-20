@@ -22,7 +22,7 @@ public class SourceImpl implements Source {
 
 	@Override
 	public SourceType getSourceType() {
-		return SourceType.valueOf((String) underlyingNode.getProperty(SOURCE_TYPE_PROPERTY));
+		return SourceType.fromId((Integer) underlyingNode.getProperty(SOURCE_TYPE_PROPERTY));
 	}
 
 	@Override

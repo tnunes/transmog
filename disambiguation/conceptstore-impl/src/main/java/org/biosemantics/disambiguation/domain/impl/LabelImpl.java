@@ -3,12 +3,12 @@ package org.biosemantics.disambiguation.domain.impl;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.common.domain.Language;
+import org.biosemantics.conceptstore.common.domain.Source;
 import org.neo4j.graphdb.Node;
 
 public class LabelImpl implements Label {
 
 	private static final long serialVersionUID = 2625024353276251601L;
-	public static final String UUID_PROPERTY = "uuid";
 	public static final String LANGUAGE_PROPERTY = "language";
 	public static final String TEXT_PROPERTY = "text";
 	private Node underlyingNode;
@@ -28,12 +28,12 @@ public class LabelImpl implements Label {
 	}
 
 	@Override
-	public String getUuid() {
-		return (String) underlyingNode.getProperty(UUID_PROPERTY);
+	public long getId() {
+		return underlyingNode.getId();
 	}
 
 	@Override
-	public String[] getSources() {
+	public Source[] getSources() {
 		// TODO Auto-generated method stub
 		return null;
 	}

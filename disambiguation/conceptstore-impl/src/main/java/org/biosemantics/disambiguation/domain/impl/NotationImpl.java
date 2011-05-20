@@ -2,12 +2,12 @@ package org.biosemantics.disambiguation.domain.impl;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.biosemantics.conceptstore.common.domain.Notation;
+import org.biosemantics.conceptstore.common.domain.Source;
 import org.neo4j.graphdb.Node;
 
 public class NotationImpl implements Notation {
 
 	private static final long serialVersionUID = -8506731919995962487L;
-	public static final String UUID_PROPERTY = "uuid";
 	public static final String CODE_PROPERTY = "code";
 	public static final String DOMAIN_UUID_PROPERTY = "domainUuid";
 
@@ -28,8 +28,8 @@ public class NotationImpl implements Notation {
 	}
 
 	@Override
-	public String getUuid() {
-		return (String) underlyingNode.getProperty(UUID_PROPERTY);
+	public long getId() {
+		return underlyingNode.getId();
 	}
 
 	@Override
@@ -55,7 +55,7 @@ public class NotationImpl implements Notation {
 	}
 
 	@Override
-	public String[] getSources() {
+	public Source[] getSources() {
 		// TODO Auto-generated method stub
 		return null;
 	}

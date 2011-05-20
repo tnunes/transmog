@@ -3,13 +3,16 @@ package org.biosemantics.disambiguation.service.local.impl;
 import java.util.Collection;
 import java.util.HashSet;
 
+import org.biosemantics.conceptstore.common.domain.Concept;
 import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.common.domain.Language;
-import org.biosemantics.conceptstore.utils.service.UuidGeneratorService;
 import org.biosemantics.conceptstore.utils.validation.ValidationUtility;
+import org.biosemantics.disambiguation.domain.impl.ConceptImpl;
 import org.biosemantics.disambiguation.domain.impl.LabelImpl;
 import org.biosemantics.disambiguation.service.local.LabelStorageServiceLocal;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
 import org.neo4j.index.impl.lucene.LuceneIndex;
@@ -23,10 +26,8 @@ public class LabelStorageServiceLocalImpl implements LabelStorageServiceLocal {
 	private final GraphStorageTemplate graphStorageTemplate;
 	private final Node labelParentNode;
 	private final Index<Node> index;
-	private UuidGeneratorService uuidGeneratorService;
 	private ValidationUtility validationUtility;
 	public static final String LABEL_INDEX = "label";
-	public static final String UUID_INDEX_KEY = "label_uuid";
 	public static final String TEXT_INDEX_KEY = "label_text";
 	private static final Logger logger = LoggerFactory.getLogger(LabelStorageServiceLocalImpl.class);
 
@@ -35,7 +36,7 @@ public class LabelStorageServiceLocalImpl implements LabelStorageServiceLocal {
 		this.labelParentNode = this.graphStorageTemplate.getParentNode(DefaultRelationshipType.LABELS);
 		this.index = graphStorageTemplate.getIndexManager().forNodes(LABEL_INDEX);
 		((LuceneIndex<Node>) this.index).setCacheCapacity(TEXT_INDEX_KEY, 300000);
-		logger.info("setting cache for label-text index to 300000");
+		logger.debug("setting cache for label-text index to 300000");
 	}
 
 	@Required
@@ -43,35 +44,27 @@ public class LabelStorageServiceLocalImpl implements LabelStorageServiceLocal {
 		this.validationUtility = validationUtility;
 	}
 
-	@Required
-	public void setUuidGeneratorService(UuidGeneratorService uuidGeneratorService) {
-		this.uuidGeneratorService = uuidGeneratorService;
-	}
-
 	@Override
 	@Transactional
-	public String createLabel(Label label) {
+	public long createLabel(Label label) {
 		validationUtility.validateLabel(label);
 		Node node = createLabelNode(label);
-		return (String) node.getProperty(LabelImpl.UUID_PROPERTY);
+		return node.getId();
 	}
 
 	public Node createLabelNode(Label label) {
-		String uuid = uuidGeneratorService.generateRandomUuid();
 		Node labelNode = graphStorageTemplate.getGraphDatabaseService().createNode();
 		labelParentNode.createRelationshipTo(labelNode, DefaultRelationshipType.LABEL);
-		labelNode.setProperty(LabelImpl.UUID_PROPERTY, uuid);
 		labelNode.setProperty(LabelImpl.LANGUAGE_PROPERTY, label.getLanguage().getLabel());
 		labelNode.setProperty(LabelImpl.TEXT_PROPERTY, label.getText());
-		index.add(labelNode, UUID_INDEX_KEY, uuid);
 		index.add(labelNode, TEXT_INDEX_KEY, label.getText());
 		return labelNode;
 	}
 
 	@Override
-	public Label getLabel(String uuid) {
-		validationUtility.validateString(uuid, "uuid");
-		return new LabelImpl(getLabelNode(uuid));
+	public Label getLabel(long id) {
+		validationUtility.validateId(id);
+		return new LabelImpl(this.graphStorageTemplate.getGraphDatabaseService().getNodeById(id));
 	}
 
 	@Override
@@ -89,8 +82,8 @@ public class LabelStorageServiceLocalImpl implements LabelStorageServiceLocal {
 	}
 
 	@Override
-	public Node getLabelNode(String uuid) {
-		return index.get(UUID_INDEX_KEY, uuid).getSingle();
+	public Node getLabelNode(long id) {
+		return graphStorageTemplate.getGraphDatabaseService().getNodeById(id);
 	}
 
 	@Override
@@ -111,4 +104,17 @@ public class LabelStorageServiceLocalImpl implements LabelStorageServiceLocal {
 		return found;
 	}
 
+	@Override
+	public Collection<Concept> getAllRelatedConceptsForLabelText(String labelText) {
+		validationUtility.validateString(labelText, "labelText");
+		IndexHits<Node> nodes = index.get(TEXT_INDEX_KEY, labelText);
+		Collection<Concept> concepts = new HashSet<Concept>();
+		for (Node node : nodes) {
+			Iterable<Relationship> rlsps = node.getRelationships(DefaultRelationshipType.HAS_LABEL, Direction.INCOMING);
+			for (Relationship relationship : rlsps) {
+				concepts.add(new ConceptImpl(relationship.getOtherNode(node)));
+			}
+		}
+		return concepts;
+	}
 }

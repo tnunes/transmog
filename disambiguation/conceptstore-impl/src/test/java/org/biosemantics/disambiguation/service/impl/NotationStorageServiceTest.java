@@ -18,8 +18,8 @@ public class NotationStorageServiceTest extends AbstractTransactionalDataSource 
 	@Test
 	public void createNotation() {
 		NotationImpl notationImpl = new NotationImpl("c12345", "c12345");
-		String uuid = notationStorageServiceLocal.createNotation(notationImpl);
-		Assert.assertNotNull(uuid);
+		long id = notationStorageServiceLocal.createNotation(notationImpl);
+		Assert.assertTrue(id > 0);
 	}
 
 	@Test(expected = NullPointerException.class)
@@ -48,31 +48,31 @@ public class NotationStorageServiceTest extends AbstractTransactionalDataSource 
 	@Test
 	public void retrieveNotation() {
 		NotationImpl notationImpl = new NotationImpl("C12345", "C12345");
-		String uuid = notationStorageServiceLocal.createNotation(notationImpl);
-		Notation retrieved = notationStorageServiceLocal.getNotation(uuid);
+		long id = notationStorageServiceLocal.createNotation(notationImpl);
+		Notation retrieved = notationStorageServiceLocal.getNotation(id);
 		Assert.assertEquals(notationImpl.getCode(), retrieved.getCode());
 		Assert.assertEquals(notationImpl.getDomainUuid(), retrieved.getDomainUuid());
 	}
 
-	@Test(expected = NullPointerException.class)
-	public void retrieveNotationWithNullUuid() {
-		notationStorageServiceLocal.getNotation(null);
+	@Test(expected = IllegalArgumentException.class)
+	public void retrieveNotationWithZeroId() {
+		notationStorageServiceLocal.getNotation(0);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void retrieveNotationWithBlankUuid() {
-		notationStorageServiceLocal.getNotation(" ");
+	public void retrieveNotationWithNegativeId() {
+		notationStorageServiceLocal.getNotation(-100);
 	}
 
 	@Test
 	public void createMultipleNotationsWithSameContents() {
 		NotationImpl notationImpl = new NotationImpl("C12345", "C 12345");
-		String uuid1 = notationStorageServiceLocal.createNotation(notationImpl);
-		String uuid2 = notationStorageServiceLocal.createNotation(notationImpl);
-		String uuid3 = notationStorageServiceLocal.createNotation(notationImpl);
-		Assert.assertNotSame(uuid1, uuid2);
-		Assert.assertNotSame(uuid2, uuid3);
-		Assert.assertNotSame(uuid1, uuid3);
+		long id1 = notationStorageServiceLocal.createNotation(notationImpl);
+		long id2 = notationStorageServiceLocal.createNotation(notationImpl);
+		long id3 = notationStorageServiceLocal.createNotation(notationImpl);
+		Assert.assertNotSame(id1, id2);
+		Assert.assertNotSame(id2, id3);
+		Assert.assertNotSame(id1, id3);
 
 	}
 

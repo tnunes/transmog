@@ -19,8 +19,8 @@ public class LabelStorageServiceTest extends AbstractTransactionalDataSource {
 	@Test
 	public void createLabel() {
 		LabelImpl labelImpl = new LabelImpl(LanguageImpl.CS, "neo");
-		String uuid = labelStorageServiceLocal.createLabel(labelImpl);
-		Assert.assertNotNull(uuid);
+		long id = labelStorageServiceLocal.createLabel(labelImpl);
+		Assert.assertTrue(id > 0);
 	}
 
 	@Test(expected = NullPointerException.class)
@@ -49,33 +49,33 @@ public class LabelStorageServiceTest extends AbstractTransactionalDataSource {
 	@Test
 	public void retrieveLabel() {
 		LabelImpl created = new LabelImpl(LanguageImpl.EN, "morpheus");
-		String uuid = labelStorageServiceLocal.createLabel(created);
-		Assert.assertNotNull(uuid);
-		Label retrieved = labelStorageServiceLocal.getLabel(uuid);
+		long id = labelStorageServiceLocal.createLabel(created);
+		Assert.assertNotNull(id);
+		Label retrieved = labelStorageServiceLocal.getLabel(id);
 		Assert.assertNotNull(retrieved);
 		Assert.assertEquals(retrieved.getText(), created.getText());
 		Assert.assertEquals(retrieved.getLanguage().getLabel(), created.getLanguage().getLabel());
 	}
 
-	@Test(expected = NullPointerException.class)
-	public void retrieveLabelWithNullUuid() {
-		labelStorageServiceLocal.getLabel(null);
+	@Test(expected = IllegalArgumentException.class)
+	public void retrieveLabelWithZeroId() {
+		labelStorageServiceLocal.getLabel(0);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void retrieveLabelWithBlankUuid() {
-		labelStorageServiceLocal.getLabel("     ");
+	public void retrieveLabelWithNegativeId() {
+		labelStorageServiceLocal.getLabel(-1);
 	}
 
 	@Test
 	public void createMultipleLabelsWithSameContents() {
 		LabelImpl created = new LabelImpl(LanguageImpl.EN, "morpheus");
-		String uuid1 = labelStorageServiceLocal.createLabel(created);
-		String uuid2 = labelStorageServiceLocal.createLabel(created);
-		String uuid3 = labelStorageServiceLocal.createLabel(created);
-		Assert.assertNotSame(uuid1, uuid2);
-		Assert.assertNotSame(uuid2, uuid3);
-		Assert.assertNotSame(uuid1, uuid3);
+		long id1 = labelStorageServiceLocal.createLabel(created);
+		long id2 = labelStorageServiceLocal.createLabel(created);
+		long id3 = labelStorageServiceLocal.createLabel(created);
+		Assert.assertNotSame(id1, id2);
+		Assert.assertNotSame(id2, id3);
+		Assert.assertNotSame(id1, id3);
 
 	}
 
@@ -92,8 +92,8 @@ public class LabelStorageServiceTest extends AbstractTransactionalDataSource {
 		Assert.assertEquals(3, trinities.size());
 		Collection<Label> neos = labelStorageServiceLocal.getLabelsByText("neo");
 		Assert.assertEquals(2, neos.size());
-	}
-
+	}	
+	
 	@Test
 	public void retrieveLabelsWithSpaces() {
 		LabelImpl trinity = new LabelImpl(LanguageImpl.EN, "trinity is bold");
@@ -108,4 +108,6 @@ public class LabelStorageServiceTest extends AbstractTransactionalDataSource {
 		Collection<Label> neos = labelStorageServiceLocal.getLabelsByText("neo is the		one");
 		Assert.assertTrue(neos.isEmpty());
 	}
+	
+	
 }

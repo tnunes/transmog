@@ -19,14 +19,12 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.index.RelationshipIndex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.transaction.annotation.Transactional;
 
 public class ConceptRelationshipStorageServiceLocalImpl implements ConceptRelationshipStorageServiceLocal {
 
-	private static final Logger logger = LoggerFactory.getLogger(ConceptRelationshipStorageServiceLocalImpl.class);
+	//private static final Logger logger = LoggerFactory.getLogger(ConceptRelationshipStorageServiceLocalImpl.class);
 	private static final String RLSP_INDEX = "relationship";
 	private static final String UUID_INDEX_KEY = "rlsp_uuid";
 	private UuidGeneratorService uuidGeneratorService;
@@ -96,7 +94,7 @@ public class ConceptRelationshipStorageServiceLocalImpl implements ConceptRelati
 					conceptRelationship.getPredicateConceptUuid());
 		}
 		relationship.setProperty(ConceptRelationshipImpl.RLSP_CATEGORY_PROPERTY, conceptRelationship
-				.getConceptRelationshipCategory().name());
+				.getConceptRelationshipCategory().getId());
 		// add sources
 		if (conceptRelationship.getSources() != null && conceptRelationship.getSources().length > 0) {
 			relationship.setProperty(ConceptRelationshipImpl.SOURCES_PROPERTY, conceptRelationship.getSources());
@@ -107,14 +105,12 @@ public class ConceptRelationshipStorageServiceLocalImpl implements ConceptRelati
 
 	}
 
-	@Transactional
 	@Override
 	public ConceptRelationship getConceptRelationship(String uuid) {
 		validationUtility.validateString(uuid, "uuid");
 		return new ConceptRelationshipImpl(getRelationship(uuid));
 	}
 
-	@Transactional
 	@Override
 	public Collection<ConceptRelationship> getAllRelationshipsForConcept(String uuid) {
 		Node node = conceptStorageServiceLocal.getConceptNode(uuid);
@@ -127,13 +123,11 @@ public class ConceptRelationshipStorageServiceLocalImpl implements ConceptRelati
 		return conceptRelationships;
 	}
 
-	@Transactional
 	@Override
 	public Relationship getRelationship(String uuid) {
 		return index.get(UUID_INDEX_KEY, uuid).getSingle();
 	}
-
-	@Transactional
+	
 	@Override
 	public Collection<ConceptRelationship> getAllDirectRelationships(String firstConceptUuid, String secondConceptUuid) {
 		Node firstNode = conceptStorageServiceLocal.getConceptNode(firstConceptUuid);
@@ -147,7 +141,6 @@ public class ConceptRelationshipStorageServiceLocalImpl implements ConceptRelati
 		return conceptRelationships;
 	}
 
-	@Transactional
 	@Override
 	public boolean relationshipExists(ConceptRelationship conceptRelationship) {
 		Node startNode = conceptStorageServiceLocal.getConceptNode(conceptRelationship.fromConcept());
@@ -158,8 +151,8 @@ public class ConceptRelationshipStorageServiceLocalImpl implements ConceptRelati
 				// rlsp exists between the concepts: check if it is the same type
 				if (foundRelationship.getType().name()
 						.equals(conceptRelationship.getSemanticRelationshipCategory().name())
-						&& ((String) foundRelationship.getProperty(ConceptRelationshipImpl.RLSP_CATEGORY_PROPERTY))
-								.equals(conceptRelationship.getConceptRelationshipCategory().name())) {
+						&& ((Integer) foundRelationship.getProperty(ConceptRelationshipImpl.RLSP_CATEGORY_PROPERTY))
+								.equals(conceptRelationship.getConceptRelationshipCategory().getId())) {
 					return true;
 				}
 				if (conceptRelationship.getSemanticRelationshipCategory() == SemanticRelationshipCategory.HAS_BROADER_CONCEPT) {

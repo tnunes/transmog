@@ -17,8 +17,8 @@ public class SourceStorageServiceTest extends AbstractTransactionalDataSource {
 	@Test
 	public void createSource() {
 		SourceImpl sourceImpl = new SourceImpl("http://dsfhsdfhkds.com", SourceType.RESOURCE);
-		String uuid = sourceStorageServiceLocal.createSource(sourceImpl);
-		Assert.assertNotNull(uuid);
+		long id = sourceStorageServiceLocal.createSource(sourceImpl);
+		Assert.assertTrue(id > 0);
 	}
 
 	@Test(expected = NullPointerException.class)
@@ -46,33 +46,33 @@ public class SourceStorageServiceTest extends AbstractTransactionalDataSource {
 	@Test
 	public void retrieveSource() {
 		SourceImpl sourceImpl = new SourceImpl("http://dsfhsdfhkds.com", SourceType.RESOURCE);
-		String uuid = sourceStorageServiceLocal.createSource(sourceImpl);
-		Assert.assertNotNull(uuid);
-		Source source = sourceStorageServiceLocal.getSource(uuid);
+		long id = sourceStorageServiceLocal.createSource(sourceImpl);
+		Assert.assertTrue(id > 0);
+		Source source = sourceStorageServiceLocal.getSource(id);
 		Assert.assertNotNull(source);
 		Assert.assertEquals(source.getValue(), sourceImpl.getValue());
 		Assert.assertEquals(source.getSourceType(), sourceImpl.getSourceType());
 	}
 
-	@Test(expected = NullPointerException.class)
-	public void retrieveSourceWithNullUuid() {
-		sourceStorageServiceLocal.getSource(null);
+	@Test(expected = IllegalArgumentException.class)
+	public void retrieveSourceWithZeroId() {
+		sourceStorageServiceLocal.getSource(0);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void retrieveSourceWithBlankUuid() {
-		sourceStorageServiceLocal.getSource("     ");
+	public void retrieveSourceWithNegativeId() {
+		sourceStorageServiceLocal.getSource(-2198098);
 	}
 
 	@Test
 	public void createMultipleSourcesWithSameContents() {
 		SourceImpl sourceImpl = new SourceImpl("http://dsfhsdfhkds.com", SourceType.RESOURCE);
-		String uuid1 = sourceStorageServiceLocal.createSource(sourceImpl);
-		String uuid2 = sourceStorageServiceLocal.createSource(sourceImpl);
-		String uuid3 = sourceStorageServiceLocal.createSource(sourceImpl);
-		Assert.assertNotSame(uuid1, uuid2);
-		Assert.assertNotSame(uuid2, uuid3);
-		Assert.assertNotSame(uuid1, uuid3);
+		long id1 = sourceStorageServiceLocal.createSource(sourceImpl);
+		long id2 = sourceStorageServiceLocal.createSource(sourceImpl);
+		long id3 = sourceStorageServiceLocal.createSource(sourceImpl);
+		Assert.assertNotSame(id1, id2);
+		Assert.assertNotSame(id2, id3);
+		Assert.assertNotSame(id1, id3);
 
 	}
 

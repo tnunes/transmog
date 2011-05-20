@@ -28,16 +28,16 @@ public class NoteStorageServiceLocalImpl implements NoteStorageServiceLocal {
 	}
 
 	@Override
-	public Note createNote(Note note) {
+	public long createNote(Note note) {
 		validationUtility.validateNote(note);
-		return new NoteImpl(createNoteNode(note));
+		return createNoteNode(note).getId();
 	}
 
 	@Override
 	public Node createNoteNode(Note note) {
 		Node noteNode = graphStorageTemplate.getGraphDatabaseService().createNode();
 		noteParentNode.createRelationshipTo(noteNode, DefaultRelationshipType.NOTE);
-		noteNode.setProperty(NoteImpl.NOTE_TYPE_PROPERTY, note.getNoteType().name());
+		noteNode.setProperty(NoteImpl.NOTE_TYPE_PROPERTY, note.getNoteType().getId());
 		noteNode.setProperty(NoteImpl.LANGUAGE_PROPERTY, note.getLanguage().getLabel());
 		noteNode.setProperty(NoteImpl.TEXT_PROPERTY, note.getText());
 		String nowDateTime = sdf.format(new Date());

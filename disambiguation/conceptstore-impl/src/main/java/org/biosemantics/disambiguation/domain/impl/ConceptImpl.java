@@ -17,12 +17,12 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.transaction.annotation.Transactional;
 
 public class ConceptImpl implements Concept {
 
 	private static final long serialVersionUID = 851453341589506946L;
 	public static final String UUID_PROPERTY = "uuid";
+	public static final String TAGS_PROPERTY = "tags";
 	private static final Logger logger = LoggerFactory.getLogger(ConceptImpl.class);
 	public static final String LABEL_TYPE_RLSP_PROPERTY = "LABEL_TYPE";
 	private Node underlyingNode;
@@ -47,17 +47,15 @@ public class ConceptImpl implements Concept {
 	 */
 	@Override
 	public Collection<ConceptLabel> getLabels() {
-		//long start = System.currentTimeMillis();
+		long start = System.currentTimeMillis();
 		Collection<ConceptLabel> labels = new HashSet<ConceptLabel>();
 		Iterable<Relationship> relationships = underlyingNode.getRelationships(DefaultRelationshipType.HAS_LABEL,
 				Direction.OUTGOING);
 		for (Relationship relationship : relationships) {
-			System.err.println(relationship.getEndNode().getProperty(LabelImpl.TEXT_PROPERTY));
-			System.err.println(relationship.getStartNode().getPropertyKeys());
-			LabelType labelType = LabelType.valueOf((String) relationship.getProperty(LABEL_TYPE_RLSP_PROPERTY));
+			LabelType labelType = LabelType.fromId(((Integer) relationship.getProperty(LABEL_TYPE_RLSP_PROPERTY)));
 			labels.add(new ConceptLabelImpl(new LabelImpl(relationship.getEndNode()), labelType));
 		}
-		//logger.info("in getLabelsByType time taken: {}(ms)", (System.currentTimeMillis() - start));
+		logger.trace("in getLabelsByType time taken: {}(ms)", (System.currentTimeMillis() - start));
 		return labels;
 	}
 
@@ -84,6 +82,11 @@ public class ConceptImpl implements Concept {
 	}
 
 	@Override
+	public String[] getTags() {
+		return (String[]) underlyingNode.getProperty(TAGS_PROPERTY);
+	}
+
+	@Override
 	public boolean equals(final Object conceptImpl) {
 		if (conceptImpl instanceof ConceptImpl) {
 			return this.underlyingNode.equals(((ConceptImpl) conceptImpl).underlyingNode);
@@ -100,4 +103,5 @@ public class ConceptImpl implements Concept {
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
 	}
+
 }

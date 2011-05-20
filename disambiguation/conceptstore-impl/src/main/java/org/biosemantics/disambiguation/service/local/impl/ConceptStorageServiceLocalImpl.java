@@ -45,7 +45,8 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 	public static final String UUID_INDEX_KEY = "concept_uuid";
 	public static final String FULLTEXT_INDEX_KEY = "concept_all_text";
 	public static final String DELIMITER = " ";
-	//private static final Logger logger = LoggerFactory.getLogger(ConceptStorageServiceLocalImpl.class);
+
+	// private static final Logger logger = LoggerFactory.getLogger(ConceptStorageServiceLocalImpl.class);
 
 	public ConceptStorageServiceLocalImpl(GraphStorageTemplate graphStorageTemplate) {
 		// FIXME two enums relationshipTypes and ConceptTypes with certain overlap between them.
@@ -107,7 +108,7 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 				labelNode = labelStorageServiceLocal.createLabelNode(label);
 			}
 			Relationship relationship = conceptNode.createRelationshipTo(labelNode, DefaultRelationshipType.HAS_LABEL);
-			relationship.setProperty(ConceptImpl.LABEL_TYPE_RLSP_PROPERTY, label.getLabelType().name());
+			relationship.setProperty(ConceptImpl.LABEL_TYPE_RLSP_PROPERTY, label.getLabelType().getId());
 			fullTextStrings.add(label.getText());
 		}
 		// create notations

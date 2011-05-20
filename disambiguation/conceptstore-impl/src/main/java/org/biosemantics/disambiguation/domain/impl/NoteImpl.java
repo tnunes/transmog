@@ -2,6 +2,7 @@ package org.biosemantics.disambiguation.domain.impl;
 
 import org.biosemantics.conceptstore.common.domain.Language;
 import org.biosemantics.conceptstore.common.domain.Note;
+import org.biosemantics.conceptstore.common.domain.Source;
 import org.neo4j.graphdb.Node;
 
 public class NoteImpl implements Note {
@@ -19,7 +20,7 @@ public class NoteImpl implements Note {
 
 	@Override
 	public NoteType getNoteType() {
-		return NoteType.valueOf((String) underlyingNode.getProperty(NOTE_TYPE_PROPERTY));
+		return NoteType.fromId((Integer) underlyingNode.getProperty(NOTE_TYPE_PROPERTY));
 	}
 
 	@Override
@@ -50,7 +51,7 @@ public class NoteImpl implements Note {
 	}
 
 	@Override
-	public String[] getSources() {
+	public Source[] getSources() {
 		// TODO Auto-generated method stub
 		return null;
 	}
