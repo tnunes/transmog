@@ -60,7 +60,7 @@ public class ConceptToSchemeRlspWriter {
 				String objectValue = umlsCacheService.getValue(sty);
 				if (subjectValue != null && objectValue != null) {
 					ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(subjectValue,
-							objectValue, null, SemanticRelationshipCategory.HAS_BROADER_CONCEPT,
+							objectValue, null, SemanticRelationshipCategory.IN_SCHEME,
 							ConceptRelationshipCategory.AUTHORITATIVE, 1);
 					bulkImportService.validateAndCreateRelationship(conceptRelationshipImpl);
 					if (++ctr % UmlsUtils.BATCH_SIZE == 0) {

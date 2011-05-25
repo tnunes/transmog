@@ -47,7 +47,8 @@ public class AlgorithmServiceLocalImpl implements AlgorithmServiceLocal {
 		PathFinder<Path> finder = GraphAlgoFactory.shortestPath(Traversal.expanderForTypes(
 				ConceptRelationshipStorageServiceLocalImpl.relatedRlspType, Direction.BOTH,
 				ConceptRelationshipStorageServiceLocalImpl.hasBroaderRlspType, Direction.BOTH,
-				ConceptRelationshipStorageServiceLocalImpl.hasNarrowerRlspType, Direction.BOTH), maxDepth);
+				ConceptRelationshipStorageServiceLocalImpl.hasNarrowerRlspType, Direction.BOTH,
+				ConceptRelationshipStorageServiceLocalImpl.inSchemeRlspType, Direction.BOTH), maxDepth);
 		Iterable<Path> paths = finder.findAllPaths(from, to);
 		return paths;
 	}

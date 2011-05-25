@@ -85,6 +85,13 @@ public class BulkImportServiceImpl implements BulkImportService {
 			return SemanticRelationshipCategory.HAS_NARROWER_CONCEPT.name();
 		}
 	};
+	RelationshipType inSchemeRlspType = new RelationshipType() {
+
+		@Override
+		public String name() {
+			return SemanticRelationshipCategory.IN_SCHEME.name();
+		}
+	};
 
 	public BulkImportServiceImpl(String dataDir) {
 		this.dataDir = dataDir;
@@ -100,7 +107,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 		this.dataDir = dataDir;
 		File file = new File(this.dataDir);
 		if (!file.exists() || !file.isDirectory()) {
-			throw new IllegalArgumentException("\""+dataDir+"\" needs to be an existing empty directory");
+			throw new IllegalArgumentException("\"" + dataDir + "\" needs to be an existing empty directory");
 		}
 		this.batchInserter = new BatchInserterImpl(this.dataDir, configuration);
 		this.graphDatabaseService = batchInserter.getGraphDbService();
@@ -110,13 +117,13 @@ public class BulkImportServiceImpl implements BulkImportService {
 		logger.info("initing indexes");
 		this.indexService = new LuceneBatchInserterIndexProvider(batchInserter);
 		conceptNodeIndex = this.indexService.nodeIndex(ConceptStorageServiceLocalImpl.CONCEPT_INDEX,
-				MapUtil.stringMap("provider", "lucene", "type", "exact"));
+				MapUtil.stringMap("provider", "lucene", "type", "exact", "to_lower_case", "true"));
 		conceptFullTextIndex = this.indexService.nodeIndex(ConceptStorageServiceLocalImpl.CONCEPT_FULLTEXT_INDEX,
 				MapUtil.stringMap("provider", "lucene", "type", "fulltext"));
 		labelNodeIndex = this.indexService.nodeIndex(LabelStorageServiceLocalImpl.LABEL_INDEX,
-				MapUtil.stringMap("provider", "lucene", "type", "exact"));
+				MapUtil.stringMap("provider", "lucene", "type", "exact", "to_lower_case", "true"));
 		notationNodeIndex = this.indexService.nodeIndex(NotationStorageServiceLocalImpl.NOTATION_INDEX,
-				MapUtil.stringMap("provider", "lucene", "type", "exact"));
+				MapUtil.stringMap("provider", "lucene", "type", "exact", "to_lower_case", "true"));
 		logger.info("creating parent nodes");
 		conceptParentNode = batchInserter.createNode(null);
 		batchInserter.createRelationship(batchInserter.getReferenceNode(), conceptParentNode,
@@ -181,11 +188,24 @@ public class BulkImportServiceImpl implements BulkImportService {
 			case HAS_NARROWER_CONCEPT:
 				found = isNarrower(startNode, endNode);
 				break;
+			case IN_SCHEME:
+				found = inScheme(startNode, endNode);
 			}
 			long time = System.currentTimeMillis() - start;
 			logger.debug("is-related time:{} for conceptRelationship:{}", new Object[] { time, conceptRelationship });
 		}
 		return found;
+	}
+
+	private boolean inScheme(Node startNode, Node endNode) {
+		Iterable<Relationship> rlsps = startNode.getRelationships(inSchemeRlspType);
+		for (Relationship rlsp : rlsps) {
+			if ((rlsp.getStartNode().equals(startNode) && rlsp.getEndNode().equals(endNode))
+					|| (rlsp.getStartNode().equals(endNode) && rlsp.getEndNode().equals(startNode))) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private boolean isRelated(Node startNode, Node endNode) {
@@ -278,7 +298,8 @@ public class BulkImportServiceImpl implements BulkImportService {
 	@Override
 	public long createNotation(Notation notation) {
 		Map<String, Object> properties = new HashMap<String, Object>();
-		String domainUuid = (String)batchInserter.getGraphDbService().getNodeById(Long.valueOf(notation.getDomainUuid())).getProperty(ConceptImpl.UUID_PROPERTY);
+		String domainUuid = (String) batchInserter.getGraphDbService()
+				.getNodeById(Long.valueOf(notation.getDomainUuid())).getProperty(ConceptImpl.UUID_PROPERTY);
 		properties.put(NotationImpl.DOMAIN_UUID_PROPERTY, domainUuid);
 		properties.put(NotationImpl.CODE_PROPERTY, notation.getCode());
 		long notationNodeId = batchInserter.createNode(properties);

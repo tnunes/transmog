@@ -51,6 +51,13 @@ public class ConceptRelationshipStorageServiceLocalImpl implements ConceptRelati
 			return SemanticRelationshipCategory.HAS_NARROWER_CONCEPT.name();
 		}
 	};
+	
+	public static final RelationshipType inSchemeRlspType = new RelationshipType() {
+		@Override
+		public String name() {
+			return SemanticRelationshipCategory.IN_SCHEME.name();
+		}
+	};
 
 	public ConceptRelationshipStorageServiceLocalImpl(GraphStorageTemplate graphStorageTemplate) {
 		this.graphStorageTemplate = graphStorageTemplate;
@@ -115,7 +122,7 @@ public class ConceptRelationshipStorageServiceLocalImpl implements ConceptRelati
 	public Collection<ConceptRelationship> getAllRelationshipsForConcept(String uuid) {
 		Node node = conceptStorageServiceLocal.getConceptNode(uuid);
 		Iterable<Relationship> relationships = node.getRelationships(relatedRlspType, hasNarrowerRlspType,
-				hasBroaderRlspType);
+				hasBroaderRlspType, inSchemeRlspType);
 		List<ConceptRelationship> conceptRelationships = new ArrayList<ConceptRelationship>();
 		for (Relationship relationship : relationships) {
 			conceptRelationships.add(new ConceptRelationshipImpl(relationship));
