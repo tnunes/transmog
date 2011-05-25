@@ -25,20 +25,20 @@ public class SchemeRlspWriter {
 	private Statement statement;
 	// avoiding self linking records: as self rlsps are not supported by neo4j
 	private static final String GET_CONCEPT_SCHEME_RELATIONS_SQL = "select STY1, RL, STY2 from SRSTRE2  where STY1 != STY2";
-	private static final Logger logger = LoggerFactory.getLogger(SchemeRlspWriter.class);
+	private static final Logger logger = LoggerFactory.getLogger(SchemeRlspWriter.class);//NOPMD
 
 	@Required
-	public void setBulkImportService(BulkImportService bulkImportService) {
+	public final void setBulkImportService(BulkImportService bulkImportService) {
 		this.bulkImportService = bulkImportService;
 	}
 
 	@Required
-	public void setDataSource(DataSource dataSource) {
+	public final void setDataSource(DataSource dataSource) {
 		this.dataSource = dataSource;
 	}
 
 	@Required
-	public void setUmlsCacheService(UmlsCacheService umlsCacheService) {
+	public final void setUmlsCacheService(UmlsCacheService umlsCacheService) {
 		this.umlsCacheService = umlsCacheService;
 	}
 

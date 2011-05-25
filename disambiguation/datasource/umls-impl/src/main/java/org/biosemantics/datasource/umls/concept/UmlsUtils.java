@@ -16,14 +16,13 @@ public abstract class UmlsUtils {
 	public static final int BATCH_SIZE = 10000;
 
 	public static Language getLanguage(String lat) {
-		lat = lat.toLowerCase();
+		String lowerCaseLat = lat.toLowerCase();
 		// http://www.loc.gov/standards/iso639-2/php/code_changes.php SCR has
 		// been deprecated
 		if (lat.equalsIgnoreCase(SCR)) {
-			lat = LanguageImpl.HR.getIso6392Code();
+			lowerCaseLat = LanguageImpl.HR.getIso6392Code();
 		}
-		Language language = LanguageUtility.getLanguageByIso6392Code(lat);
-		return language;
+		return LanguageUtility.getLanguageByIso6392Code(lowerCaseLat);
 	}
 
 	public static LabelType getLabelType(String ts, String isPref, String stt) {
@@ -64,7 +63,7 @@ public abstract class UmlsUtils {
 		}
 		return semanticRelationshipCategory;
 	}
-	
+
 	public static String setToString(Set<String> fullText) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String string : fullText) {

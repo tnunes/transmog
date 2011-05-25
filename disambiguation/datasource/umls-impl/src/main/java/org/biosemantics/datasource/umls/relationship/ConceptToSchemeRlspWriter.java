@@ -25,20 +25,20 @@ public class ConceptToSchemeRlspWriter {
 	private Connection connection;
 	private Statement statement;
 	private static final String GET_CONCEPT_TO_SCHEME_RELATIONS_SQL = "SELECT CUI, STY FROM MRSTY";
-	private static final Logger logger = LoggerFactory.getLogger(ConceptToSchemeRlspWriter.class);
+	private static final Logger logger = LoggerFactory.getLogger(ConceptToSchemeRlspWriter.class);// NOPMD
 
 	@Required
-	public void setBulkImportService(BulkImportService bulkImportService) {
+	public final void setBulkImportService(BulkImportService bulkImportService) {
 		this.bulkImportService = bulkImportService;
 	}
 
 	@Required
-	public void setDataSource(DataSource dataSource) {
+	public final void setDataSource(DataSource dataSource) {
 		this.dataSource = dataSource;
 	}
 
 	@Required
-	public void setUmlsCacheService(UmlsCacheService umlsCacheService) {
+	public final void setUmlsCacheService(UmlsCacheService umlsCacheService) {
 		this.umlsCacheService = umlsCacheService;
 	}
 

@@ -25,20 +25,20 @@ public class ConceptFactualRlspWriter {
 	private Connection connection;
 	private Statement statement;
 	private static final String GET_ALL_FACTUAL_RLSP_SQL = "select CUI1, CUI2, REL from MRREL where CUI1 != CUI2";
-	private static final Logger logger = LoggerFactory.getLogger(ConceptFactualRlspWriter.class);
+	private static final Logger logger = LoggerFactory.getLogger(ConceptFactualRlspWriter.class);//NOPMD
 
 	@Required
-	public void setBulkImportService(BulkImportService bulkImportService) {
+	public final void setBulkImportService(BulkImportService bulkImportService) {
 		this.bulkImportService = bulkImportService;
 	}
 
 	@Required
-	public void setDataSource(DataSource dataSource) {
+	public final void setDataSource(DataSource dataSource) {
 		this.dataSource = dataSource;
 	}
 
 	@Required
-	public void setUmlsCacheService(UmlsCacheService umlsCacheService) {
+	public final void setUmlsCacheService(UmlsCacheService umlsCacheService) {
 		this.umlsCacheService = umlsCacheService;
 	}
 

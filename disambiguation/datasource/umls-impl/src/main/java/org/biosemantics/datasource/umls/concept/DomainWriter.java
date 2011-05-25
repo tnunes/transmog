@@ -38,20 +38,20 @@ public class DomainWriter {
 	// private static final String GET_ALL_DOMAINS_SQL = "SELECT RSAB, RCUI, VCUI, SON from MRSAB";
 	private static final String GET_ALL_DISTINCT_DOMAINS_SQL = "SELECT DISTINCT(RSAB) from MRSAB";
 	private static final String GET_ALL_DOMAIN_LABELS_SQL = "SELECT DISTINCT(SON) from MRSAB where RSAB = ?";
-	private static final Logger logger = LoggerFactory.getLogger(DomainWriter.class);
+	private static final Logger logger = LoggerFactory.getLogger(DomainWriter.class);//NOPMD
 
 	@Required
-	public void setBulkImportService(BulkImportService bulkImportService) {
+	public final void setBulkImportService(BulkImportService bulkImportService) {
 		this.bulkImportService = bulkImportService;
 	}
 
 	@Required
-	public void setDataSource(DataSource dataSource) {
+	public final void setDataSource(DataSource dataSource) {
 		this.dataSource = dataSource;
 	}
 
 	@Required
-	public void setUmlsCacheService(UmlsCacheService umlsCacheService) {
+	public final void setUmlsCacheService(UmlsCacheService umlsCacheService) {
 		this.umlsCacheService = umlsCacheService;
 	}
 

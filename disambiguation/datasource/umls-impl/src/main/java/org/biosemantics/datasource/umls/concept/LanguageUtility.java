@@ -7,7 +7,6 @@ import org.biosemantics.conceptstore.common.domain.Language;
 import org.biosemantics.disambiguation.domain.impl.LanguageImpl;
 
 public abstract class LanguageUtility {
-
 	public static final Map<String, LanguageImpl> iso6392LanguageMap = new HashMap<String, LanguageImpl>();
 
 	static {

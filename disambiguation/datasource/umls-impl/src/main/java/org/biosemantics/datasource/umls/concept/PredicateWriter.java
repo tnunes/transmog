@@ -38,25 +38,25 @@ public class PredicateWriter {
 	private String predicatesTsvFile;
 
 	private static final String GET_CONCEPT_SCHEME_PREDICATES_SQL = "select distinct RL as RL from SRSTRE2";
-	private static final Logger logger = LoggerFactory.getLogger(PredicateWriter.class);
+	private static final Logger logger = LoggerFactory.getLogger(PredicateWriter.class);//NOPMD
 
 	@Required
-	public void setBulkImportService(BulkImportService bulkImportService) {
+	public final void setBulkImportService(BulkImportService bulkImportService) {
 		this.bulkImportService = bulkImportService;
 	}
 
 	@Required
-	public void setDataSource(DataSource dataSource) {
+	public final void setDataSource(DataSource dataSource) {
 		this.dataSource = dataSource;
 	}
 
 	@Required
-	public void setUmlsCacheService(UmlsCacheService umlsCacheService) {
+	public final void setUmlsCacheService(UmlsCacheService umlsCacheService) {
 		this.umlsCacheService = umlsCacheService;
 	}
 
 	@Required
-	public void setPredicatesTsvFile(String predicatesTsvFile) {
+	public final void setPredicatesTsvFile(String predicatesTsvFile) {
 		this.predicatesTsvFile = predicatesTsvFile;
 	}
 
