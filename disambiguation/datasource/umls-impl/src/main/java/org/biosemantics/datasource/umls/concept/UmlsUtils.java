@@ -1,5 +1,7 @@
 package org.biosemantics.datasource.umls.concept;
 
+import java.util.Set;
+
 import org.biosemantics.conceptstore.common.domain.LabelType;
 import org.biosemantics.conceptstore.common.domain.Language;
 import org.biosemantics.conceptstore.common.domain.SemanticRelationshipCategory;
@@ -61,6 +63,14 @@ public abstract class UmlsUtils {
 			semanticRelationshipCategory = SemanticRelationshipCategory.HAS_BROADER_CONCEPT;
 		}
 		return semanticRelationshipCategory;
+	}
+	
+	public static String setToString(Set<String> fullText) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (String string : fullText) {
+			stringBuilder.append(string).append(SEPERATOR);
+		}
+		return stringBuilder.toString();
 	}
 
 }

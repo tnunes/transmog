@@ -1,11 +1,14 @@
 package org.biosemantics.datasource.umls.concept;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -30,8 +33,11 @@ public class DomainWriter {
 	private DataSource dataSource;
 	private Connection connection;
 	private Statement statement;
+	private PreparedStatement preparedStatement;
 
-	private static final String GET_ALL_DOMAINS_SQL = "SELECT RSAB, RCUI, VCUI, SON from MRSAB";
+	// private static final String GET_ALL_DOMAINS_SQL = "SELECT RSAB, RCUI, VCUI, SON from MRSAB";
+	private static final String GET_ALL_DISTINCT_DOMAINS_SQL = "SELECT DISTINCT(RSAB) from MRSAB";
+	private static final String GET_ALL_DOMAIN_LABELS_SQL = "SELECT DISTINCT(SON) from MRSAB where RSAB = ?";
 	private static final Logger logger = LoggerFactory.getLogger(DomainWriter.class);
 
 	@Required
@@ -52,31 +58,43 @@ public class DomainWriter {
 	public void init() throws SQLException {
 		// streaming connection to MYSQL see:
 		connection = dataSource.getConnection();
-		statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-		statement.setFetchSize(Integer.MIN_VALUE);
+		statement = connection.createStatement();
+		preparedStatement = connection.prepareStatement(GET_ALL_DOMAIN_LABELS_SQL);
 	}
 
 	public void writeAll() throws SQLException {
-		ResultSet rs = statement.executeQuery(GET_ALL_DOMAINS_SQL);
+		ResultSet rs = statement.executeQuery(GET_ALL_DISTINCT_DOMAINS_SQL);
 		int ctr = 0;
+		Set<String> fullText = new HashSet<String>();
 		try {
 			while (rs.next()) {
 				List<ConceptLabel> conceptLabels = new ArrayList<ConceptLabel>();
-				String son = rs.getString("SON");
 				String rsab = rs.getString("RSAB");
-				Label sonLabel = new LabelImpl(LanguageImpl.EN, son);
-				long sonLabelId = bulkImportService.createLabel(sonLabel);
-				conceptLabels.add(new ConceptLabelImpl(new LabelImpl(null, String.valueOf(sonLabelId)),
-						LabelType.PREFERRED));
-
 				Label rsabLabel = new LabelImpl(LanguageImpl.EN, rsab);
 				long rsabLabelId = bulkImportService.createLabel(rsabLabel);
 				conceptLabels.add(new ConceptLabelImpl(new LabelImpl(null, String.valueOf(rsabLabelId)),
-						LabelType.ALTERNATE));
-				//umlsCacheService.add(new KeyValue(rsab, String.valueOf(rsabLabelId)));
-				// FIXME: get other labels as well from RCUI and VCUI
-				StringBuilder fullText = new StringBuilder(son).append(UmlsUtils.SEPERATOR).append(rsab);
-				long id = bulkImportService.createUmlsConcept(ConceptType.DOMAIN, conceptLabels, null, fullText.toString());
+						LabelType.HIDDEN));
+				fullText.add(rsab);
+				//get all SON for this RSAB
+				preparedStatement.setString(1, rsab);
+				ResultSet labelResultSet = preparedStatement.executeQuery();
+				while (labelResultSet.next()) {
+					String son = labelResultSet.getString("SON");
+					String sonLabelId = umlsCacheService.getValue(son);
+					if (sonLabelId == null) {
+						Label sonLabel = new LabelImpl(LanguageImpl.EN, son);
+						fullText.add(son);
+						sonLabelId = String.valueOf(bulkImportService.createLabel(sonLabel));
+						conceptLabels.add(new ConceptLabelImpl(new LabelImpl(null, sonLabelId), LabelType.ALTERNATE));
+						umlsCacheService.add(new KeyValue(son, sonLabelId));
+					} else {
+						conceptLabels.add(new ConceptLabelImpl(new LabelImpl(null, sonLabelId), LabelType.ALTERNATE));
+					}
+				}
+				labelResultSet.close();
+				
+				long id = bulkImportService.createUmlsConcept(ConceptType.DOMAIN, conceptLabels, null,
+						UmlsUtils.setToString(fullText));
 				umlsCacheService.add(new KeyValue(rsab, String.valueOf(id)));
 				ctr++;
 			}

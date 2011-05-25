@@ -102,8 +102,7 @@ public class PredicateWriter {
 						updatedPredicateString));
 				conceptLabels.add(new ConceptLabelImpl(new LabelImpl(null, String.valueOf(altLabelNodeId)),
 						LabelType.ALTERNATE));
-				StringBuilder fullText = new StringBuilder(predicateString).append(UmlsUtils.SEPERATOR).append(
-						updatedPredicateString);
+				StringBuilder fullText = new StringBuilder(predicateString);
 				long conceptNodeId = bulkImportService.createUmlsConcept(ConceptType.PREDICATE, conceptLabels, null,
 						fullText.toString());
 				umlsCacheService.add(new KeyValue(predicateString, String.valueOf(conceptNodeId)));

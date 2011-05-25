@@ -82,13 +82,14 @@ public class ConceptWriter {
 							previousCui);
 					long cuiNotationNodeId = bulkImportService.createNotation(notationImpl);
 					notations.add(cuiNotationNodeId);
+					fullText.add(previousCui);
 					long uuid = bulkImportService.createUmlsConcept(ConceptType.CONCEPT, conceptLabels, notations,
-							setToString(fullText));
+							UmlsUtils.setToString(fullText));
 					fullText.clear();
 					conceptLabels.clear();
 					notations.clear();
 					// add cui to cache
-					umlsCacheService.add(new KeyValue(previousCui,String.valueOf(uuid)));
+					umlsCacheService.add(new KeyValue(previousCui, String.valueOf(uuid)));
 					if (++conceptInsertCounter % UmlsUtils.BATCH_SIZE == 0) {
 						logger.info("inserted concepts: {}", conceptInsertCounter);
 					}
@@ -117,13 +118,13 @@ public class ConceptWriter {
 						}
 						NotationImpl notationImpl = new NotationImpl(domainUuid, code);
 						notationNodeId = bulkImportService.createNotation(notationImpl);
+						umlsCacheService.add(new KeyValue(sab+code, String.valueOf(notationNodeId)));
 					} else {
 						notationNodeId = Long.valueOf(notationValue);
 					}
 					notations.add(notationNodeId);
+					fullText.add(code);
 				}
-				fullText.add(code);
-
 				// counter
 				previousCui = cui;
 			}
@@ -131,14 +132,6 @@ public class ConceptWriter {
 			rs.close();
 		}
 
-	}
-
-	private String setToString(Set<String> fullText) {
-		StringBuilder stringBuilder = new StringBuilder();
-		for (String string : fullText) {
-			stringBuilder.append(string).append(UmlsUtils.SEPERATOR);
-		}
-		return stringBuilder.toString();
 	}
 
 	public void destroy() throws SQLException {

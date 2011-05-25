@@ -58,8 +58,8 @@ public class ConceptFactualRlspWriter {
 				String cui2 = rs.getString("CUI2");
 				String rel = rs.getString("REL");
 				// factual relationships are stored in the form cui2->rel->cui1 hence inverting subject object here
-				String subjectValue = umlsCacheService.getValue(cui2);
-				String objectValue = umlsCacheService.getValue(cui1);
+				String subjectValue = umlsCacheService.getValue(cui1);
+				String objectValue = umlsCacheService.getValue(cui2);
 				SemanticRelationshipCategory semanticRelationshipCategory = UmlsUtils.getConceptRelationshipType(rel);
 				if (subjectValue != null && objectValue != null) {
 					if (!checkExists(subjectValue, objectValue, semanticRelationshipCategory)) {
