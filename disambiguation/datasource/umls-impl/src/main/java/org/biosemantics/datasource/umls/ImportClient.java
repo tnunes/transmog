@@ -7,6 +7,7 @@ import org.biosemantics.datasource.umls.concept.ConceptSchemeWriter;
 import org.biosemantics.datasource.umls.concept.ConceptWriter;
 import org.biosemantics.datasource.umls.concept.DomainWriter;
 import org.biosemantics.datasource.umls.concept.PredicateWriter;
+import org.biosemantics.datasource.umls.relationship.ConceptCooccuranceRlspWriter;
 import org.biosemantics.datasource.umls.relationship.ConceptFactualRlspWriter;
 import org.biosemantics.datasource.umls.relationship.ConceptToSchemeRlspWriter;
 import org.biosemantics.datasource.umls.relationship.SchemeRlspWriter;
@@ -26,6 +27,7 @@ public class ImportClient {
 	private SchemeRlspWriter schemeRlspWriter;
 	private ConceptToSchemeRlspWriter conceptToSchemeRlspWriter;
 	private ConceptFactualRlspWriter conceptFactualRlspWriter;
+	private ConceptCooccuranceRlspWriter conceptCooccuranceRlspWriter;
 
 	public static void main(String[] args) throws SQLException, IOException {
 		ImportClient importClient = new ImportClient();
@@ -43,6 +45,7 @@ public class ImportClient {
 		schemeRlspWriter = applicationContext.getBean(SchemeRlspWriter.class);
 		conceptToSchemeRlspWriter = applicationContext.getBean(ConceptToSchemeRlspWriter.class);
 		conceptFactualRlspWriter = applicationContext.getBean(ConceptFactualRlspWriter.class);
+		conceptCooccuranceRlspWriter = applicationContext.getBean(ConceptCooccuranceRlspWriter.class);
 	}
 
 	public void init() throws SQLException, IOException {
@@ -60,6 +63,8 @@ public class ImportClient {
 		conceptToSchemeRlspWriter.destroy();
 		conceptFactualRlspWriter.writeAll();
 		conceptFactualRlspWriter.destroy();
+		conceptCooccuranceRlspWriter.writeAll();
+		conceptCooccuranceRlspWriter.destroy();
 	}
 
 	public void destroy() {

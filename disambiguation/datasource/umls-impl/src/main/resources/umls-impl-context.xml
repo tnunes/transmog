@@ -63,5 +63,11 @@
 		<property name="umlsCacheService" ref="umlsCacheService"></property>
 	</bean>
 
+	<bean id="conceptCooccuranceRlspWriter" class="org.biosemantics.datasource.umls.relationship.ConceptCooccuranceRlspWriter">
+		<property name="bulkImportService" ref="bulkImportService"></property>
+		<property name="dataSource" ref="dataSource"></property>
+		<property name="umlsCacheService" ref="umlsCacheService"></property>
+	</bean>
+
 
 </beans>
