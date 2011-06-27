@@ -95,6 +95,11 @@ public class ListenerControllerImpl implements ClickListener, SelectedTabChangeL
 				logger.debug("looking for labels with string: {}", searchString);
 				concepts = application.getSpringServiceLocator().getLabelStorageService()
 						.getAllRelatedConceptsForLabelText(searchString);
+			}else if (strValue.startsWith("not:")) {
+				String searchString = strValue.substring(4, strValue.length());
+				logger.debug("looking for notations with code: {}", searchString);
+				concepts = application.getSpringServiceLocator().getNotationStorageService()
+						.getAllRelatedConcepts(searchString);
 			} else {
 				concepts = application.getSpringServiceLocator().getConceptStorageService()
 						.getConceptsByFullTextQuery(value.toString(), 30);
