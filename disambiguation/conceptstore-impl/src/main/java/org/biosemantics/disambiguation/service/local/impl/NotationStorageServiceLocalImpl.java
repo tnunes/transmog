@@ -3,11 +3,15 @@ package org.biosemantics.disambiguation.service.local.impl;
 import java.util.Collection;
 import java.util.HashSet;
 
+import org.biosemantics.conceptstore.common.domain.Concept;
 import org.biosemantics.conceptstore.common.domain.Notation;
 import org.biosemantics.conceptstore.utils.validation.ValidationUtility;
+import org.biosemantics.disambiguation.domain.impl.ConceptImpl;
 import org.biosemantics.disambiguation.domain.impl.NotationImpl;
 import org.biosemantics.disambiguation.service.local.NotationStorageServiceLocal;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
 import org.neo4j.index.impl.lucene.LuceneIndex;
@@ -100,6 +104,21 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 			nodes.close();
 		}
 		return found;
+	}
+
+	@Override
+	public Collection<Concept> getAllRelatedConcepts(String notationCode) {
+		validationUtility.validateString(notationCode, "notationCode");
+		IndexHits<Node> nodes = index.get(CODE_INDEX_KEY, notationCode);
+		Collection<Concept> concepts = new HashSet<Concept>();
+		for (Node node : nodes) {
+			Iterable<Relationship> rlsps = node.getRelationships(DefaultRelationshipType.HAS_NOTATION,
+					Direction.INCOMING);
+			for (Relationship relationship : rlsps) {
+				concepts.add(new ConceptImpl(relationship.getOtherNode(node)));
+			}
+		}
+		return concepts;
 	}
 
 }
