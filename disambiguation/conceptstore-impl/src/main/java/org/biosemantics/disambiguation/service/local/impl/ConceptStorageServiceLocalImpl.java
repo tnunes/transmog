@@ -1,5 +1,6 @@
 package org.biosemantics.disambiguation.service.local.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -8,6 +9,8 @@ import org.biosemantics.conceptstore.common.domain.ConceptLabel;
 import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.Notation;
 import org.biosemantics.conceptstore.common.domain.Note;
+import org.biosemantics.conceptstore.common.domain.SemanticRelationshipCategory;
+import org.biosemantics.conceptstore.common.domain.extn.ChildConcept;
 import org.biosemantics.conceptstore.utils.service.UuidGeneratorService;
 import org.biosemantics.conceptstore.utils.validation.ValidationUtility;
 import org.biosemantics.disambiguation.domain.impl.ConceptImpl;
@@ -15,8 +18,15 @@ import org.biosemantics.disambiguation.service.local.ConceptStorageServiceLocal;
 import org.biosemantics.disambiguation.service.local.LabelStorageServiceLocal;
 import org.biosemantics.disambiguation.service.local.NotationStorageServiceLocal;
 import org.biosemantics.disambiguation.service.local.NoteStorageServiceLocal;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
 import org.neo4j.helpers.collection.MapUtil;
@@ -59,6 +69,19 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 		this.fulltextIndex = graphStorageTemplate.getIndexManager().forNodes(CONCEPT_FULLTEXT_INDEX,
 				MapUtil.stringMap("provider", "lucene", "type", "fulltext"));
 	}
+
+	public static final RelationshipType hasBroaderRlspType = new RelationshipType() {
+		@Override
+		public String name() {
+			return SemanticRelationshipCategory.HAS_BROADER_CONCEPT.name();
+		}
+	};
+	public static final RelationshipType hasNarrowerRlspType = new RelationshipType() {
+		@Override
+		public String name() {
+			return SemanticRelationshipCategory.HAS_NARROWER_CONCEPT.name();
+		}
+	};
 
 	@Required
 	public void setUuidGeneratorService(UuidGeneratorService uuidGeneratorService) {
@@ -201,6 +224,21 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 		}
 		return uuids;
 
+	}
+
+	@Override
+	public Collection<ChildConcept> getAllChildren(String uuid) {
+		Node conceptNode = getConceptNode(uuid);
+		Collection<ChildConcept> childConcepts = new ArrayList<ChildConcept>();
+		Traverser children = conceptNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
+				ReturnableEvaluator.ALL_BUT_START_NODE, hasNarrowerRlspType, Direction.OUTGOING, hasBroaderRlspType,
+				Direction.INCOMING);
+		for (Node child : children) {
+			TraversalPosition currentPosition = children.currentPosition();
+			ChildConcept childConcept = new ChildConcept(new ConceptImpl(child), currentPosition.depth());
+			childConcepts.add(childConcept);
+		}
+		return childConcepts;
 	}
 
 }
