@@ -1,5 +1,8 @@
 package org.biosemantics.disambiguation.bulkimport.service.impl;
 
+import static org.biosemantics.disambiguation.common.IndexConstant.*;
+import static org.biosemantics.disambiguation.common.PropertyConstant.*;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
@@ -11,15 +14,12 @@ import org.biosemantics.conceptstore.common.domain.ConceptRelationship;
 import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.common.domain.Notation;
-import org.biosemantics.conceptstore.common.domain.SemanticRelationshipCategory;
+import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
 import org.biosemantics.conceptstore.utils.service.UuidGeneratorService;
 import org.biosemantics.disambiguation.bulkimport.service.BulkImportService;
-import org.biosemantics.disambiguation.domain.impl.ConceptImpl;
+import org.biosemantics.disambiguation.common.PropertyConstant;
+import org.biosemantics.disambiguation.common.RelationshipTypeConstant;
 import org.biosemantics.disambiguation.domain.impl.ConceptRelationshipImpl;
-import org.biosemantics.disambiguation.domain.impl.LabelImpl;
-import org.biosemantics.disambiguation.domain.impl.NotationImpl;
-import org.biosemantics.disambiguation.service.local.impl.ConceptStorageServiceLocalImpl;
-import org.biosemantics.disambiguation.service.local.impl.DefaultRelationshipType;
 import org.biosemantics.disambiguation.service.local.impl.LabelStorageServiceLocalImpl;
 import org.biosemantics.disambiguation.service.local.impl.NotationStorageServiceLocalImpl;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -59,8 +59,6 @@ public class BulkImportServiceImpl implements BulkImportService {
 	private long conceptParentNode;
 	private long labelParentNode;
 	private long notationParentNode;
-	private long domainParentNode;
-	private long predicateParentNode;
 	private long noteParentNode;
 
 	// relationships
@@ -68,28 +66,28 @@ public class BulkImportServiceImpl implements BulkImportService {
 
 		@Override
 		public String name() {
-			return SemanticRelationshipCategory.RELATED.name();
+			return ConceptRelationshipType.RELATED.name();
 		}
 	};
 	RelationshipType hasBroaderRlspType = new RelationshipType() {
 
 		@Override
 		public String name() {
-			return SemanticRelationshipCategory.HAS_BROADER_CONCEPT.name();
+			return ConceptRelationshipType.HAS_BROADER_CONCEPT.name();
 		}
 	};
 	RelationshipType hasNarrowerRlspType = new RelationshipType() {
 
 		@Override
 		public String name() {
-			return SemanticRelationshipCategory.HAS_NARROWER_CONCEPT.name();
+			return ConceptRelationshipType.HAS_NARROWER_CONCEPT.name();
 		}
 	};
 	RelationshipType inSchemeRlspType = new RelationshipType() {
 
 		@Override
 		public String name() {
-			return SemanticRelationshipCategory.IN_SCHEME.name();
+			return ConceptRelationshipType.IN_SCHEME.name();
 		}
 	};
 
@@ -116,9 +114,9 @@ public class BulkImportServiceImpl implements BulkImportService {
 	public void init() {
 		logger.info("initing indexes");
 		this.indexService = new LuceneBatchInserterIndexProvider(batchInserter);
-		conceptNodeIndex = this.indexService.nodeIndex(ConceptStorageServiceLocalImpl.CONCEPT_INDEX,
+		conceptNodeIndex = this.indexService.nodeIndex(CONCEPT_INDEX.name(),
 				MapUtil.stringMap("provider", "lucene", "type", "exact", "to_lower_case", "true"));
-		conceptFullTextIndex = this.indexService.nodeIndex(ConceptStorageServiceLocalImpl.CONCEPT_FULLTEXT_INDEX,
+		conceptFullTextIndex = this.indexService.nodeIndex(CONCEPT_FULL_TEXT_KEY.name(),
 				MapUtil.stringMap("provider", "lucene", "type", "fulltext"));
 		labelNodeIndex = this.indexService.nodeIndex(LabelStorageServiceLocalImpl.LABEL_INDEX,
 				MapUtil.stringMap("provider", "lucene", "type", "exact", "to_lower_case", "true"));
@@ -127,22 +125,16 @@ public class BulkImportServiceImpl implements BulkImportService {
 		logger.info("creating parent nodes");
 		conceptParentNode = batchInserter.createNode(null);
 		batchInserter.createRelationship(batchInserter.getReferenceNode(), conceptParentNode,
-				DefaultRelationshipType.CONCEPTS, null);
+				RelationshipTypeConstant.CONCEPTS, null);
 		labelParentNode = batchInserter.createNode(null);
 		batchInserter.createRelationship(batchInserter.getReferenceNode(), labelParentNode,
-				DefaultRelationshipType.LABELS, null);
+				RelationshipTypeConstant.LABELS, null);
 		notationParentNode = batchInserter.createNode(null);
 		batchInserter.createRelationship(batchInserter.getReferenceNode(), notationParentNode,
-				DefaultRelationshipType.NOTATIONS, null);
-		domainParentNode = batchInserter.createNode(null);
-		batchInserter.createRelationship(batchInserter.getReferenceNode(), domainParentNode,
-				DefaultRelationshipType.DOMAINS, null);
-		predicateParentNode = batchInserter.createNode(null);
-		batchInserter.createRelationship(batchInserter.getReferenceNode(), predicateParentNode,
-				DefaultRelationshipType.PREDICATES, null);
+				RelationshipTypeConstant.NOTATIONS, null);
 		noteParentNode = batchInserter.createNode(null);
 		batchInserter.createRelationship(batchInserter.getReferenceNode(), noteParentNode,
-				DefaultRelationshipType.NOTES, null);
+				RelationshipTypeConstant.NOTES, null);
 	}
 
 	public void destroy() {
@@ -178,7 +170,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 					conceptRelationship });
 		} else {
 			long start = System.currentTimeMillis();
-			switch (conceptRelationship.getSemanticRelationshipCategory()) {
+			switch (conceptRelationship.getType()) {
 			case RELATED:
 				found = isRelated(startNode, endNode);
 				break;
@@ -261,18 +253,18 @@ public class BulkImportServiceImpl implements BulkImportService {
 		} else {
 			Map<String, Object> properties = new HashMap<String, Object>();
 			String relationshipUuid = uuidGeneratorService.generateRandomUuid();
-			properties.put(ConceptRelationshipImpl.UUID_PROPERTY, relationshipUuid);
+			properties.put(UUID.name(), relationshipUuid);
 			properties.put(ConceptRelationshipImpl.RLSP_CATEGORY_PROPERTY, conceptRelationship
-					.getConceptRelationshipCategory().getId());
+					.getSource().getId());
 			if (!StringUtils.isBlank(conceptRelationship.getPredicateConceptUuid())) {
 				properties.put(ConceptRelationshipImpl.PREDICATE_CONCEPT_UUID_PROPERTY,
 						getUuidforNodeId(Long.valueOf(conceptRelationship.getPredicateConceptUuid())));
 			}
-			properties.put(ConceptRelationshipImpl.WEIGHT_PROERTY, conceptRelationship.getWeight());
+			properties.put(WEIGHT.name(), conceptRelationship.getWeight());
 			long relationshipId = batchInserter.createRelationship(fromNodeId, toNodeId, new RelationshipType() {
 				@Override
 				public String name() {
-					return conceptRelationship.getSemanticRelationshipCategory().name();
+					return conceptRelationship.getType().name();
 				}
 			}, properties);
 			return relationshipId;
@@ -283,10 +275,10 @@ public class BulkImportServiceImpl implements BulkImportService {
 	@Override
 	public long createLabel(Label label) {
 		Map<String, Object> properties = new HashMap<String, Object>();
-		properties.put(LabelImpl.TEXT_PROPERTY, label.getText());
-		properties.put(LabelImpl.LANGUAGE_PROPERTY, label.getLanguage().getLabel());
+		properties.put(PropertyConstant.TEXT.name(), label.getText());
+		properties.put(PropertyConstant.LANGUAGE.name(), label.getLanguage().name());
 		long labelNode = batchInserter.createNode(properties);
-		batchInserter.createRelationship(labelParentNode, labelNode, DefaultRelationshipType.LABEL, null);
+		batchInserter.createRelationship(labelParentNode, labelNode, RelationshipTypeConstant.LABEL, null);
 		properties.clear();
 		// index text
 		properties.put(LabelStorageServiceLocalImpl.TEXT_INDEX_KEY, label.getText());
@@ -299,11 +291,11 @@ public class BulkImportServiceImpl implements BulkImportService {
 	public long createNotation(Notation notation) {
 		Map<String, Object> properties = new HashMap<String, Object>();
 		String domainUuid = (String) batchInserter.getGraphDbService()
-				.getNodeById(Long.valueOf(notation.getDomainUuid())).getProperty(ConceptImpl.UUID_PROPERTY);
-		properties.put(NotationImpl.DOMAIN_UUID_PROPERTY, domainUuid);
-		properties.put(NotationImpl.CODE_PROPERTY, notation.getCode());
+				.getNodeById(Long.valueOf(notation.getDomainUuid())).getProperty(UUID.name());
+		properties.put(PropertyConstant.DOMAIN.name(), domainUuid);
+		properties.put(PropertyConstant.CODE.name(), notation.getCode());
 		long notationNodeId = batchInserter.createNode(properties);
-		batchInserter.createRelationship(notationParentNode, notationNodeId, DefaultRelationshipType.NOTATION, null);
+		batchInserter.createRelationship(notationParentNode, notationNodeId, RelationshipTypeConstant.NOTATION, null);
 		properties.clear();
 		// index code
 		properties.put(NotationStorageServiceLocalImpl.CODE_INDEX_KEY, notation.getCode());
@@ -318,41 +310,30 @@ public class BulkImportServiceImpl implements BulkImportService {
 		Map<String, Object> properties = new HashMap<String, Object>();
 		final String conceptUuid = uuidGeneratorService.generateRandomUuid();
 		// properties map is reused so make sure to clear it after each storage call
-		properties.put(ConceptImpl.UUID_PROPERTY, conceptUuid);
+		properties.put(UUID.name(), conceptUuid);
 		long conceptNodeId = batchInserter.createNode(properties);
 		properties.clear();
-		switch (conceptType) {
-		case CONCEPT:
-			batchInserter.createRelationship(conceptParentNode, conceptNodeId, DefaultRelationshipType.CONCEPT, null);
-			break;
-		case DOMAIN:
-			batchInserter.createRelationship(domainParentNode, conceptNodeId, DefaultRelationshipType.CONCEPT, null);
-			break;
-		case PREDICATE:
-			batchInserter.createRelationship(predicateParentNode, conceptNodeId, DefaultRelationshipType.CONCEPT, null);
-			break;
-		default:
-			break;
-		}
+		batchInserter.createRelationship(conceptParentNode, conceptNodeId, RelationshipTypeConstant.CONCEPT, null);
 		// indexing uuid
-		properties.put(ConceptStorageServiceLocalImpl.UUID_INDEX_KEY, conceptUuid);
+		properties.put(CONCEPT_UUID_KEY.name(), conceptUuid);
+		properties.put(CONCEPT_TYPE_KEY.name(), conceptType.name());
 		conceptNodeIndex.add(conceptNodeId, properties);
 		properties.clear();
 		// indexing full text
-		properties.put(ConceptStorageServiceLocalImpl.FULLTEXT_INDEX_KEY, fullText);
+		properties.put(CONCEPT_FULL_TEXT_KEY.name(), fullText);
 		conceptFullTextIndex.add(conceptNodeId, properties);
 		properties.clear();
 		// creating rlsp to labels
 		for (ConceptLabel conceptLabel : conceptLabels) {
-			properties.put(ConceptImpl.LABEL_TYPE_RLSP_PROPERTY, conceptLabel.getLabelType().getId());
+			properties.put(LABEL_TYPE.name(), conceptLabel.getLabelType().getId());
 			batchInserter.createRelationship(conceptNodeId, Long.valueOf(conceptLabel.getText()),
-					DefaultRelationshipType.HAS_LABEL, properties);
+					RelationshipTypeConstant.HAS_LABEL, properties);
 			properties.clear();
 		}
 		// create rlsp to notations
 		if (notations != null) {
 			for (Long notationNodeId : notations) {
-				batchInserter.createRelationship(conceptNodeId, notationNodeId, DefaultRelationshipType.HAS_NOTATION,
+				batchInserter.createRelationship(conceptNodeId, notationNodeId, RelationshipTypeConstant.HAS_NOTATION,
 						null);
 			}
 		}
@@ -360,7 +341,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 	}
 
 	private String getUuidforNodeId(long nodeId) {
-		return (String) batchInserter.getNodeProperties(nodeId).get(ConceptRelationshipImpl.UUID_PROPERTY);
+		return (String) batchInserter.getNodeProperties(nodeId).get(UUID.name());
 	}
 
 }
