@@ -8,11 +8,11 @@ import java.util.Map;
 
 import org.biosemantics.conceptstore.common.domain.Concept;
 import org.biosemantics.conceptstore.common.domain.ConceptRelationship;
+import org.biosemantics.conceptstore.common.domain.Language;
 import org.biosemantics.conceptstore.common.service.ConceptRelationshipStorageService;
 import org.biosemantics.conceptstore.common.service.ConceptStorageService;
 import org.biosemantics.disambiguation.conceptstore.web.ConceptStoreApplication;
 import org.biosemantics.disambiguation.conceptstore.web.common.StorageUtility;
-import org.biosemantics.disambiguation.domain.impl.LanguageImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
@@ -65,7 +65,7 @@ public class ConceptRelation extends VerticalLayout {
 					fromConceptPrefLabel = conceptCache.get(conceptRelationship.fromConcept());
 				} else {
 					Concept retrievedConcept = conceptStorageService.getConcept(conceptRelationship.fromConcept());
-					fromConceptPrefLabel = StorageUtility.getPreferredLabel(retrievedConcept, LanguageImpl.EN)
+					fromConceptPrefLabel = StorageUtility.getPreferredLabel(retrievedConcept, Language.EN)
 							.getText();
 					conceptCache.put(retrievedConcept.getUuid(), fromConceptPrefLabel);
 				}
@@ -75,7 +75,7 @@ public class ConceptRelation extends VerticalLayout {
 					toConceptPrefLabel = conceptCache.get(conceptRelationship.toConcept());
 				} else {
 					Concept retrievedConcept = conceptStorageService.getConcept(conceptRelationship.toConcept());
-					toConceptPrefLabel = StorageUtility.getPreferredLabel(retrievedConcept, LanguageImpl.EN).getText();
+					toConceptPrefLabel = StorageUtility.getPreferredLabel(retrievedConcept, Language.EN).getText();
 					conceptCache.put(retrievedConcept.getUuid(), toConceptPrefLabel);
 				}
 				try {
@@ -87,10 +87,10 @@ public class ConceptRelation extends VerticalLayout {
 					logger.error("error encoding", e);
 				}
 				String[] line = new String[] { fromConceptPrefLabel,
-						conceptRelationship.getSemanticRelationshipCategory().name(), toConceptPrefLabel };
+						conceptRelationship.getType().name(), toConceptPrefLabel };
 				relationsTable.addItem(
-						new Object[] { fromConceptPrefLabel, conceptRelationship.getSemanticRelationshipCategory(),
-								conceptRelationship.getConceptRelationshipCategory(), toConceptPrefLabel }, ++ctr);
+						new Object[] { fromConceptPrefLabel, conceptRelationship.getType(),
+								conceptRelationship.getSource(), toConceptPrefLabel }, ++ctr);
 			}
 			this.addComponent(relationsTable);
 			googleChartApiUrl.append("}");

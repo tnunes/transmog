@@ -42,7 +42,7 @@ public class ConceptDetail extends VerticalLayout {
 		labelTable.addContainerProperty("Language", String.class, null);
 		labelTable.addContainerProperty("Label Type", String.class, null);
 		for (ConceptLabel conceptLabel : conceptLabels) {
-			labelTable.addItem(new Object[] { conceptLabel.getText(), conceptLabel.getLanguage().getIso6392Code(),
+			labelTable.addItem(new Object[] { conceptLabel.getText(), conceptLabel.getLanguage().name(),
 					conceptLabel.getLabelType().name() }, conceptLabel.getId());
 		}
 		return labelTable;
