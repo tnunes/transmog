@@ -2,16 +2,12 @@ package org.biosemantics.disambiguation.domain.impl;
 
 import org.biosemantics.conceptstore.common.domain.Language;
 import org.biosemantics.conceptstore.common.domain.Note;
-import org.biosemantics.conceptstore.common.domain.Source;
+import org.biosemantics.disambiguation.common.PropertyConstant;
 import org.neo4j.graphdb.Node;
 
 public class NoteImpl implements Note {
 
 	private static final long serialVersionUID = -4163123163985347673L;
-	public static final String NOTE_TYPE_PROPERTY = "noteType";
-	public static final String LANGUAGE_PROPERTY = "language";
-	public static final String TEXT_PROPERTY = "text";
-	public static final String DATE_TIME_PROPERTY = "dateTime";
 	private Node underlyingNode;
 
 	public NoteImpl(Node node) {
@@ -20,17 +16,17 @@ public class NoteImpl implements Note {
 
 	@Override
 	public NoteType getNoteType() {
-		return NoteType.fromId((Integer) underlyingNode.getProperty(NOTE_TYPE_PROPERTY));
+		return NoteType.fromId((Integer) underlyingNode.getProperty(PropertyConstant.TYPE.name()));
 	}
 
 	@Override
 	public String getText() {
-		return (String) underlyingNode.getProperty(TEXT_PROPERTY);
+		return (String) underlyingNode.getProperty(PropertyConstant.TEXT.name());
 	}
 
 	@Override
 	public Language getLanguage() {
-		return LanguageImpl.valueOf((String) underlyingNode.getProperty(LANGUAGE_PROPERTY));
+		return Language.valueOf((String) underlyingNode.getProperty(PropertyConstant.LANGUAGE.name()));
 	}
 
 	public Node getUnderlyingNode() {
@@ -51,14 +47,13 @@ public class NoteImpl implements Note {
 	}
 
 	@Override
-	public Source[] getSources() {
-		// TODO Auto-generated method stub
-		return null;
+	public String getCreatedDateTime() {
+		return (String) underlyingNode.getProperty(PropertyConstant.DATE_TIME.name());
 	}
 
 	@Override
-	public String getCreatedDateTime() {
-		return (String) underlyingNode.getProperty(DATE_TIME_PROPERTY);
+	public String[] getTags() {
+		return (String[]) underlyingNode.getProperty(PropertyConstant.TAGS.name());
 	}
 
 }

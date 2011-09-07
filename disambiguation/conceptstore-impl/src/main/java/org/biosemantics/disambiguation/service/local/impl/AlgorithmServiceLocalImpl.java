@@ -1,6 +1,8 @@
 package org.biosemantics.disambiguation.service.local.impl;
 
-import org.biosemantics.disambiguation.domain.impl.ConceptRelationshipImpl;
+import static org.biosemantics.disambiguation.common.PropertyConstant.WEIGHT;
+
+import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
 import org.biosemantics.disambiguation.service.local.AlgorithmServiceLocal;
 import org.biosemantics.disambiguation.service.local.ConceptStorageServiceLocal;
 import org.neo4j.graphalgo.CostEvaluator;
@@ -28,12 +30,12 @@ public class AlgorithmServiceLocalImpl implements AlgorithmServiceLocal {
 		Node from = conceptStorageServiceLocal.getConceptNode(fromConceptUuid);
 		Node to = conceptStorageServiceLocal.getConceptNode(toConceptUuid);
 		PathFinder<WeightedPath> finder = GraphAlgoFactory.dijkstra(
-				Traversal.expanderForTypes(ConceptRelationshipStorageServiceLocalImpl.relatedRlspType, Direction.BOTH),
+				Traversal.expanderForTypes(ConceptRelationshipType.RELATED, Direction.BOTH),
 				new CostEvaluator<Double>() {
 
 					@Override
 					public Double getCost(Relationship relationship, Direction direction) {
-						return Double.valueOf("" + relationship.getProperty(ConceptRelationshipImpl.WEIGHT_PROERTY));
+						return Double.valueOf("" + relationship.getProperty(WEIGHT.name()));
 					}
 				});
 		WeightedPath path = finder.findSinglePath(from, to);
@@ -45,10 +47,9 @@ public class AlgorithmServiceLocalImpl implements AlgorithmServiceLocal {
 		Node from = conceptStorageServiceLocal.getConceptNode(fromConceptUuid);
 		Node to = conceptStorageServiceLocal.getConceptNode(toConceptUuid);
 		PathFinder<Path> finder = GraphAlgoFactory.shortestPath(Traversal.expanderForTypes(
-				ConceptRelationshipStorageServiceLocalImpl.relatedRlspType, Direction.BOTH,
-				ConceptRelationshipStorageServiceLocalImpl.hasBroaderRlspType, Direction.BOTH,
-				ConceptRelationshipStorageServiceLocalImpl.hasNarrowerRlspType, Direction.BOTH,
-				ConceptRelationshipStorageServiceLocalImpl.inSchemeRlspType, Direction.BOTH), maxDepth);
+				ConceptRelationshipType.RELATED, Direction.BOTH, ConceptRelationshipType.HAS_BROADER_CONCEPT,
+				Direction.BOTH, ConceptRelationshipType.HAS_NARROWER_CONCEPT, Direction.BOTH,
+				ConceptRelationshipType.IN_SCHEME, Direction.BOTH), maxDepth);
 		Iterable<Path> paths = finder.findAllPaths(from, to);
 		return paths;
 	}

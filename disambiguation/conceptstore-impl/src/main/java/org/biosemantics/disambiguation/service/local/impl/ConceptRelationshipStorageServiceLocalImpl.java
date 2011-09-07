@@ -1,6 +1,7 @@
 package org.biosemantics.disambiguation.service.local.impl;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.biosemantics.disambiguation.common.PropertyConstant.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,12 +10,14 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.biosemantics.conceptstore.common.domain.ConceptRelationship;
-import org.biosemantics.conceptstore.common.domain.SemanticRelationshipCategory;
+import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
 import org.biosemantics.conceptstore.utils.service.UuidGeneratorService;
 import org.biosemantics.conceptstore.utils.validation.ValidationUtility;
+import org.biosemantics.disambiguation.common.PropertyConstant;
 import org.biosemantics.disambiguation.domain.impl.ConceptRelationshipImpl;
 import org.biosemantics.disambiguation.service.local.ConceptRelationshipStorageServiceLocal;
 import org.biosemantics.disambiguation.service.local.ConceptStorageServiceLocal;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
@@ -24,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 public class ConceptRelationshipStorageServiceLocalImpl implements ConceptRelationshipStorageServiceLocal {
 
-	//private static final Logger logger = LoggerFactory.getLogger(ConceptRelationshipStorageServiceLocalImpl.class);
+	// private static final Logger logger = LoggerFactory.getLogger(ConceptRelationshipStorageServiceLocalImpl.class);
 	private static final String RLSP_INDEX = "relationship";
 	private static final String UUID_INDEX_KEY = "rlsp_uuid";
 	private UuidGeneratorService uuidGeneratorService;
@@ -32,32 +35,6 @@ public class ConceptRelationshipStorageServiceLocalImpl implements ConceptRelati
 	private final RelationshipIndex index;
 	private ConceptStorageServiceLocal conceptStorageServiceLocal;
 	private ValidationUtility validationUtility;
-
-	public static final RelationshipType relatedRlspType = new RelationshipType() {
-		@Override
-		public String name() {
-			return SemanticRelationshipCategory.RELATED.name();
-		}
-	};
-	public static final RelationshipType hasBroaderRlspType = new RelationshipType() {
-		@Override
-		public String name() {
-			return SemanticRelationshipCategory.HAS_BROADER_CONCEPT.name();
-		}
-	};
-	public static final RelationshipType hasNarrowerRlspType = new RelationshipType() {
-		@Override
-		public String name() {
-			return SemanticRelationshipCategory.HAS_NARROWER_CONCEPT.name();
-		}
-	};
-	
-	public static final RelationshipType inSchemeRlspType = new RelationshipType() {
-		@Override
-		public String name() {
-			return SemanticRelationshipCategory.IN_SCHEME.name();
-		}
-	};
 
 	public ConceptRelationshipStorageServiceLocalImpl(GraphStorageTemplate graphStorageTemplate) {
 		this.graphStorageTemplate = graphStorageTemplate;
@@ -91,20 +68,20 @@ public class ConceptRelationshipStorageServiceLocalImpl implements ConceptRelati
 		Relationship relationship = startNode.createRelationshipTo(endNode, new RelationshipType() {
 			@Override
 			public String name() {
-				return conceptRelationship.getSemanticRelationshipCategory().name();
+				return conceptRelationship.getType().name();
 			}
 		});
-		relationship.setProperty(ConceptRelationshipImpl.UUID_PROPERTY, uuid);
-		relationship.setProperty(ConceptRelationshipImpl.WEIGHT_PROERTY, conceptRelationship.getWeight());
+		relationship.setProperty(UUID.name(), uuid);
+		relationship.setProperty(WEIGHT.name(), conceptRelationship.getWeight());
 		if (!StringUtils.isBlank(conceptRelationship.getPredicateConceptUuid())) {
 			relationship.setProperty(ConceptRelationshipImpl.PREDICATE_CONCEPT_UUID_PROPERTY,
 					conceptRelationship.getPredicateConceptUuid());
 		}
 		relationship.setProperty(ConceptRelationshipImpl.RLSP_CATEGORY_PROPERTY, conceptRelationship
-				.getConceptRelationshipCategory().getId());
+				.getSource().getId());
 		// add sources
-		if (conceptRelationship.getSources() != null && conceptRelationship.getSources().length > 0) {
-			relationship.setProperty(ConceptRelationshipImpl.SOURCES_PROPERTY, conceptRelationship.getSources());
+		if (conceptRelationship.getTags() != null && conceptRelationship.getTags().length > 0) {
+			relationship.setProperty(PropertyConstant.TAGS.name(), conceptRelationship.getTags());
 		}
 
 		index.add(relationship, UUID_INDEX_KEY, uuid);
@@ -121,9 +98,12 @@ public class ConceptRelationshipStorageServiceLocalImpl implements ConceptRelati
 	@Override
 	public Collection<ConceptRelationship> getAllRelationshipsForConcept(String uuid) {
 		Node node = conceptStorageServiceLocal.getConceptNode(uuid);
-		Iterable<Relationship> relationships = node.getRelationships(relatedRlspType, hasNarrowerRlspType,
-				hasBroaderRlspType, inSchemeRlspType);
+		Iterable<Relationship> relationships = node.getRelationships(ConceptRelationshipType.HAS_NARROWER_CONCEPT, Direction.OUTGOING);
 		List<ConceptRelationship> conceptRelationships = new ArrayList<ConceptRelationship>();
+		for (Relationship relationship : relationships) {
+			conceptRelationships.add(new ConceptRelationshipImpl(relationship));
+		}
+		relationships = node.getRelationships(ConceptRelationshipType.HAS_BROADER_CONCEPT, Direction.INCOMING);
 		for (Relationship relationship : relationships) {
 			conceptRelationships.add(new ConceptRelationshipImpl(relationship));
 		}
@@ -134,7 +114,7 @@ public class ConceptRelationshipStorageServiceLocalImpl implements ConceptRelati
 	public Relationship getRelationship(String uuid) {
 		return index.get(UUID_INDEX_KEY, uuid).getSingle();
 	}
-	
+
 	@Override
 	public Collection<ConceptRelationship> getAllDirectRelationships(String firstConceptUuid, String secondConceptUuid) {
 		Node firstNode = conceptStorageServiceLocal.getConceptNode(firstConceptUuid);
@@ -157,24 +137,24 @@ public class ConceptRelationshipStorageServiceLocalImpl implements ConceptRelati
 			if (foundRelationship.getOtherNode(startNode).equals(endNode)) {
 				// rlsp exists between the concepts: check if it is the same type
 				if (foundRelationship.getType().name()
-						.equals(conceptRelationship.getSemanticRelationshipCategory().name())
+						.equals(conceptRelationship.getType().name())
 						&& ((Integer) foundRelationship.getProperty(ConceptRelationshipImpl.RLSP_CATEGORY_PROPERTY))
-								.equals(conceptRelationship.getConceptRelationshipCategory().getId())) {
+								.equals(conceptRelationship.getSource().getId())) {
 					return true;
 				}
-				if (conceptRelationship.getSemanticRelationshipCategory() == SemanticRelationshipCategory.HAS_BROADER_CONCEPT) {
+				if (conceptRelationship.getType() == ConceptRelationshipType.HAS_BROADER_CONCEPT) {
 					if (foundRelationship.getStartNode().equals(endNode)
 							&& foundRelationship.getEndNode().equals(startNode)
 							&& foundRelationship.getType().name()
-									.equals(SemanticRelationshipCategory.HAS_NARROWER_CONCEPT.name())) {
+									.equals(ConceptRelationshipType.HAS_NARROWER_CONCEPT.name())) {
 						return true;
 					}
 				}
-				if (conceptRelationship.getSemanticRelationshipCategory() == SemanticRelationshipCategory.HAS_NARROWER_CONCEPT) {
+				if (conceptRelationship.getType() == ConceptRelationshipType.HAS_NARROWER_CONCEPT) {
 					if (foundRelationship.getStartNode().equals(endNode)
 							&& foundRelationship.getEndNode().equals(startNode)
 							&& foundRelationship.getType().name()
-									.equals(SemanticRelationshipCategory.HAS_BROADER_CONCEPT.name())) {
+									.equals(ConceptRelationshipType.HAS_BROADER_CONCEPT.name())) {
 						return true;
 					}
 				}

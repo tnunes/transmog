@@ -31,6 +31,7 @@
 
 	<bean id="graphStorageTemplate" class="org.biosemantics.disambiguation.service.local.impl.GraphStorageTemplateImpl">
 		<constructor-arg value="${data.store}" />
+		<constructor-arg value="${neo4j.startServer}" />
 		<!-- <constructor-arg> -->
 		<!-- <map> -->
 		<!-- <entry key="neostore.nodestore.db.mapped_memory" value="550M"/> -->
@@ -58,13 +59,6 @@
 	</bean>
 
 	<bean id="noteStorageServiceLocal" class="org.biosemantics.disambiguation.service.local.impl.NoteStorageServiceLocalImpl">
-		<constructor-arg>
-			<ref local="graphStorageTemplate" />
-		</constructor-arg>
-		<property name="validationUtility" ref="validationUtility"></property>
-	</bean>
-
-	<bean id="sourceStorageServiceLocal" class="org.biosemantics.disambiguation.service.local.impl.SourceStorageServiceLocalImpl">
 		<constructor-arg>
 			<ref local="graphStorageTemplate" />
 		</constructor-arg>

@@ -6,6 +6,8 @@ import java.util.HashSet;
 import org.biosemantics.conceptstore.common.domain.Concept;
 import org.biosemantics.conceptstore.common.domain.Notation;
 import org.biosemantics.conceptstore.utils.validation.ValidationUtility;
+import org.biosemantics.disambiguation.common.PropertyConstant;
+import org.biosemantics.disambiguation.common.RelationshipTypeConstant;
 import org.biosemantics.disambiguation.domain.impl.ConceptImpl;
 import org.biosemantics.disambiguation.domain.impl.NotationImpl;
 import org.biosemantics.disambiguation.service.local.NotationStorageServiceLocal;
@@ -34,7 +36,7 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 	public NotationStorageServiceLocalImpl(GraphStorageTemplate graphStorageTemplate) {
 		super();
 		this.graphStorageTemplate = graphStorageTemplate;
-		this.notationParentNode = this.graphStorageTemplate.getParentNode(DefaultRelationshipType.NOTATIONS);
+		this.notationParentNode = this.graphStorageTemplate.getParentNode(RelationshipTypeConstant.NOTATIONS);
 		this.index = graphStorageTemplate.getIndexManager().forNodes(NOTATION_INDEX);
 		((LuceneIndex<Node>) this.index).setCacheCapacity(CODE_INDEX_KEY, 300000);
 		logger.debug("setting cache for notation-code index to 300000");
@@ -57,9 +59,9 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 	public Node createNotationNode(Notation notation) {
 		// create new node if none exists
 		Node notationNode = graphStorageTemplate.getGraphDatabaseService().createNode();
-		notationParentNode.createRelationshipTo(notationNode, DefaultRelationshipType.NOTATION);
-		notationNode.setProperty(NotationImpl.DOMAIN_UUID_PROPERTY, notation.getDomainUuid());
-		notationNode.setProperty(NotationImpl.CODE_PROPERTY, notation.getCode());
+		notationParentNode.createRelationshipTo(notationNode, RelationshipTypeConstant.NOTATION);
+		notationNode.setProperty(PropertyConstant.DOMAIN.name(), notation.getDomainUuid());
+		notationNode.setProperty(PropertyConstant.CODE.name(), notation.getCode());
 		index.add(notationNode, CODE_INDEX_KEY, notation.getCode());
 		return notationNode;
 	}
@@ -76,7 +78,7 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 		IndexHits<Node> nodes = index.get(CODE_INDEX_KEY, code);
 		Collection<Notation> notations = new HashSet<Notation>();
 		for (Node node : nodes) {
-			if (((String) node.getProperty(NotationImpl.CODE_PROPERTY)).equals(code)) {
+			if (((String) node.getProperty(PropertyConstant.CODE.name())).equals(code)) {
 				notations.add(new NotationImpl(node));
 			}
 		}
@@ -94,8 +96,8 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 		IndexHits<Node> nodes = index.get(CODE_INDEX_KEY, code);
 		try {
 			for (Node node : nodes) {
-				if (((String) node.getProperty(NotationImpl.CODE_PROPERTY)).equals(code)
-						&& domainUuid.equals((String) node.getProperty(NotationImpl.DOMAIN_UUID_PROPERTY))) {
+				if (((String) node.getProperty(PropertyConstant.CODE.name())).equals(code)
+						&& domainUuid.equals((String) node.getProperty(PropertyConstant.DOMAIN.name()))) {
 					found = node;
 					break;
 				}
@@ -112,7 +114,7 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 		IndexHits<Node> nodes = index.get(CODE_INDEX_KEY, notationCode);
 		Collection<Concept> concepts = new HashSet<Concept>();
 		for (Node node : nodes) {
-			Iterable<Relationship> rlsps = node.getRelationships(DefaultRelationshipType.HAS_NOTATION,
+			Iterable<Relationship> rlsps = node.getRelationships(RelationshipTypeConstant.HAS_NOTATION,
 					Direction.INCOMING);
 			for (Relationship relationship : rlsps) {
 				concepts.add(new ConceptImpl(relationship.getOtherNode(node)));

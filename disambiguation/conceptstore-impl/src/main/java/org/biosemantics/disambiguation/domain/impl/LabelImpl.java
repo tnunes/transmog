@@ -3,14 +3,12 @@ package org.biosemantics.disambiguation.domain.impl;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.common.domain.Language;
-import org.biosemantics.conceptstore.common.domain.Source;
+import org.biosemantics.disambiguation.common.PropertyConstant;
 import org.neo4j.graphdb.Node;
 
 public class LabelImpl implements Label {
 
 	private static final long serialVersionUID = 2625024353276251601L;
-	public static final String LANGUAGE_PROPERTY = "language";
-	public static final String TEXT_PROPERTY = "text";
 	private Node underlyingNode;
 
 	public LabelImpl(Node node) {
@@ -19,23 +17,17 @@ public class LabelImpl implements Label {
 
 	@Override
 	public Language getLanguage() {
-		return LanguageImpl.valueOf((String) underlyingNode.getProperty(LANGUAGE_PROPERTY));
+		return Language.valueOf((String) underlyingNode.getProperty(PropertyConstant.LANGUAGE.name()));
 	}
 
 	@Override
 	public String getText() {
-		return (String) underlyingNode.getProperty(TEXT_PROPERTY);
+		return (String) underlyingNode.getProperty(PropertyConstant.TEXT.name());
 	}
 
 	@Override
 	public long getId() {
 		return underlyingNode.getId();
-	}
-
-	@Override
-	public Source[] getSources() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	public Node getUnderlyingNode() {
@@ -58,6 +50,11 @@ public class LabelImpl implements Label {
 	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
+	}
+
+	@Override
+	public String[] getTags() {
+		return (String[]) underlyingNode.getProperty(PropertyConstant.TAGS.name());
 	}
 
 }

@@ -1,15 +1,16 @@
 package org.biosemantics.disambiguation.service.impl;
 
+import static org.biosemantics.disambiguation.common.PropertyConstant.UUID;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.biosemantics.conceptstore.common.domain.Concept;
-import org.biosemantics.conceptstore.common.domain.ConceptRelationshipCategory;
+import org.biosemantics.conceptstore.common.domain.ConceptRelationshipSource;
 import org.biosemantics.conceptstore.common.domain.ConceptType;
-import org.biosemantics.conceptstore.common.domain.SemanticRelationshipCategory;
+import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
 import org.biosemantics.conceptstore.common.service.ConceptRelationshipStorageService;
 import org.biosemantics.conceptstore.utils.domain.impl.ConceptRelationshipImpl;
-import org.biosemantics.disambiguation.domain.impl.ConceptImpl;
 import org.biosemantics.disambiguation.service.local.AlgorithmServiceLocal;
 import org.biosemantics.disambiguation.service.local.ConceptStorageServiceLocal;
 import org.junit.Assert;
@@ -43,16 +44,16 @@ public class AlgorithmServiceTest extends AbstractTransactionalDataSource {
 		Concept end = TestUtility.createFullConcept();
 		String endUuid = conceptStorageServiceLocal.createConcept(ConceptType.CONCEPT, end);
 		ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(startUuid, middle1Uuid, null,
-				SemanticRelationshipCategory.RELATED, ConceptRelationshipCategory.AUTHORITATIVE, 1);
+				ConceptRelationshipType.RELATED, ConceptRelationshipSource.AUTHORITATIVE, 1);
 		conceptRelationshipStorageService.createRelationship(conceptRelationshipImpl);
 		conceptRelationshipImpl = new ConceptRelationshipImpl(middle1Uuid, middle2Uuid, null,
-				SemanticRelationshipCategory.RELATED, ConceptRelationshipCategory.AUTHORITATIVE, 1);
+				ConceptRelationshipType.RELATED, ConceptRelationshipSource.AUTHORITATIVE, 1);
 		conceptRelationshipStorageService.createRelationship(conceptRelationshipImpl);
 		conceptRelationshipImpl = new ConceptRelationshipImpl(middle2Uuid, middle3Uuid, null,
-				SemanticRelationshipCategory.RELATED, ConceptRelationshipCategory.AUTHORITATIVE, 1);
+				ConceptRelationshipType.RELATED, ConceptRelationshipSource.AUTHORITATIVE, 1);
 		conceptRelationshipStorageService.createRelationship(conceptRelationshipImpl);
 		conceptRelationshipImpl = new ConceptRelationshipImpl(middle3Uuid, endUuid, null,
-				SemanticRelationshipCategory.RELATED, ConceptRelationshipCategory.AUTHORITATIVE, 1);
+				ConceptRelationshipType.RELATED, ConceptRelationshipSource.AUTHORITATIVE, 1);
 		conceptRelationshipStorageService.createRelationship(conceptRelationshipImpl);
 
 		// find shortest path (start->middle1->middle2->middle3->middle4->end)
@@ -64,21 +65,14 @@ public class AlgorithmServiceTest extends AbstractTransactionalDataSource {
 			for (Relationship relationship : path.relationships()) {
 				relationshipList.add(relationship);
 			}
-			Assert.assertEquals(startUuid, relationshipList.get(0).getStartNode()
-					.getProperty(ConceptImpl.UUID_PROPERTY));
-			Assert.assertEquals(middle1Uuid, relationshipList.get(0).getEndNode()
-					.getProperty(ConceptImpl.UUID_PROPERTY));
-			Assert.assertEquals(middle1Uuid,
-					relationshipList.get(1).getStartNode().getProperty(ConceptImpl.UUID_PROPERTY));
-			Assert.assertEquals(middle2Uuid, relationshipList.get(1).getEndNode()
-					.getProperty(ConceptImpl.UUID_PROPERTY));
-			Assert.assertEquals(middle2Uuid,
-					relationshipList.get(2).getStartNode().getProperty(ConceptImpl.UUID_PROPERTY));
-			Assert.assertEquals(middle3Uuid, relationshipList.get(2).getEndNode()
-					.getProperty(ConceptImpl.UUID_PROPERTY));
-			Assert.assertEquals(middle3Uuid,
-					relationshipList.get(3).getStartNode().getProperty(ConceptImpl.UUID_PROPERTY));
-			Assert.assertEquals(endUuid, relationshipList.get(3).getEndNode().getProperty(ConceptImpl.UUID_PROPERTY));
+			Assert.assertEquals(startUuid, relationshipList.get(0).getStartNode().getProperty(UUID.name()));
+			Assert.assertEquals(middle1Uuid, relationshipList.get(0).getEndNode().getProperty(UUID.name()));
+			Assert.assertEquals(middle1Uuid, relationshipList.get(1).getStartNode().getProperty(UUID.name()));
+			Assert.assertEquals(middle2Uuid, relationshipList.get(1).getEndNode().getProperty(UUID.name()));
+			Assert.assertEquals(middle2Uuid, relationshipList.get(2).getStartNode().getProperty(UUID.name()));
+			Assert.assertEquals(middle3Uuid, relationshipList.get(2).getEndNode().getProperty(UUID.name()));
+			Assert.assertEquals(middle3Uuid, relationshipList.get(3).getStartNode().getProperty(UUID.name()));
+			Assert.assertEquals(endUuid, relationshipList.get(3).getEndNode().getProperty(UUID.name()));
 		}
 	}
 
@@ -96,20 +90,20 @@ public class AlgorithmServiceTest extends AbstractTransactionalDataSource {
 		Concept end = TestUtility.createFullConcept();
 		String endUuid = conceptStorageServiceLocal.createConcept(ConceptType.CONCEPT, end);
 		ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(startUuid, middle1Uuid, null,
-				SemanticRelationshipCategory.RELATED, ConceptRelationshipCategory.AUTHORITATIVE, 1);
+				ConceptRelationshipType.RELATED, ConceptRelationshipSource.AUTHORITATIVE, 1);
 		conceptRelationshipStorageService.createRelationship(conceptRelationshipImpl);
 		conceptRelationshipImpl = new ConceptRelationshipImpl(middle1Uuid, middle2Uuid, null,
-				SemanticRelationshipCategory.RELATED, ConceptRelationshipCategory.AUTHORITATIVE, 1);
+				ConceptRelationshipType.RELATED, ConceptRelationshipSource.AUTHORITATIVE, 1);
 		conceptRelationshipStorageService.createRelationship(conceptRelationshipImpl);
 		conceptRelationshipImpl = new ConceptRelationshipImpl(middle2Uuid, middle3Uuid, null,
-				SemanticRelationshipCategory.RELATED, ConceptRelationshipCategory.AUTHORITATIVE, 1);
+				ConceptRelationshipType.RELATED, ConceptRelationshipSource.AUTHORITATIVE, 1);
 		conceptRelationshipStorageService.createRelationship(conceptRelationshipImpl);
 		conceptRelationshipImpl = new ConceptRelationshipImpl(middle3Uuid, endUuid, null,
-				SemanticRelationshipCategory.RELATED, ConceptRelationshipCategory.AUTHORITATIVE, 1);
+				ConceptRelationshipType.RELATED, ConceptRelationshipSource.AUTHORITATIVE, 1);
 		conceptRelationshipStorageService.createRelationship(conceptRelationshipImpl);
 		// create a shorter path than one above (start->middle1->end)
 		conceptRelationshipImpl = new ConceptRelationshipImpl(middle1Uuid, endUuid, null,
-				SemanticRelationshipCategory.RELATED, ConceptRelationshipCategory.AUTHORITATIVE, 1);
+				ConceptRelationshipType.RELATED, ConceptRelationshipSource.AUTHORITATIVE, 1);
 		conceptRelationshipStorageService.createRelationship(conceptRelationshipImpl);
 
 		// find shortest path : in this case : (start->middle1->end)
@@ -121,13 +115,10 @@ public class AlgorithmServiceTest extends AbstractTransactionalDataSource {
 			for (Relationship relationship : path.relationships()) {
 				relationshipList.add(relationship);
 			}
-			Assert.assertEquals(startUuid, relationshipList.get(0).getStartNode()
-					.getProperty(ConceptImpl.UUID_PROPERTY));
-			Assert.assertEquals(middle1Uuid, relationshipList.get(0).getEndNode()
-					.getProperty(ConceptImpl.UUID_PROPERTY));
-			Assert.assertEquals(middle1Uuid,
-					relationshipList.get(1).getStartNode().getProperty(ConceptImpl.UUID_PROPERTY));
-			Assert.assertEquals(endUuid, relationshipList.get(1).getEndNode().getProperty(ConceptImpl.UUID_PROPERTY));
+			Assert.assertEquals(startUuid, relationshipList.get(0).getStartNode().getProperty(UUID.name()));
+			Assert.assertEquals(middle1Uuid, relationshipList.get(0).getEndNode().getProperty(UUID.name()));
+			Assert.assertEquals(middle1Uuid, relationshipList.get(1).getStartNode().getProperty(UUID.name()));
+			Assert.assertEquals(endUuid, relationshipList.get(1).getEndNode().getProperty(UUID.name()));
 		}
 	}
 }

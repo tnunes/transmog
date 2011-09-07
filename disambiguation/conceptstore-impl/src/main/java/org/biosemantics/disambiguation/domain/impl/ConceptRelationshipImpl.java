@@ -1,18 +1,17 @@
 package org.biosemantics.disambiguation.domain.impl;
 
 import org.biosemantics.conceptstore.common.domain.ConceptRelationship;
-import org.biosemantics.conceptstore.common.domain.ConceptRelationshipCategory;
-import org.biosemantics.conceptstore.common.domain.SemanticRelationshipCategory;
-import org.biosemantics.conceptstore.common.domain.Source;
+import org.biosemantics.conceptstore.common.domain.ConceptRelationshipSource;
+import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
+import org.biosemantics.disambiguation.common.PropertyConstant;
 import org.neo4j.graphdb.Relationship;
+import static org.biosemantics.disambiguation.common.PropertyConstant.*;
 
 import com.google.common.base.Objects;
 
 public class ConceptRelationshipImpl implements ConceptRelationship {
 
 	private static final long serialVersionUID = -1908002768195644773L;
-	public static final String UUID_PROPERTY = "uuid";
-	public static final String WEIGHT_PROERTY = "weight";
 	public static final String PREDICATE_CONCEPT_UUID_PROPERTY = "predicateConceptUuid";
 	public static final String RLSP_CATEGORY_PROPERTY = "rlspCategory";
 	public static final String SOURCES_PROPERTY = "sources";
@@ -29,12 +28,12 @@ public class ConceptRelationshipImpl implements ConceptRelationship {
 
 	@Override
 	public String getUuid() {
-		return (String) underlyingRelationship.getProperty(UUID_PROPERTY);
+		return (String) underlyingRelationship.getProperty(UUID.name());
 	}
 
 	@Override
 	public double getWeight() {
-		return (Double) underlyingRelationship.getProperty(WEIGHT_PROERTY);
+		return (Double) underlyingRelationship.getProperty(WEIGHT.name());
 	}
 
 	@Override
@@ -44,17 +43,17 @@ public class ConceptRelationshipImpl implements ConceptRelationship {
 
 	@Override
 	public String fromConcept() {
-		return (String) underlyingRelationship.getStartNode().getProperty(ConceptImpl.UUID_PROPERTY);
+		return (String) underlyingRelationship.getStartNode().getProperty(UUID.name());
 	}
 
 	@Override
 	public String toConcept() {
-		return (String) underlyingRelationship.getEndNode().getProperty(ConceptImpl.UUID_PROPERTY);
+		return (String) underlyingRelationship.getEndNode().getProperty(UUID.name());
 	}
 
 	@Override
-	public SemanticRelationshipCategory getSemanticRelationshipCategory() {
-		return SemanticRelationshipCategory.valueOf(underlyingRelationship.getType().name());
+	public ConceptRelationshipType getType() {
+		return ConceptRelationshipType.valueOf(underlyingRelationship.getType().name());
 	}
 
 	@Override
@@ -73,19 +72,18 @@ public class ConceptRelationshipImpl implements ConceptRelationship {
 
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this).add(UUID_PROPERTY, getUuid()).add(WEIGHT_PROERTY, getWeight())
+		return Objects.toStringHelper(this).add(UUID.name(), getUuid()).add(WEIGHT.name(), getWeight())
 				.add(PREDICATE_CONCEPT_UUID_PROPERTY, getPredicateConceptUuid()).toString();
 	}
 
 	@Override
-	public ConceptRelationshipCategory getConceptRelationshipCategory() {
-		return ConceptRelationshipCategory.fromId((Integer) underlyingRelationship.getProperty(RLSP_CATEGORY_PROPERTY));
+	public ConceptRelationshipSource getSource() {
+		return ConceptRelationshipSource.fromId((Integer) underlyingRelationship.getProperty(RLSP_CATEGORY_PROPERTY));
 	}
 
 	@Override
-	public Source[] getSources() {
-		// TODO Auto-generated method stub
-		return null;
+	public String[] getTags() {
+		return (String[]) underlyingRelationship.getProperty(PropertyConstant.TAGS.name());
 	}
 
 }

@@ -7,6 +7,8 @@ import org.biosemantics.conceptstore.common.domain.Concept;
 import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.common.domain.Language;
 import org.biosemantics.conceptstore.utils.validation.ValidationUtility;
+import org.biosemantics.disambiguation.common.PropertyConstant;
+import org.biosemantics.disambiguation.common.RelationshipTypeConstant;
 import org.biosemantics.disambiguation.domain.impl.ConceptImpl;
 import org.biosemantics.disambiguation.domain.impl.LabelImpl;
 import org.biosemantics.disambiguation.service.local.LabelStorageServiceLocal;
@@ -33,7 +35,7 @@ public class LabelStorageServiceLocalImpl implements LabelStorageServiceLocal {
 
 	public LabelStorageServiceLocalImpl(GraphStorageTemplate graphStorageTemplate) {
 		this.graphStorageTemplate = graphStorageTemplate;
-		this.labelParentNode = this.graphStorageTemplate.getParentNode(DefaultRelationshipType.LABELS);
+		this.labelParentNode = this.graphStorageTemplate.getParentNode(RelationshipTypeConstant.LABELS);
 		this.index = graphStorageTemplate.getIndexManager().forNodes(LABEL_INDEX);
 		((LuceneIndex<Node>) this.index).setCacheCapacity(TEXT_INDEX_KEY, 300000);
 		logger.debug("setting cache for label-text index to 300000");
@@ -54,9 +56,9 @@ public class LabelStorageServiceLocalImpl implements LabelStorageServiceLocal {
 
 	public Node createLabelNode(Label label) {
 		Node labelNode = graphStorageTemplate.getGraphDatabaseService().createNode();
-		labelParentNode.createRelationshipTo(labelNode, DefaultRelationshipType.LABEL);
-		labelNode.setProperty(LabelImpl.LANGUAGE_PROPERTY, label.getLanguage().getLabel());
-		labelNode.setProperty(LabelImpl.TEXT_PROPERTY, label.getText());
+		labelParentNode.createRelationshipTo(labelNode, RelationshipTypeConstant.LABEL);
+		labelNode.setProperty(PropertyConstant.LANGUAGE.name(), label.getLanguage().name());
+		labelNode.setProperty(PropertyConstant.TEXT.name(), label.getText());
 		index.add(labelNode, TEXT_INDEX_KEY, label.getText());
 		return labelNode;
 	}
@@ -73,7 +75,7 @@ public class LabelStorageServiceLocalImpl implements LabelStorageServiceLocal {
 		IndexHits<Node> nodes = index.get(TEXT_INDEX_KEY, text);
 		Collection<Label> labels = new HashSet<Label>();
 		for (Node node : nodes) {
-			if (((String) node.getProperty(LabelImpl.TEXT_PROPERTY)).equals(text)) {
+			if (((String) node.getProperty(PropertyConstant.TEXT.name())).equals(text)) {
 				labels.add(new LabelImpl(node));
 			}
 		}
@@ -92,8 +94,8 @@ public class LabelStorageServiceLocalImpl implements LabelStorageServiceLocal {
 		IndexHits<Node> nodes = index.get(TEXT_INDEX_KEY, text);
 		try {
 			for (Node node : nodes) {
-				if (((String) node.getProperty(LabelImpl.TEXT_PROPERTY)).equals(text)
-						&& language.getLabel().equals((String) node.getProperty(LabelImpl.LANGUAGE_PROPERTY))) {
+				if (((String) node.getProperty(PropertyConstant.TEXT.name())).equals(text)
+						&& language.name().equals((String) node.getProperty(PropertyConstant.LANGUAGE.name()))) {
 					found = node;
 					break;
 				}
@@ -110,7 +112,8 @@ public class LabelStorageServiceLocalImpl implements LabelStorageServiceLocal {
 		IndexHits<Node> nodes = index.get(TEXT_INDEX_KEY, labelText);
 		Collection<Concept> concepts = new HashSet<Concept>();
 		for (Node node : nodes) {
-			Iterable<Relationship> rlsps = node.getRelationships(DefaultRelationshipType.HAS_LABEL, Direction.INCOMING);
+			Iterable<Relationship> rlsps = node
+					.getRelationships(RelationshipTypeConstant.HAS_LABEL, Direction.INCOMING);
 			for (Relationship relationship : rlsps) {
 				concepts.add(new ConceptImpl(relationship.getOtherNode(node)));
 			}

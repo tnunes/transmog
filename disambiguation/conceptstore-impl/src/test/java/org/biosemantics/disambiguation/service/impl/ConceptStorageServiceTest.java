@@ -6,10 +6,10 @@ import org.biosemantics.conceptstore.common.domain.Concept;
 import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.common.domain.LabelType;
+import org.biosemantics.conceptstore.common.domain.Language;
 import org.biosemantics.conceptstore.common.domain.Notation;
 import org.biosemantics.conceptstore.utils.domain.impl.ConceptImpl;
 import org.biosemantics.conceptstore.utils.domain.impl.ConceptLabelImpl;
-import org.biosemantics.disambiguation.domain.impl.LanguageImpl;
 import org.biosemantics.disambiguation.service.local.ConceptStorageServiceLocal;
 import org.biosemantics.disambiguation.service.local.LabelStorageServiceLocal;
 import org.biosemantics.disambiguation.service.local.NotationStorageServiceLocal;
@@ -29,8 +29,8 @@ public class ConceptStorageServiceTest extends AbstractTransactionalDataSource {
 	@Test
 	public void createConceptWithLabelsOnly() {
 		ConceptImpl conceptImpl = new ConceptImpl();
-		ConceptLabelImpl label1 = new ConceptLabelImpl(LanguageImpl.DE, "deutch", LabelType.ALTERNATE);
-		ConceptLabelImpl label2 = new ConceptLabelImpl(LanguageImpl.ES, "espanol", LabelType.ALTERNATE);
+		ConceptLabelImpl label1 = new ConceptLabelImpl(Language.DE, "deutch", LabelType.ALTERNATE);
+		ConceptLabelImpl label2 = new ConceptLabelImpl(Language.ES, "espanol", LabelType.ALTERNATE);
 		conceptImpl.addConceptLabels(label1);
 		conceptImpl.addConceptLabels(label2);
 		String uuid = conceptStorageServiceLocal.createConcept(ConceptType.CONCEPT, conceptImpl);

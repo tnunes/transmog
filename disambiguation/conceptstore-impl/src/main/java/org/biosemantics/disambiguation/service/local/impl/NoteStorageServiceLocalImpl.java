@@ -5,7 +5,8 @@ import java.util.Date;
 
 import org.biosemantics.conceptstore.common.domain.Note;
 import org.biosemantics.conceptstore.utils.validation.ValidationUtility;
-import org.biosemantics.disambiguation.domain.impl.NoteImpl;
+import org.biosemantics.disambiguation.common.PropertyConstant;
+import org.biosemantics.disambiguation.common.RelationshipTypeConstant;
 import org.biosemantics.disambiguation.service.local.NoteStorageServiceLocal;
 import org.neo4j.graphdb.Node;
 import org.springframework.beans.factory.annotation.Required;
@@ -19,7 +20,7 @@ public class NoteStorageServiceLocalImpl implements NoteStorageServiceLocal {
 
 	public NoteStorageServiceLocalImpl(GraphStorageTemplate graphStorageTemplate) {
 		this.graphStorageTemplate = graphStorageTemplate;
-		this.noteParentNode = this.graphStorageTemplate.getParentNode(DefaultRelationshipType.NOTES);
+		this.noteParentNode = this.graphStorageTemplate.getParentNode(RelationshipTypeConstant.NOTES);
 	}
 
 	@Required
@@ -36,12 +37,12 @@ public class NoteStorageServiceLocalImpl implements NoteStorageServiceLocal {
 	@Override
 	public Node createNoteNode(Note note) {
 		Node noteNode = graphStorageTemplate.getGraphDatabaseService().createNode();
-		noteParentNode.createRelationshipTo(noteNode, DefaultRelationshipType.NOTE);
-		noteNode.setProperty(NoteImpl.NOTE_TYPE_PROPERTY, note.getNoteType().getId());
-		noteNode.setProperty(NoteImpl.LANGUAGE_PROPERTY, note.getLanguage().getLabel());
-		noteNode.setProperty(NoteImpl.TEXT_PROPERTY, note.getText());
+		noteParentNode.createRelationshipTo(noteNode, RelationshipTypeConstant.NOTE);
+		noteNode.setProperty(PropertyConstant.TYPE.name(), note.getNoteType().getId());
+		noteNode.setProperty(PropertyConstant.LANGUAGE.name(), note.getLanguage().name());
+		noteNode.setProperty(PropertyConstant.TEXT.name(), note.getText());
 		String nowDateTime = sdf.format(new Date());
-		noteNode.setProperty(NoteImpl.DATE_TIME_PROPERTY, nowDateTime);
+		noteNode.setProperty(PropertyConstant.DATE_TIME.name(), nowDateTime);
 		return noteNode;
 	}
 }

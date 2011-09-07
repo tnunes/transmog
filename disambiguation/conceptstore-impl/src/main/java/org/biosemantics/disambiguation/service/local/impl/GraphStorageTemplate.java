@@ -2,6 +2,7 @@ package org.biosemantics.disambiguation.service.local.impl;
 
 import java.util.Map;
 
+import org.biosemantics.disambiguation.common.RelationshipTypeConstant;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.index.IndexManager;
@@ -13,7 +14,7 @@ public interface GraphStorageTemplate {
 
 	public GraphDatabaseService getGraphDatabaseService();
 
-	public Node getParentNode(DefaultRelationshipType defaultRelationshipType);
+	public Node getParentNode(RelationshipTypeConstant relationshipTypeConstant);
 	
 	public IndexManager getIndexManager();
 

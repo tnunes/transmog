@@ -1,5 +1,7 @@
 package org.biosemantics.disambiguation.domain.impl;
 
+import static org.biosemantics.disambiguation.common.PropertyConstant.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -8,10 +10,11 @@ import java.util.List;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.biosemantics.conceptstore.common.domain.Concept;
 import org.biosemantics.conceptstore.common.domain.ConceptLabel;
+import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.LabelType;
 import org.biosemantics.conceptstore.common.domain.Notation;
 import org.biosemantics.conceptstore.common.domain.Note;
-import org.biosemantics.disambiguation.service.local.impl.DefaultRelationshipType;
+import org.biosemantics.disambiguation.common.RelationshipTypeConstant;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -21,10 +24,7 @@ import org.slf4j.LoggerFactory;
 public class ConceptImpl implements Concept {
 
 	private static final long serialVersionUID = 851453341589506946L;
-	public static final String UUID_PROPERTY = "uuid";
-	public static final String TAGS_PROPERTY = "tags";
 	private static final Logger logger = LoggerFactory.getLogger(ConceptImpl.class);
-	public static final String LABEL_TYPE_RLSP_PROPERTY = "LABEL_TYPE";
 	private Node underlyingNode;
 
 	public ConceptImpl(Node node) {
@@ -37,7 +37,7 @@ public class ConceptImpl implements Concept {
 
 	@Override
 	public String getUuid() {
-		return (String) underlyingNode.getProperty(UUID_PROPERTY);
+		return (String) underlyingNode.getProperty(UUID.name());
 	}
 
 	/*
@@ -49,10 +49,10 @@ public class ConceptImpl implements Concept {
 	public Collection<ConceptLabel> getLabels() {
 		long start = System.currentTimeMillis();
 		Collection<ConceptLabel> labels = new HashSet<ConceptLabel>();
-		Iterable<Relationship> relationships = underlyingNode.getRelationships(DefaultRelationshipType.HAS_LABEL,
+		Iterable<Relationship> relationships = underlyingNode.getRelationships(RelationshipTypeConstant.HAS_LABEL,
 				Direction.OUTGOING);
 		for (Relationship relationship : relationships) {
-			LabelType labelType = LabelType.fromId(((Integer) relationship.getProperty(LABEL_TYPE_RLSP_PROPERTY)));
+			LabelType labelType = LabelType.fromId(((Integer) relationship.getProperty(LABEL_TYPE.name())));
 			labels.add(new ConceptLabelImpl(new LabelImpl(relationship.getEndNode()), labelType));
 		}
 		logger.trace("in getLabelsByType time taken: {}(ms)", (System.currentTimeMillis() - start));
@@ -62,7 +62,7 @@ public class ConceptImpl implements Concept {
 	@Override
 	public Collection<Notation> getNotations() {
 		final List<Notation> notations = new ArrayList<Notation>();
-		Iterable<Relationship> relationships = underlyingNode.getRelationships(DefaultRelationshipType.HAS_NOTATION,
+		Iterable<Relationship> relationships = underlyingNode.getRelationships(RelationshipTypeConstant.HAS_NOTATION,
 				Direction.OUTGOING);
 		for (Relationship rel : relationships) {
 			notations.add(new NotationImpl(rel.getEndNode()));
@@ -73,7 +73,7 @@ public class ConceptImpl implements Concept {
 	@Override
 	public Collection<Note> getNotes() {
 		final List<Note> notes = new ArrayList<Note>();
-		Iterable<Relationship> relationships = underlyingNode.getRelationships(DefaultRelationshipType.HAS_NOTE,
+		Iterable<Relationship> relationships = underlyingNode.getRelationships(RelationshipTypeConstant.HAS_NOTE,
 				Direction.OUTGOING);
 		for (Relationship rel : relationships) {
 			notes.add(new NoteImpl(rel.getEndNode()));
@@ -83,7 +83,7 @@ public class ConceptImpl implements Concept {
 
 	@Override
 	public String[] getTags() {
-		return (String[]) underlyingNode.getProperty(TAGS_PROPERTY);
+		return (String[]) underlyingNode.getProperty(TAGS.name());
 	}
 
 	@Override
@@ -102,6 +102,12 @@ public class ConceptImpl implements Concept {
 	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
+	}
+
+	@Override
+	public ConceptType getType() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

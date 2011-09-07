@@ -1,18 +1,22 @@
 package org.biosemantics.disambiguation.service.local.impl;
 
+import static org.biosemantics.disambiguation.common.IndexConstant.*;
+import static org.biosemantics.disambiguation.common.PropertyConstant.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
 import org.biosemantics.conceptstore.common.domain.Concept;
 import org.biosemantics.conceptstore.common.domain.ConceptLabel;
+import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
 import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.Notation;
 import org.biosemantics.conceptstore.common.domain.Note;
-import org.biosemantics.conceptstore.common.domain.SemanticRelationshipCategory;
 import org.biosemantics.conceptstore.common.domain.extn.ChildConcept;
 import org.biosemantics.conceptstore.utils.service.UuidGeneratorService;
 import org.biosemantics.conceptstore.utils.validation.ValidationUtility;
+import org.biosemantics.disambiguation.common.RelationshipTypeConstant;
 import org.biosemantics.disambiguation.domain.impl.ConceptImpl;
 import org.biosemantics.disambiguation.service.local.ConceptStorageServiceLocal;
 import org.biosemantics.disambiguation.service.local.LabelStorageServiceLocal;
@@ -21,7 +25,6 @@ import org.biosemantics.disambiguation.service.local.NoteStorageServiceLocal;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.TraversalPosition;
@@ -38,9 +41,6 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 
 	private final GraphStorageTemplate graphStorageTemplate;
 	private final Node conceptParentNode;
-	private final Node predicateParentNode;
-	private final Node domainParentNode;
-	private final Node conceptSchemeParentNode;
 	private final Index<Node> index;
 	private final Index<Node> fulltextIndex;
 	private UuidGeneratorService uuidGeneratorService;
@@ -50,10 +50,6 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 	private ValidationUtility validationUtility;
 	private boolean optimise = true;
 
-	public static final String CONCEPT_INDEX = "concept";
-	public static final String CONCEPT_FULLTEXT_INDEX = "concept_fulltext";
-	public static final String UUID_INDEX_KEY = "concept_uuid";
-	public static final String FULLTEXT_INDEX_KEY = "concept_all_text";
 	public static final String DELIMITER = " ";
 
 	// private static final Logger logger = LoggerFactory.getLogger(ConceptStorageServiceLocalImpl.class);
@@ -61,27 +57,11 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 	public ConceptStorageServiceLocalImpl(GraphStorageTemplate graphStorageTemplate) {
 		// FIXME two enums relationshipTypes and ConceptTypes with certain overlap between them.
 		this.graphStorageTemplate = graphStorageTemplate;
-		this.conceptParentNode = this.graphStorageTemplate.getParentNode(DefaultRelationshipType.CONCEPTS);
-		this.predicateParentNode = this.graphStorageTemplate.getParentNode(DefaultRelationshipType.PREDICATES);
-		this.domainParentNode = this.graphStorageTemplate.getParentNode(DefaultRelationshipType.DOMAINS);
-		this.conceptSchemeParentNode = this.graphStorageTemplate.getParentNode(DefaultRelationshipType.CONCEPT_SCHEMES);
-		this.index = graphStorageTemplate.getIndexManager().forNodes(CONCEPT_INDEX);
-		this.fulltextIndex = graphStorageTemplate.getIndexManager().forNodes(CONCEPT_FULLTEXT_INDEX,
+		this.conceptParentNode = this.graphStorageTemplate.getParentNode(RelationshipTypeConstant.CONCEPTS);
+		this.index = graphStorageTemplate.getIndexManager().forNodes(CONCEPT_INDEX.name());
+		this.fulltextIndex = graphStorageTemplate.getIndexManager().forNodes(CONCEPT_FULL_TEXT_KEY.name(),
 				MapUtil.stringMap("provider", "lucene", "type", "fulltext"));
 	}
-
-	public static final RelationshipType hasBroaderRlspType = new RelationshipType() {
-		@Override
-		public String name() {
-			return SemanticRelationshipCategory.HAS_BROADER_CONCEPT.name();
-		}
-	};
-	public static final RelationshipType hasNarrowerRlspType = new RelationshipType() {
-		@Override
-		public String name() {
-			return SemanticRelationshipCategory.HAS_NARROWER_CONCEPT.name();
-		}
-	};
 
 	@Required
 	public void setUuidGeneratorService(UuidGeneratorService uuidGeneratorService) {
@@ -116,10 +96,10 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 		Collection<String> fullTextStrings = new HashSet<String>();
 		fullTextStrings.add(uuid);
 		Node conceptNode = graphStorageTemplate.getGraphDatabaseService().createNode();
-		Node parentNode = getParentNode(conceptType);
-		conceptNode.setProperty(ConceptImpl.UUID_PROPERTY, uuid);
-		index.add(conceptNode, UUID_INDEX_KEY, uuid);
-		parentNode.createRelationshipTo(conceptNode, DefaultRelationshipType.CONCEPT);
+		conceptNode.setProperty(UUID.name(), uuid);
+		index.add(conceptNode, CONCEPT_UUID_KEY.name(), uuid);
+		index.add(conceptNode, CONCEPT_TYPE_KEY.name(), concept.getType().name());
+		conceptParentNode.createRelationshipTo(conceptNode, RelationshipTypeConstant.CONCEPT);
 		// create labels
 		for (ConceptLabel label : concept.getLabels()) {
 			Node labelNode = null;
@@ -130,8 +110,8 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 			if (labelNode == null) {
 				labelNode = labelStorageServiceLocal.createLabelNode(label);
 			}
-			Relationship relationship = conceptNode.createRelationshipTo(labelNode, DefaultRelationshipType.HAS_LABEL);
-			relationship.setProperty(ConceptImpl.LABEL_TYPE_RLSP_PROPERTY, label.getLabelType().getId());
+			Relationship relationship = conceptNode.createRelationshipTo(labelNode, RelationshipTypeConstant.HAS_LABEL);
+			relationship.setProperty(LABEL_TYPE.name(), label.getLabelType().getId());
 			fullTextStrings.add(label.getText());
 		}
 		// create notations
@@ -146,7 +126,7 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 				if (notationNode == null) {
 					notationNode = notationStorageServiceLocal.createNotationNode(notation);
 				}
-				conceptNode.createRelationshipTo(notationNode, DefaultRelationshipType.HAS_NOTATION);
+				conceptNode.createRelationshipTo(notationNode, RelationshipTypeConstant.HAS_NOTATION);
 				fullTextStrings.add(notation.getCode());
 			}
 		}
@@ -156,7 +136,7 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 			for (Note note : concept.getNotes()) {
 				// notes are not optimised as the probability of getting the same note is too low
 				Node noteNode = noteStorageServiceLocal.createNoteNode(note);
-				conceptNode.createRelationshipTo(noteNode, DefaultRelationshipType.HAS_NOTE);
+				conceptNode.createRelationshipTo(noteNode, RelationshipTypeConstant.HAS_NOTE);
 				fullTextStrings.add(note.getText());
 			}
 		}
@@ -165,27 +145,8 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 		for (String string : fullTextStrings) {
 			fullText.append(string).append(DELIMITER);
 		}
-		fulltextIndex.add(conceptNode, FULLTEXT_INDEX_KEY, fullText.toString());
+		fulltextIndex.add(conceptNode, CONCEPT_FULL_TEXT_KEY.name(), fullText.toString());
 		return uuid;
-	}
-
-	private Node getParentNode(ConceptType conceptType) {
-		Node parentNode = null;
-		switch (conceptType) {
-		case CONCEPT:
-			parentNode = conceptParentNode;
-			break;
-		case PREDICATE:
-			parentNode = predicateParentNode;
-			break;
-		case CONCEPT_SCHEME:
-			parentNode = conceptSchemeParentNode;
-			break;
-		case DOMAIN:
-			parentNode = domainParentNode;
-			break;
-		}
-		return parentNode;
 	}
 
 	@Override
@@ -195,12 +156,12 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 
 	@Override
 	public Node getConceptNode(String uuid) {
-		return index.get(UUID_INDEX_KEY, uuid).getSingle();
+		return index.get(CONCEPT_UUID_KEY.name(), uuid).getSingle();
 	}
 
 	@Override
 	public Collection<Concept> getConceptsByFullTextQuery(String fulltextQuery, int maxResults) {
-		IndexHits<Node> nodes = fulltextIndex.query(FULLTEXT_INDEX_KEY, fulltextQuery);
+		IndexHits<Node> nodes = fulltextIndex.query(CONCEPT_FULL_TEXT_KEY.name(), fulltextQuery);
 		Collection<Concept> concepts = new HashSet<Concept>(maxResults);
 		int ctr = 0;
 		for (Node node : nodes) {
@@ -218,9 +179,13 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 	public Collection<String> getConceptsByNotation(Notation notation) {
 		Collection<String> uuids = new HashSet<String>();
 		Node node = notationStorageServiceLocal.getNotationNode(notation.getCode(), notation.getDomainUuid());
-		Iterable<Relationship> relationships = node.getRelationships(DefaultRelationshipType.HAS_NOTATION);
-		for (Relationship relationship : relationships) {
-			uuids.add((String) relationship.getOtherNode(node).getProperty(ConceptImpl.UUID_PROPERTY));
+		if (node == null) {
+			throw new IllegalArgumentException("no notation found for " + notation.toString());
+		} else {
+			Iterable<Relationship> relationships = node.getRelationships(RelationshipTypeConstant.HAS_NOTATION);
+			for (Relationship relationship : relationships) {
+				uuids.add((String) relationship.getOtherNode(node).getProperty(UUID.name()));
+			}
 		}
 		return uuids;
 
@@ -231,8 +196,8 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 		Node conceptNode = getConceptNode(uuid);
 		Collection<ChildConcept> childConcepts = new ArrayList<ChildConcept>();
 		Traverser children = conceptNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
-				ReturnableEvaluator.ALL_BUT_START_NODE, hasNarrowerRlspType, Direction.OUTGOING, hasBroaderRlspType,
-				Direction.INCOMING);
+				ReturnableEvaluator.ALL_BUT_START_NODE, ConceptRelationshipType.HAS_NARROWER_CONCEPT,
+				Direction.OUTGOING, ConceptRelationshipType.HAS_BROADER_CONCEPT, Direction.INCOMING);
 		for (Node child : children) {
 			TraversalPosition currentPosition = children.currentPosition();
 			ChildConcept childConcept = new ChildConcept(new ConceptImpl(child), currentPosition.depth());
