@@ -7,8 +7,8 @@ import java.sql.Statement;
 
 import javax.sql.DataSource;
 
-import org.biosemantics.conceptstore.common.domain.ConceptRelationshipCategory;
-import org.biosemantics.conceptstore.common.domain.SemanticRelationshipCategory;
+import org.biosemantics.conceptstore.common.domain.ConceptRelationshipSource;
+import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
 import org.biosemantics.conceptstore.utils.domain.impl.ConceptRelationshipImpl;
 import org.biosemantics.datasource.umls.cache.KeyValue;
 import org.biosemantics.datasource.umls.cache.UmlsCacheService;
@@ -60,12 +60,12 @@ public class ConceptFactualRlspWriter {
 				// factual relationships are stored in the form cui2->rel->cui1 hence inverting subject object here
 				String subjectValue = umlsCacheService.getValue(cui1);
 				String objectValue = umlsCacheService.getValue(cui2);
-				SemanticRelationshipCategory semanticRelationshipCategory = UmlsUtils.getConceptRelationshipType(rel);
+				ConceptRelationshipType semanticRelationshipCategory = UmlsUtils.getConceptRelationshipType(rel);
 				if (subjectValue != null && objectValue != null) {
 					if (!checkExists(subjectValue, objectValue, semanticRelationshipCategory)) {
 						ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(subjectValue,
 								objectValue, null, semanticRelationshipCategory,
-								ConceptRelationshipCategory.AUTHORITATIVE, 1);
+								ConceptRelationshipSource.AUTHORITATIVE, 1);
 						bulkImportService.createRelationship(conceptRelationshipImpl);
 						// add to cache
 						umlsCacheService.add(new KeyValue(subjectValue + objectValue
@@ -85,7 +85,7 @@ public class ConceptFactualRlspWriter {
 	}
 
 	private boolean checkExists(String subjectValue, String objectValue,
-			SemanticRelationshipCategory semanticRelationshipCategory) {
+			ConceptRelationshipType semanticRelationshipCategory) {
 		switch (semanticRelationshipCategory) {
 		case RELATED:
 			if (umlsCacheService.getValue(subjectValue + objectValue + semanticRelationshipCategory.name()) == null) {
@@ -99,9 +99,9 @@ public class ConceptFactualRlspWriter {
 			}
 		case HAS_BROADER_CONCEPT:
 			if (umlsCacheService.getValue(subjectValue + objectValue
-					+ SemanticRelationshipCategory.HAS_BROADER_CONCEPT.name()) == null) {
+					+ ConceptRelationshipType.HAS_BROADER_CONCEPT.name()) == null) {
 				if (umlsCacheService.getValue(objectValue + subjectValue
-						+ SemanticRelationshipCategory.HAS_NARROWER_CONCEPT.name()) == null) {
+						+ ConceptRelationshipType.HAS_NARROWER_CONCEPT.name()) == null) {
 					return false;
 				} else {
 					return true;
@@ -111,9 +111,9 @@ public class ConceptFactualRlspWriter {
 			}
 		case HAS_NARROWER_CONCEPT:
 			if (umlsCacheService.getValue(subjectValue + objectValue
-					+ SemanticRelationshipCategory.HAS_NARROWER_CONCEPT.name()) == null) {
+					+ ConceptRelationshipType.HAS_NARROWER_CONCEPT.name()) == null) {
 				if (umlsCacheService.getValue(objectValue + subjectValue
-						+ SemanticRelationshipCategory.HAS_BROADER_CONCEPT.name()) == null) {
+						+ ConceptRelationshipType.HAS_BROADER_CONCEPT.name()) == null) {
 					return false;
 				} else {
 					return true;

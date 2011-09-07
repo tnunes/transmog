@@ -2,10 +2,9 @@ package org.biosemantics.datasource.umls.concept;
 
 import java.util.Set;
 
+import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
 import org.biosemantics.conceptstore.common.domain.LabelType;
 import org.biosemantics.conceptstore.common.domain.Language;
-import org.biosemantics.conceptstore.common.domain.SemanticRelationshipCategory;
-import org.biosemantics.disambiguation.domain.impl.LanguageImpl;
 
 public abstract class UmlsUtils {
 
@@ -15,14 +14,61 @@ public abstract class UmlsUtils {
 	public static final String NOCODE = "NOCODE";
 	public static final int BATCH_SIZE = 10000;
 
+	/*
+	 * EN("en", "eng"), EU("eu", "baq"), CS("cs", "cze"), DA("da", "dan"), NL("nl", "dut"), FI("fi", "fin"), FR("fr",
+			"fre"), DE("de", "ger"), HE("he", "heb"), HU("hu", "hun"), IT("it", "ita"), JA("ja", "jpn"), KO("ko", "kor"), LV(
+			"lv", "lav"), NO("no", "nor"), PT("pt", "por"), RU("ru", "rus"), HR("hr", "hrv"), ES("es", "spa"), SV("sv",
+			"swe");
+	 */
+	// FIXME
 	public static Language getLanguage(String lat) {
-		String lowerCaseLat = lat.toLowerCase();
-		// http://www.loc.gov/standards/iso639-2/php/code_changes.php SCR has
-		// been deprecated
-		if (lat.equalsIgnoreCase(SCR)) {
-			lowerCaseLat = LanguageImpl.HR.getIso6392Code();
+		if (lat.equalsIgnoreCase("eng")) {
+			return Language.EN;
+		} else if (lat.equalsIgnoreCase("baq")) {
+			return Language.EU;
+		} else if (lat.equalsIgnoreCase("cze")) {
+			return Language.CS;
+		} else if (lat.equalsIgnoreCase("dan")) {
+			return Language.DA;
+		} else if (lat.equalsIgnoreCase("dut")) {
+			return Language.NL;
+		} else if (lat.equalsIgnoreCase("fin")) {
+			return Language.FI;
+		} else if (lat.equalsIgnoreCase("fre")) {
+			return Language.FR;
+		} else if (lat.equalsIgnoreCase("ger")) {
+			return Language.DE;
+		} else if (lat.equalsIgnoreCase("heb")) {
+			return Language.HE;
+		} else if (lat.equalsIgnoreCase("hun")) {
+			return Language.HU;
+		} else if (lat.equalsIgnoreCase("ita")) {
+			return Language.IT;
+		} else if (lat.equalsIgnoreCase("jpn")) {
+			return Language.JA;
+		} else if (lat.equalsIgnoreCase("kor")) {
+			return Language.KO;
+		} else if (lat.equalsIgnoreCase("lav")) {
+			return Language.LV;
+		} else if (lat.equalsIgnoreCase("nor")) {
+			return Language.NO;
+		} else if (lat.equalsIgnoreCase("por")) {
+			return Language.PT;
+		} else if (lat.equalsIgnoreCase("rus")) {
+			return Language.RU;
+		} else if (lat.equalsIgnoreCase("hrv")) {
+			return Language.HR;
+		} else if (lat.equalsIgnoreCase("spa")) {
+			return Language.ES;
+		} else if (lat.equalsIgnoreCase("swe")) {
+			return Language.SV;
+			// old code for HRV is SCR
+		} else if (lat.equalsIgnoreCase(SCR)) {
+			return Language.HR;
 		}
-		return LanguageUtility.getLanguageByIso6392Code(lowerCaseLat);
+		//default
+		
+		return Language.EN;
 	}
 
 	public static LabelType getLabelType(String ts, String isPref, String stt) {
@@ -53,13 +99,13 @@ public abstract class UmlsUtils {
 	XR	Not related, no mapping
 	Empty relationship 
 	 */
-	public static SemanticRelationshipCategory getConceptRelationshipType(String rel) {
-		SemanticRelationshipCategory semanticRelationshipCategory = SemanticRelationshipCategory.RELATED;
+	public static ConceptRelationshipType getConceptRelationshipType(String rel) {
+		ConceptRelationshipType semanticRelationshipCategory = ConceptRelationshipType.RELATED;
 		String relUpper = rel.toUpperCase().trim();
 		if (relUpper.equals("CHD") || relUpper.equals("RN")) {
-			semanticRelationshipCategory = SemanticRelationshipCategory.HAS_NARROWER_CONCEPT;
+			semanticRelationshipCategory = ConceptRelationshipType.HAS_NARROWER_CONCEPT;
 		} else if (relUpper.equals("PAR") || relUpper.equals("RB")) {
-			semanticRelationshipCategory = SemanticRelationshipCategory.HAS_BROADER_CONCEPT;
+			semanticRelationshipCategory = ConceptRelationshipType.HAS_BROADER_CONCEPT;
 		}
 		return semanticRelationshipCategory;
 	}

@@ -7,8 +7,8 @@ import java.sql.Statement;
 
 import javax.sql.DataSource;
 
-import org.biosemantics.conceptstore.common.domain.ConceptRelationshipCategory;
-import org.biosemantics.conceptstore.common.domain.SemanticRelationshipCategory;
+import org.biosemantics.conceptstore.common.domain.ConceptRelationshipSource;
+import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
 import org.biosemantics.conceptstore.utils.domain.impl.ConceptRelationshipImpl;
 import org.biosemantics.datasource.umls.cache.UmlsCacheService;
 import org.biosemantics.disambiguation.bulkimport.service.BulkImportService;
@@ -63,8 +63,8 @@ public class SchemeRlspWriter {
 				String objectValue = umlsCacheService.getValue(sty2);
 				if (subjectValue != null && predicateValue != null && objectValue != null) {
 					ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(subjectValue,
-							objectValue, predicateValue, SemanticRelationshipCategory.RELATED,
-							ConceptRelationshipCategory.AUTHORITATIVE, 1);
+							objectValue, predicateValue, ConceptRelationshipType.RELATED,
+							ConceptRelationshipSource.AUTHORITATIVE, 1);
 					bulkImportService.validateAndCreateRelationship(conceptRelationshipImpl);
 					ctr++;
 				} else {

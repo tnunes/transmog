@@ -16,12 +16,12 @@ import javax.sql.DataSource;
 import org.biosemantics.conceptstore.common.domain.ConceptLabel;
 import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.LabelType;
+import org.biosemantics.conceptstore.common.domain.Language;
 import org.biosemantics.conceptstore.utils.domain.impl.LabelImpl;
 import org.biosemantics.datasource.umls.cache.KeyValue;
 import org.biosemantics.datasource.umls.cache.UmlsCacheService;
 import org.biosemantics.disambiguation.bulkimport.service.BulkImportService;
 import org.biosemantics.disambiguation.domain.impl.ConceptLabelImpl;
-import org.biosemantics.disambiguation.domain.impl.LanguageImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
@@ -93,12 +93,12 @@ public class PredicateWriter {
 			List<ConceptLabel> conceptLabels = new ArrayList<ConceptLabel>();
 			String value = umlsCacheService.getValue(predicateString);
 			if (value == null) {
-				long prefLabelNodeId = bulkImportService.createLabel(new LabelImpl(LanguageImpl.EN, predicateString));
+				long prefLabelNodeId = bulkImportService.createLabel(new LabelImpl(Language.EN, predicateString));
 				conceptLabels.add(new ConceptLabelImpl(new LabelImpl(null, String.valueOf(prefLabelNodeId)),
 						LabelType.PREFERRED));
 
 				String updatedPredicateString = predicateString.replace('_', ' ');
-				long altLabelNodeId = bulkImportService.createLabel(new LabelImpl(LanguageImpl.EN,
+				long altLabelNodeId = bulkImportService.createLabel(new LabelImpl(Language.EN,
 						updatedPredicateString));
 				conceptLabels.add(new ConceptLabelImpl(new LabelImpl(null, String.valueOf(altLabelNodeId)),
 						LabelType.ALTERNATE));

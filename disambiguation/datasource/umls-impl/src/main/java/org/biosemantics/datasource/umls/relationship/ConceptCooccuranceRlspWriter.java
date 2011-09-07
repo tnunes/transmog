@@ -7,8 +7,8 @@ import java.sql.Statement;
 
 import javax.sql.DataSource;
 
-import org.biosemantics.conceptstore.common.domain.ConceptRelationshipCategory;
-import org.biosemantics.conceptstore.common.domain.SemanticRelationshipCategory;
+import org.biosemantics.conceptstore.common.domain.ConceptRelationshipSource;
+import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
 import org.biosemantics.conceptstore.utils.domain.impl.ConceptRelationshipImpl;
 import org.biosemantics.datasource.umls.cache.KeyValue;
 import org.biosemantics.datasource.umls.cache.UmlsCacheService;
@@ -61,8 +61,8 @@ public class ConceptCooccuranceRlspWriter {
 				if (subjectValue != null && objectValue != null) {
 					if (!checkExists(subjectValue, objectValue)) {
 						ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(subjectValue,
-								objectValue, null, SemanticRelationshipCategory.RELATED,
-								ConceptRelationshipCategory.AUTHORITATIVE, 1);
+								objectValue, null, ConceptRelationshipType.RELATED,
+								ConceptRelationshipSource.AUTHORITATIVE, 1);
 						bulkImportService.createRelationship(conceptRelationshipImpl);
 						// add to cache
 						umlsCacheService.add(new KeyValue(subjectValue + objectValue, subjectValue));

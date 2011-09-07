@@ -17,6 +17,6 @@
 		<appender-ref ref="FILE" />
 	</root>
 	<logger name="org.biosemantics">
-		<level value="debug" />
+		<level value="info" />
 	</logger>
 </configuration>

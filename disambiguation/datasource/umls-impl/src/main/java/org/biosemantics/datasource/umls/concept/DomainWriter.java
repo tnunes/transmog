@@ -16,12 +16,12 @@ import org.biosemantics.conceptstore.common.domain.ConceptLabel;
 import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.common.domain.LabelType;
+import org.biosemantics.conceptstore.common.domain.Language;
 import org.biosemantics.conceptstore.utils.domain.impl.LabelImpl;
 import org.biosemantics.datasource.umls.cache.KeyValue;
 import org.biosemantics.datasource.umls.cache.UmlsCacheService;
 import org.biosemantics.disambiguation.bulkimport.service.BulkImportService;
 import org.biosemantics.disambiguation.domain.impl.ConceptLabelImpl;
-import org.biosemantics.disambiguation.domain.impl.LanguageImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
@@ -70,7 +70,7 @@ public class DomainWriter {
 			while (rs.next()) {
 				List<ConceptLabel> conceptLabels = new ArrayList<ConceptLabel>();
 				String rsab = rs.getString("RSAB");
-				Label rsabLabel = new LabelImpl(LanguageImpl.EN, rsab);
+				Label rsabLabel = new LabelImpl(Language.EN, rsab);
 				long rsabLabelId = bulkImportService.createLabel(rsabLabel);
 				conceptLabels.add(new ConceptLabelImpl(new LabelImpl(null, String.valueOf(rsabLabelId)),
 						LabelType.HIDDEN));
@@ -82,7 +82,7 @@ public class DomainWriter {
 					String son = labelResultSet.getString("SON");
 					String sonLabelId = umlsCacheService.getValue(son);
 					if (sonLabelId == null) {
-						Label sonLabel = new LabelImpl(LanguageImpl.EN, son);
+						Label sonLabel = new LabelImpl(Language.EN, son);
 						fullText.add(son);
 						sonLabelId = String.valueOf(bulkImportService.createLabel(sonLabel));
 						conceptLabels.add(new ConceptLabelImpl(new LabelImpl(null, sonLabelId), LabelType.ALTERNATE));
