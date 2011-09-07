@@ -5,7 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import org.biosemantics.disambiguation.script.OutputSink;
-import org.biosemantics.disambiguation.script.OutputObject;
+import org.biosemantics.disambiguation.script.WritableObject;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
@@ -35,7 +35,7 @@ public class CsvFileOutputSink implements OutputSink {
 	}
 
 	@Override
-	public void write(OutputObject object) {
+	public void write(WritableObject object) {
 		csvWriter.writeNext(object.toStringArray());
 		try {
 			csvWriter.flush();
@@ -47,7 +47,6 @@ public class CsvFileOutputSink implements OutputSink {
 	@Override
 	public void destroy() {
 		try {
-
 			csvWriter.close();
 		} catch (IOException e) {
 			throw new RuntimeException(e);

@@ -3,9 +3,9 @@ package org.biosemantics.disambiguation.script.impl;
 import java.util.List;
 
 import org.biosemantics.conceptstore.common.domain.Label;
-import org.biosemantics.disambiguation.script.OutputObject;
+import org.biosemantics.disambiguation.script.WritableObject;
 
-public class AmbiguousLabelOutputObject implements OutputObject {
+public class AmbiguousLabelOutputObject implements WritableObject {
 
 	private Label label;
 	private List<String> concepts;

@@ -1,11 +1,13 @@
 package org.biosemantics.disambiguation.script.impl;
 
+import static org.biosemantics.disambiguation.common.PropertyConstant.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.time.StopWatch;
 import org.biosemantics.conceptstore.common.domain.LabelType;
-import org.biosemantics.disambiguation.domain.impl.ConceptImpl;
+import org.biosemantics.disambiguation.common.PropertyConstant;
 import org.biosemantics.disambiguation.domain.impl.LabelImpl;
 import org.biosemantics.disambiguation.domain.impl.LanguageImpl;
 import org.biosemantics.disambiguation.script.AmbiguousLabelScript;
@@ -52,9 +54,8 @@ public class AmbiguousLabelScriptImpl implements AmbiguousLabelScript {
 			List<String> conceptDetails = new ArrayList<String>();
 			for (Relationship labelRelationship : labelRelationships) {
 				Node conceptNode = labelRelationship.getOtherNode(labelNode);
-				StringBuilder conceptDetail = new StringBuilder(
-						(String) conceptNode.getProperty(ConceptImpl.UUID_PROPERTY)).append("|").append(
-						getPreferredLabelText(conceptNode));
+				StringBuilder conceptDetail = new StringBuilder((String) conceptNode.getProperty(UUID.name())).append(
+						"|").append(getPreferredLabelText(conceptNode));
 				conceptDetails.add(conceptDetail.toString());
 			}
 			stopWatch.stop();
@@ -63,7 +64,7 @@ public class AmbiguousLabelScriptImpl implements AmbiguousLabelScript {
 			if (conceptDetails.size() > 1) {
 				AmbiguousLabelOutputObject object = new AmbiguousLabelOutputObject(new LabelImpl(labelNode),
 						conceptDetails);
-				logger.debug("{},{},{}", new Object[]{totalLabelCounter, stopWatch.getTime(), conceptDetails.size()});
+				logger.debug("{},{},{}", new Object[] { totalLabelCounter, stopWatch.getTime(), conceptDetails.size() });
 				outputSink.write(object);
 			}
 		}
@@ -74,10 +75,10 @@ public class AmbiguousLabelScriptImpl implements AmbiguousLabelScript {
 		Iterable<Relationship> relationships = conceptNode.getRelationships(DefaultRelationshipType.HAS_LABEL);
 
 		for (Relationship relationship : relationships) {
-			if (relationship.getProperty(ConceptImpl.LABEL_TYPE_RLSP_PROPERTY).equals(LabelType.PREFERRED.name())
-					&& ((String) relationship.getOtherNode(conceptNode).getProperty(LabelImpl.LANGUAGE_PROPERTY))
+			if (relationship.getProperty(LABEL_TYPE.name()).equals(LabelType.PREFERRED.name())
+					&& ((String) relationship.getOtherNode(conceptNode).getProperty(PropertyConstant.LANGUAGE.name()))
 							.equals(LanguageImpl.EN.name())) {
-				label = (String) relationship.getOtherNode(conceptNode).getProperty(LabelImpl.TEXT_PROPERTY);
+				label = (String) relationship.getOtherNode(conceptNode).getProperty(PropertyConstant.TEXT.name());
 				break;
 			}
 		}
