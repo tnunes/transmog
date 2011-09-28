@@ -64,7 +64,7 @@ public class SchemeRlspWriter {
 				if (subjectValue != null && predicateValue != null && objectValue != null) {
 					ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(subjectValue,
 							objectValue, predicateValue, ConceptRelationshipType.RELATED,
-							ConceptRelationshipSource.AUTHORITATIVE, 1);
+							ConceptRelationshipSource.AUTHORITATIVE, Integer.MAX_VALUE);
 					bulkImportService.validateAndCreateRelationship(conceptRelationshipImpl);
 					ctr++;
 				} else {

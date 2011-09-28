@@ -24,7 +24,7 @@ public class ConceptCooccuranceRlspWriter {
 	private DataSource dataSource;
 	private Connection connection;
 	private Statement statement;
-	private static final String GET_ALL_COC_RLSP = "select CUI1, CUI2 from MRCOC where CUI1 != CUI2";
+	private static final String GET_ALL_COC_RLSP = "select CUI1, CUI2, COF from MRCOC where CUI1 != CUI2";
 	private static final Logger logger = LoggerFactory.getLogger(ConceptCooccuranceRlspWriter.class);// NOPMD
 
 	@Required
@@ -56,13 +56,14 @@ public class ConceptCooccuranceRlspWriter {
 			while (rs.next()) {
 				String cui1 = rs.getString("CUI1");
 				String cui2 = rs.getString("CUI2");
+				int cof = rs.getInt("COF");
 				String subjectValue = umlsCacheService.getValue(cui1);
 				String objectValue = umlsCacheService.getValue(cui2);
 				if (subjectValue != null && objectValue != null) {
 					if (!checkExists(subjectValue, objectValue)) {
 						ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(subjectValue,
 								objectValue, null, ConceptRelationshipType.RELATED,
-								ConceptRelationshipSource.AUTHORITATIVE, 1);
+								ConceptRelationshipSource.AUTHORITATIVE, cof);
 						bulkImportService.createRelationship(conceptRelationshipImpl);
 						// add to cache
 						umlsCacheService.add(new KeyValue(subjectValue + objectValue, subjectValue));

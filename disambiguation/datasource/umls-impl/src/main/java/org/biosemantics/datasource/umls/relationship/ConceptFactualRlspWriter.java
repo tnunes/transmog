@@ -65,7 +65,7 @@ public class ConceptFactualRlspWriter {
 					if (!checkExists(subjectValue, objectValue, semanticRelationshipCategory)) {
 						ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(subjectValue,
 								objectValue, null, semanticRelationshipCategory,
-								ConceptRelationshipSource.AUTHORITATIVE, 1);
+								ConceptRelationshipSource.AUTHORITATIVE, Integer.MAX_VALUE);
 						bulkImportService.createRelationship(conceptRelationshipImpl);
 						// add to cache
 						umlsCacheService.add(new KeyValue(subjectValue + objectValue

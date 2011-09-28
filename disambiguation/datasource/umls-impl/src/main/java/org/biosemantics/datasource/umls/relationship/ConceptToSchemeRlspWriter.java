@@ -61,7 +61,7 @@ public class ConceptToSchemeRlspWriter {
 				if (subjectValue != null && objectValue != null) {
 					ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(subjectValue,
 							objectValue, null, ConceptRelationshipType.IN_SCHEME,
-							ConceptRelationshipSource.AUTHORITATIVE, 1);
+							ConceptRelationshipSource.AUTHORITATIVE, Integer.MAX_VALUE);
 					bulkImportService.validateAndCreateRelationship(conceptRelationshipImpl);
 					if (++ctr % UmlsUtils.BATCH_SIZE == 0) {
 						logger.info("inserted concept-scheme rlsp: {}", ctr);
