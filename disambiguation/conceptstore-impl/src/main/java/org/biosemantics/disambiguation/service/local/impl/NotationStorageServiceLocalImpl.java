@@ -1,5 +1,8 @@
 package org.biosemantics.disambiguation.service.local.impl;
 
+import static org.biosemantics.disambiguation.common.IndexConstant.NOTATION_CODE_KEY;
+import static org.biosemantics.disambiguation.common.IndexConstant.NOTATION_INDEX;
+
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -28,8 +31,6 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 	private final Node notationParentNode;
 	private final Index<Node> index;
 	private ValidationUtility validationUtility;
-	public static final String NOTATION_INDEX = "notation";
-	public static final String CODE_INDEX_KEY = "notation_code";
 
 	private static final Logger logger = LoggerFactory.getLogger(NotationStorageServiceLocalImpl.class);
 
@@ -37,8 +38,8 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 		super();
 		this.graphStorageTemplate = graphStorageTemplate;
 		this.notationParentNode = this.graphStorageTemplate.getParentNode(RelationshipTypeConstant.NOTATIONS);
-		this.index = graphStorageTemplate.getIndexManager().forNodes(NOTATION_INDEX);
-		((LuceneIndex<Node>) this.index).setCacheCapacity(CODE_INDEX_KEY, 300000);
+		this.index = graphStorageTemplate.getIndexManager().forNodes(NOTATION_INDEX.name());
+		((LuceneIndex<Node>) this.index).setCacheCapacity(NOTATION_CODE_KEY.name(), 300000);
 		logger.debug("setting cache for notation-code index to 300000");
 	}
 
@@ -63,7 +64,7 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 		notationNode.setProperty(PropertyConstant.DOMAIN.name(), notation.getDomain());
 		notationNode.setProperty(PropertyConstant.DOMAIN_TYPE.name(), notation.getDomainType().getId());
 		notationNode.setProperty(PropertyConstant.CODE.name(), notation.getCode());
-		index.add(notationNode, CODE_INDEX_KEY, notation.getCode());
+		index.add(notationNode, NOTATION_CODE_KEY.name(), notation.getCode());
 		return notationNode;
 	}
 
@@ -76,7 +77,7 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 	@Override
 	public Collection<Notation> getNotationsByCode(String code) {
 		validationUtility.validateString(code, "code");
-		IndexHits<Node> nodes = index.get(CODE_INDEX_KEY, code);
+		IndexHits<Node> nodes = index.get(NOTATION_CODE_KEY.name(), code);
 		Collection<Notation> notations = new HashSet<Notation>();
 		for (Node node : nodes) {
 			if (((String) node.getProperty(PropertyConstant.CODE.name())).equals(code)) {
@@ -89,7 +90,7 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 	@Override
 	public IndexHits<Node> getNotationNodes(String code) {
 		validationUtility.validateString(code, "code");
-		return index.get(CODE_INDEX_KEY, code);
+		return index.get(NOTATION_CODE_KEY.name(), code);
 	}
 
 	@Override
@@ -100,7 +101,7 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 	@Override
 	public Node getNotationNode(String code, String domainUuid) {
 		Node found = null;
-		IndexHits<Node> nodes = index.get(CODE_INDEX_KEY, code);
+		IndexHits<Node> nodes = index.get(NOTATION_CODE_KEY.name(), code);
 		try {
 			for (Node node : nodes) {
 				if (((String) node.getProperty(PropertyConstant.CODE.name())).equals(code)
@@ -118,7 +119,7 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 	@Override
 	public Collection<Concept> getAllRelatedConcepts(String notationCode) {
 		validationUtility.validateString(notationCode, "notationCode");
-		IndexHits<Node> nodes = index.get(CODE_INDEX_KEY, notationCode);
+		IndexHits<Node> nodes = index.get(NOTATION_CODE_KEY.name(), notationCode);
 		Collection<Concept> concepts = new HashSet<Concept>();
 		for (Node node : nodes) {
 			Iterable<Relationship> rlsps = node.getRelationships(RelationshipTypeConstant.HAS_NOTATION,
@@ -133,7 +134,7 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 	@Override
 	public Collection<Concept> getAllRelatedConcepts(Notation notation) {
 		validationUtility.validateNotation(notation);
-		IndexHits<Node> nodes = index.get(CODE_INDEX_KEY, notation.getCode());
+		IndexHits<Node> nodes = index.get(NOTATION_CODE_KEY.name(), notation.getCode());
 		Collection<Concept> concepts = new HashSet<Concept>();
 		for (Node node : nodes) {
 			if (((String) node.getProperty(PropertyConstant.DOMAIN.name())).equals(notation.getDomain())) {

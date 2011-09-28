@@ -1,5 +1,8 @@
 package org.biosemantics.disambiguation.service.local.impl;
 
+import static org.biosemantics.disambiguation.common.IndexConstant.LABEL_INDEX;
+import static org.biosemantics.disambiguation.common.IndexConstant.LABEL_TEXT_KEY;
+
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -22,22 +25,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.transaction.annotation.Transactional;
-
 public class LabelStorageServiceLocalImpl implements LabelStorageServiceLocal {
 
 	private final GraphStorageTemplate graphStorageTemplate;
 	private final Node labelParentNode;
 	private final Index<Node> index;
 	private ValidationUtility validationUtility;
-	public static final String LABEL_INDEX = "label";
-	public static final String TEXT_INDEX_KEY = "label_text";
 	private static final Logger logger = LoggerFactory.getLogger(LabelStorageServiceLocalImpl.class);
 
 	public LabelStorageServiceLocalImpl(GraphStorageTemplate graphStorageTemplate) {
 		this.graphStorageTemplate = graphStorageTemplate;
 		this.labelParentNode = this.graphStorageTemplate.getParentNode(RelationshipTypeConstant.LABELS);
-		this.index = graphStorageTemplate.getIndexManager().forNodes(LABEL_INDEX);
-		((LuceneIndex<Node>) this.index).setCacheCapacity(TEXT_INDEX_KEY, 300000);
+		this.index = graphStorageTemplate.getIndexManager().forNodes(LABEL_INDEX.name());
+		((LuceneIndex<Node>) this.index).setCacheCapacity(LABEL_TEXT_KEY.name(), 300000);
 		logger.debug("setting cache for label-text index to 300000");
 	}
 
@@ -59,7 +59,7 @@ public class LabelStorageServiceLocalImpl implements LabelStorageServiceLocal {
 		labelParentNode.createRelationshipTo(labelNode, RelationshipTypeConstant.LABEL);
 		labelNode.setProperty(PropertyConstant.LANGUAGE.name(), label.getLanguage().name());
 		labelNode.setProperty(PropertyConstant.TEXT.name(), label.getText());
-		index.add(labelNode, TEXT_INDEX_KEY, label.getText());
+		index.add(labelNode, LABEL_TEXT_KEY.name(), label.getText());
 		return labelNode;
 	}
 
@@ -72,7 +72,7 @@ public class LabelStorageServiceLocalImpl implements LabelStorageServiceLocal {
 	@Override
 	public Collection<Label> getLabelsByText(String text) {
 		validationUtility.validateString(text, "text");
-		IndexHits<Node> nodes = index.get(TEXT_INDEX_KEY, text);
+		IndexHits<Node> nodes = index.get( LABEL_TEXT_KEY.name(), text);
 		Collection<Label> labels = new HashSet<Label>();
 		for (Node node : nodes) {
 			if (((String) node.getProperty(PropertyConstant.TEXT.name())).equals(text)) {
@@ -91,7 +91,7 @@ public class LabelStorageServiceLocalImpl implements LabelStorageServiceLocal {
 	@Override
 	public Node getLabelNode(String text, Language language) {
 		Node found = null;
-		IndexHits<Node> nodes = index.get(TEXT_INDEX_KEY, text);
+		IndexHits<Node> nodes = index.get( LABEL_TEXT_KEY.name(), text);
 		try {
 			for (Node node : nodes) {
 				if (((String) node.getProperty(PropertyConstant.TEXT.name())).equals(text)
@@ -109,7 +109,7 @@ public class LabelStorageServiceLocalImpl implements LabelStorageServiceLocal {
 	@Override
 	public Collection<Concept> getAllRelatedConceptsForLabelText(String labelText) {
 		validationUtility.validateString(labelText, "labelText");
-		IndexHits<Node> nodes = index.get(TEXT_INDEX_KEY, labelText);
+		IndexHits<Node> nodes = index.get( LABEL_TEXT_KEY.name(), labelText);
 		Collection<Concept> concepts = new HashSet<Concept>();
 		for (Node node : nodes) {
 			Iterable<Relationship> rlsps = node
