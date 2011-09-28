@@ -51,7 +51,7 @@ public class NotationStorageServiceTest extends AbstractTransactionalDataSource 
 		long id = notationStorageServiceLocal.createNotation(notationImpl);
 		Notation retrieved = notationStorageServiceLocal.getNotation(id);
 		Assert.assertEquals(notationImpl.getCode(), retrieved.getCode());
-		Assert.assertEquals(notationImpl.getDomainUuid(), retrieved.getDomainUuid());
+		Assert.assertEquals(notationImpl.getDomain(), retrieved.getDomain());
 	}
 
 	@Test(expected = IllegalArgumentException.class)

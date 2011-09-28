@@ -1,6 +1,7 @@
 package org.biosemantics.disambiguation.domain.impl;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.biosemantics.conceptstore.common.domain.DomainType;
 import org.biosemantics.conceptstore.common.domain.Notation;
 import org.biosemantics.disambiguation.common.PropertyConstant;
 import org.neo4j.graphdb.Node;
@@ -21,8 +22,13 @@ public class NotationImpl implements Notation {
 	}
 
 	@Override
-	public String getDomainUuid() {
+	public String getDomain() {
 		return (String) underlyingNode.getProperty(PropertyConstant.DOMAIN.name());
+	}
+
+	@Override
+	public DomainType getDomainType() {
+		return DomainType.fromId((Integer) underlyingNode.getProperty(PropertyConstant.DOMAIN_TYPE.name()));
 	}
 
 	@Override

@@ -55,7 +55,7 @@ public class ConceptDetail extends VerticalLayout {
 		notationTable.addContainerProperty("Notation Code", String.class, null);
 		notationTable.addContainerProperty("Domain", String.class, null);
 		for (Notation notation : notations) {
-			notationTable.addItem(new Object[] { notation.getCode(), notation.getDomainUuid() }, notation.getId());
+			notationTable.addItem(new Object[] { notation.getCode(), notation.getDomain() }, notation.getId());
 		}
 		System.err.println(this.getApplication());
 		return notationTable;

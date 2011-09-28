@@ -1,11 +1,15 @@
 package org.biosemantics.disambiguation.service.local.impl;
 
-import static org.biosemantics.disambiguation.common.IndexConstant.*;
-import static org.biosemantics.disambiguation.common.PropertyConstant.*;
+import static org.biosemantics.disambiguation.common.IndexConstant.CONCEPT_FULL_TEXT_KEY;
+import static org.biosemantics.disambiguation.common.IndexConstant.CONCEPT_INDEX;
+import static org.biosemantics.disambiguation.common.IndexConstant.CONCEPT_TYPE_KEY;
+import static org.biosemantics.disambiguation.common.IndexConstant.CONCEPT_UUID_KEY;
+import static org.biosemantics.disambiguation.common.PropertyConstant.LABEL_TYPE;
+import static org.biosemantics.disambiguation.common.PropertyConstant.UUID;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 
 import org.biosemantics.conceptstore.common.domain.Concept;
 import org.biosemantics.conceptstore.common.domain.ConceptLabel;
@@ -13,7 +17,7 @@ import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
 import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.Notation;
 import org.biosemantics.conceptstore.common.domain.Note;
-import org.biosemantics.conceptstore.common.domain.extn.ChildConcept;
+import org.biosemantics.conceptstore.common.domain.extn.RelatedConcept;
 import org.biosemantics.conceptstore.utils.service.UuidGeneratorService;
 import org.biosemantics.conceptstore.utils.validation.ValidationUtility;
 import org.biosemantics.disambiguation.common.RelationshipTypeConstant;
@@ -27,7 +31,6 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
-import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.graphdb.index.Index;
@@ -52,10 +55,12 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 
 	public static final String DELIMITER = " ";
 
-	// private static final Logger logger = LoggerFactory.getLogger(ConceptStorageServiceLocalImpl.class);
+	// private static final Logger logger =
+	// LoggerFactory.getLogger(ConceptStorageServiceLocalImpl.class);
 
 	public ConceptStorageServiceLocalImpl(GraphStorageTemplate graphStorageTemplate) {
-		// FIXME two enums relationshipTypes and ConceptTypes with certain overlap between them.
+		// FIXME two enums relationshipTypes and ConceptTypes with certain
+		// overlap between them.
 		this.graphStorageTemplate = graphStorageTemplate;
 		this.conceptParentNode = this.graphStorageTemplate.getParentNode(RelationshipTypeConstant.CONCEPTS);
 		this.index = graphStorageTemplate.getIndexManager().forNodes(CONCEPT_INDEX.name());
@@ -103,7 +108,8 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 		// create labels
 		for (ConceptLabel label : concept.getLabels()) {
 			Node labelNode = null;
-			// if optimise is set to true only create labels if needed otherwise link with existing labels
+			// if optimise is set to true only create labels if needed otherwise
+			// link with existing labels
 			if (optimise) {
 				labelNode = labelStorageServiceLocal.getLabelNode(label.getText(), label.getLanguage());
 			}
@@ -117,11 +123,12 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 		// create notations
 		if (!CollectionUtils.isEmpty(concept.getNotations())) {
 			for (Notation notation : concept.getNotations()) {
-				// if optimise is set to true only create notations if needed otherwise link with existing notations
+				// if optimise is set to true only create notations if needed
+				// otherwise link with existing notations
 				Node notationNode = null;
 				if (optimise) {
 					notationNode = notationStorageServiceLocal.getNotationNode(notation.getCode(),
-							notation.getDomainUuid());
+							notation.getDomain());
 				}
 				if (notationNode == null) {
 					notationNode = notationStorageServiceLocal.createNotationNode(notation);
@@ -134,7 +141,8 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 		// create notes
 		if (!CollectionUtils.isEmpty(concept.getNotes())) {
 			for (Note note : concept.getNotes()) {
-				// notes are not optimised as the probability of getting the same note is too low
+				// notes are not optimised as the probability of getting the
+				// same note is too low
 				Node noteNode = noteStorageServiceLocal.createNoteNode(note);
 				conceptNode.createRelationshipTo(noteNode, RelationshipTypeConstant.HAS_NOTE);
 				fullTextStrings.add(note.getText());
@@ -176,34 +184,23 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 	}
 
 	@Override
-	public Collection<String> getConceptsByNotation(Notation notation) {
-		Collection<String> uuids = new HashSet<String>();
-		Node node = notationStorageServiceLocal.getNotationNode(notation.getCode(), notation.getDomainUuid());
-		if (node == null) {
-			throw new IllegalArgumentException("no notation found for " + notation.toString());
-		} else {
-			Iterable<Relationship> relationships = node.getRelationships(RelationshipTypeConstant.HAS_NOTATION);
-			for (Relationship relationship : relationships) {
-				uuids.add((String) relationship.getOtherNode(node).getProperty(UUID.name()));
-			}
-		}
-		return uuids;
-
+	public Iterator<RelatedConcept> getChildConcepts(String uuid) {
+		Node conceptNode = getConceptNode(uuid);
+		Traverser traverser = conceptNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
+				ReturnableEvaluator.ALL_BUT_START_NODE, ConceptRelationshipType.HAS_NARROWER_CONCEPT,
+				Direction.OUTGOING, ConceptRelationshipType.HAS_BROADER_CONCEPT, Direction.INCOMING);
+		RelatedConceptIterator relatedConceptIterator = new RelatedConceptIterator(traverser);
+		return relatedConceptIterator;
 	}
 
 	@Override
-	public Collection<ChildConcept> getAllChildren(String uuid) {
+	public Iterator<RelatedConcept> getParentConcepts(String uuid) {
 		Node conceptNode = getConceptNode(uuid);
-		Collection<ChildConcept> childConcepts = new ArrayList<ChildConcept>();
-		Traverser children = conceptNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
+		Traverser traverser = conceptNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
 				ReturnableEvaluator.ALL_BUT_START_NODE, ConceptRelationshipType.HAS_NARROWER_CONCEPT,
-				Direction.OUTGOING, ConceptRelationshipType.HAS_BROADER_CONCEPT, Direction.INCOMING);
-		for (Node child : children) {
-			TraversalPosition currentPosition = children.currentPosition();
-			ChildConcept childConcept = new ChildConcept(new ConceptImpl(child), currentPosition.depth());
-			childConcepts.add(childConcept);
-		}
-		return childConcepts;
+				Direction.INCOMING, ConceptRelationshipType.HAS_BROADER_CONCEPT, Direction.OUTGOING);
+		RelatedConceptIterator relatedConceptIterator = new RelatedConceptIterator(traverser);
+		return relatedConceptIterator;
 	}
 
 }

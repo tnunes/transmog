@@ -60,7 +60,8 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 		// create new node if none exists
 		Node notationNode = graphStorageTemplate.getGraphDatabaseService().createNode();
 		notationParentNode.createRelationshipTo(notationNode, RelationshipTypeConstant.NOTATION);
-		notationNode.setProperty(PropertyConstant.DOMAIN.name(), notation.getDomainUuid());
+		notationNode.setProperty(PropertyConstant.DOMAIN.name(), notation.getDomain());
+		notationNode.setProperty(PropertyConstant.DOMAIN_TYPE.name(), notation.getDomainType().getId());
 		notationNode.setProperty(PropertyConstant.CODE.name(), notation.getCode());
 		index.add(notationNode, CODE_INDEX_KEY, notation.getCode());
 		return notationNode;
@@ -83,6 +84,12 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 			}
 		}
 		return notations;
+	}
+
+	@Override
+	public IndexHits<Node> getNotationNodes(String code) {
+		validationUtility.validateString(code, "code");
+		return index.get(CODE_INDEX_KEY, code);
 	}
 
 	@Override
@@ -123,4 +130,21 @@ public class NotationStorageServiceLocalImpl implements NotationStorageServiceLo
 		return concepts;
 	}
 
+	@Override
+	public Collection<Concept> getAllRelatedConcepts(Notation notation) {
+		validationUtility.validateNotation(notation);
+		IndexHits<Node> nodes = index.get(CODE_INDEX_KEY, notation.getCode());
+		Collection<Concept> concepts = new HashSet<Concept>();
+		for (Node node : nodes) {
+			if (((String) node.getProperty(PropertyConstant.DOMAIN.name())).equals(notation.getDomain())) {
+				Iterable<Relationship> rlsps = node.getRelationships(RelationshipTypeConstant.HAS_NOTATION,
+						Direction.INCOMING);
+				for (Relationship relationship : rlsps) {
+					concepts.add(new ConceptImpl(relationship.getOtherNode(node)));
+				}
+			}
+
+		}
+		return concepts;
+	}
 }

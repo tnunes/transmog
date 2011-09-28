@@ -291,7 +291,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 	public long createNotation(Notation notation) {
 		Map<String, Object> properties = new HashMap<String, Object>();
 		String domainUuid = (String) batchInserter.getGraphDbService()
-				.getNodeById(Long.valueOf(notation.getDomainUuid())).getProperty(UUID.name());
+				.getNodeById(Long.valueOf(notation.getDomain())).getProperty(UUID.name());
 		properties.put(PropertyConstant.DOMAIN.name(), domainUuid);
 		properties.put(PropertyConstant.CODE.name(), notation.getCode());
 		long notationNodeId = batchInserter.createNode(properties);
