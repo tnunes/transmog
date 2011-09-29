@@ -5,24 +5,22 @@ import java.util.Collection;
 import java.util.List;
 
 import org.biosemantics.peregrine.rmi.PeregrineRmiManager;
-import org.biosemantics.vo.peregrine.WsExternalId;
 import org.biosemantics.vo.peregrine.WsResultConcept;
 import org.biosemantics.vo.peregrine.WsTerm;
 import org.biosemantics.vo.peregrine.WsWord;
 import org.erasmusmc.ids.DatabaseID;
-import org.erasmusmc.ontology.Concept;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PeregrineManager {
+public class IndexServicePeregrineImpl implements IndexService {
 	private static final int PEREGRINE_RMI_PORT = 1011;
 	private static final String PEREGRINE_RMI_SERVER = "mi-bios1";
 	private static final boolean PEREGRINE_DISAMBIGUATION = false;
 
 	private PeregrineRmiManager peregrineRmiManager;
-	private static final Logger logger = LoggerFactory.getLogger(PeregrineManager.class);
+	private static final Logger logger = LoggerFactory.getLogger(IndexServicePeregrineImpl.class);
 
-	public PeregrineManager() throws Exception {
+	public IndexServicePeregrineImpl() throws Exception {
 		peregrineRmiManager = new PeregrineRmiManager(PEREGRINE_RMI_SERVER, PEREGRINE_RMI_PORT,
 				PEREGRINE_DISAMBIGUATION);
 	}
@@ -65,7 +63,7 @@ public class PeregrineManager {
 	// return cuis;
 	// }
 
-	public Collection<String> getConcepts(String text) {
+	public Collection<String> index(String text) {
 		List<WsResultConcept> wsResultConcepts = peregrineRmiManager.index(text);
 		logger.info("total concepts found in text: {}", wsResultConcepts.size());
 		Collection<WsResultConcept> purgedConcepts = purgeAmbiguousConcepts(wsResultConcepts);
@@ -125,8 +123,8 @@ public class PeregrineManager {
 	}
 
 	public static void main(String[] args) throws Exception {
-		PeregrineManager peregrineFingerprintReader = new PeregrineManager();
-		Collection<String> cuis = peregrineFingerprintReader.getConcepts(" malaria is cold");
+		IndexServicePeregrineImpl peregrineFingerprintReader = new IndexServicePeregrineImpl();
+		Collection<String> cuis = peregrineFingerprintReader.index(" malaria is cold");
 		logger.info("{}", cuis);
 	}
 

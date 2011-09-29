@@ -19,7 +19,7 @@ public class UmlsWsdImpl {
 	private RelatedCuiReader relatedCuiReader;
 	private AmbiguousWordReader ambiguousWordReader;
 	NlmWsdRecordReader nlmWsdRecordReader;
-	PeregrineManager peregrineManager;
+	IndexServicePeregrineImpl peregrineManager;
 
 	private void init() throws Exception {
 		classPathXmlApplicationContext = new ClassPathXmlApplicationContext(CONTEXTS);
@@ -28,7 +28,7 @@ public class UmlsWsdImpl {
 		relatedCuiReader = new RelatedCuiReader(classPathXmlApplicationContext);
 		ambiguousWordReader = new AmbiguousWordReader();
 		nlmWsdRecordReader = new NlmWsdRecordReader();
-		peregrineManager = new PeregrineManager();
+		peregrineManager = new IndexServicePeregrineImpl();
 		logger.debug("init completed.");
 	}
 
@@ -59,7 +59,7 @@ public class UmlsWsdImpl {
 		logger.debug("{} records read for ambiguous word {}", new Object[] { records.size(), ambiguousWord });
 		for (NlmWsdRecord nlmWsdRecord : records) {
 			logger.info("record number------------------------------------- {}", nlmWsdRecord.getRecordNumber());
-			Collection<String> peregrineCuis = peregrineManager.getConcepts(nlmWsdRecord.getTitleText() + " "
+			Collection<String> peregrineCuis = peregrineManager.index(nlmWsdRecord.getTitleText() + " "
 					+ nlmWsdRecord.getAbstractText());
 			// remove all ambiguous concepts from fingerprint.
 			logger.debug("{} non ambiguous cuis found in fingerprint", peregrineCuis.size());
