@@ -35,7 +35,7 @@ public class AlgorithmServiceLocalImpl implements AlgorithmServiceLocal {
 
 					@Override
 					public Double getCost(Relationship relationship, Direction direction) {
-						return Double.valueOf("" + relationship.getProperty(WEIGHT.name()));
+						return Double.valueOf(1 / (Integer) relationship.getProperty(WEIGHT.name()));
 					}
 				});
 		WeightedPath path = finder.findSinglePath(from, to);
