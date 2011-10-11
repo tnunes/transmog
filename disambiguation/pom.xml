@@ -198,7 +198,5 @@
 		<module>conceptstore-bulk-import-impl</module>
 		<module>conceptstore-scripts</module>
 		<module>conceptstore-web</module>
-		<module>transmog-server</module>
-		<module>transmog-server-impl</module>
 	</modules>
 </project>
