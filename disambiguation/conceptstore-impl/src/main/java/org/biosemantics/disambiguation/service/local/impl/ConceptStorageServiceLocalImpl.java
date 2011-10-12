@@ -203,4 +203,10 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 		return relatedConceptIterator;
 	}
 
+	@Override
+	public Iterable<Concept> getConceptsByType(ConceptType conceptType) {
+		IndexHits<Node> nodes = index.get(CONCEPT_TYPE_KEY.name(), conceptType.name());
+		return new ConceptIteratorImpl(nodes);
+	}
+
 }
