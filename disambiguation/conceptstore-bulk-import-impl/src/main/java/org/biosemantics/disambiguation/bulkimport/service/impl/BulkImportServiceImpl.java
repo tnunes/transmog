@@ -1,7 +1,16 @@
 package org.biosemantics.disambiguation.bulkimport.service.impl;
 
-import static org.biosemantics.disambiguation.common.IndexConstant.*;
-import static org.biosemantics.disambiguation.common.PropertyConstant.*;
+import static org.biosemantics.disambiguation.common.IndexConstant.CONCEPT_FULL_TEXT_KEY;
+import static org.biosemantics.disambiguation.common.IndexConstant.CONCEPT_INDEX;
+import static org.biosemantics.disambiguation.common.IndexConstant.CONCEPT_TYPE_KEY;
+import static org.biosemantics.disambiguation.common.IndexConstant.CONCEPT_UUID_KEY;
+import static org.biosemantics.disambiguation.common.IndexConstant.LABEL_INDEX;
+import static org.biosemantics.disambiguation.common.IndexConstant.LABEL_TEXT_KEY;
+import static org.biosemantics.disambiguation.common.IndexConstant.NOTATION_CODE_KEY;
+import static org.biosemantics.disambiguation.common.IndexConstant.NOTATION_INDEX;
+import static org.biosemantics.disambiguation.common.PropertyConstant.LABEL_TYPE;
+import static org.biosemantics.disambiguation.common.PropertyConstant.UUID;
+import static org.biosemantics.disambiguation.common.PropertyConstant.WEIGHT;
 
 import java.io.File;
 import java.util.HashMap;
@@ -11,17 +20,15 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.biosemantics.conceptstore.common.domain.ConceptLabel;
 import org.biosemantics.conceptstore.common.domain.ConceptRelationship;
+import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
 import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.common.domain.Notation;
-import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
 import org.biosemantics.conceptstore.utils.service.UuidGeneratorService;
 import org.biosemantics.disambiguation.bulkimport.service.BulkImportService;
 import org.biosemantics.disambiguation.common.PropertyConstant;
 import org.biosemantics.disambiguation.common.RelationshipTypeConstant;
 import org.biosemantics.disambiguation.domain.impl.ConceptRelationshipImpl;
-import org.biosemantics.disambiguation.service.local.impl.LabelStorageServiceLocalImpl;
-import org.biosemantics.disambiguation.service.local.impl.NotationStorageServiceLocalImpl;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -118,9 +125,9 @@ public class BulkImportServiceImpl implements BulkImportService {
 				MapUtil.stringMap("provider", "lucene", "type", "exact", "to_lower_case", "true"));
 		conceptFullTextIndex = this.indexService.nodeIndex(CONCEPT_FULL_TEXT_KEY.name(),
 				MapUtil.stringMap("provider", "lucene", "type", "fulltext"));
-		labelNodeIndex = this.indexService.nodeIndex(LabelStorageServiceLocalImpl.LABEL_INDEX,
+		labelNodeIndex = this.indexService.nodeIndex(LABEL_INDEX.name(),
 				MapUtil.stringMap("provider", "lucene", "type", "exact", "to_lower_case", "true"));
-		notationNodeIndex = this.indexService.nodeIndex(NotationStorageServiceLocalImpl.NOTATION_INDEX,
+		notationNodeIndex = this.indexService.nodeIndex(NOTATION_INDEX.name(),
 				MapUtil.stringMap("provider", "lucene", "type", "exact", "to_lower_case", "true"));
 		logger.info("creating parent nodes");
 		conceptParentNode = batchInserter.createNode(null);
@@ -254,8 +261,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 			Map<String, Object> properties = new HashMap<String, Object>();
 			String relationshipUuid = uuidGeneratorService.generateRandomUuid();
 			properties.put(UUID.name(), relationshipUuid);
-			properties.put(ConceptRelationshipImpl.RLSP_CATEGORY_PROPERTY, conceptRelationship
-					.getSource().getId());
+			properties.put(ConceptRelationshipImpl.RLSP_CATEGORY_PROPERTY, conceptRelationship.getSource().getId());
 			if (!StringUtils.isBlank(conceptRelationship.getPredicateConceptUuid())) {
 				properties.put(ConceptRelationshipImpl.PREDICATE_CONCEPT_UUID_PROPERTY,
 						getUuidforNodeId(Long.valueOf(conceptRelationship.getPredicateConceptUuid())));
@@ -281,7 +287,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 		batchInserter.createRelationship(labelParentNode, labelNode, RelationshipTypeConstant.LABEL, null);
 		properties.clear();
 		// index text
-		properties.put(LabelStorageServiceLocalImpl.TEXT_INDEX_KEY, label.getText());
+		properties.put(LABEL_TEXT_KEY.name(), label.getText());
 		labelNodeIndex.add(labelNode, properties);
 		properties.clear();
 		return labelNode;
@@ -298,7 +304,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 		batchInserter.createRelationship(notationParentNode, notationNodeId, RelationshipTypeConstant.NOTATION, null);
 		properties.clear();
 		// index code
-		properties.put(NotationStorageServiceLocalImpl.CODE_INDEX_KEY, notation.getCode());
+		properties.put(NOTATION_CODE_KEY.name(), notation.getCode());
 		notationNodeIndex.add(notationNodeId, properties);
 		properties.clear();
 		return notationNodeId;
