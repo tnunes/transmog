@@ -311,7 +311,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 	}
 
 	@Override
-	public long createUmlsConcept(ConceptType conceptType, List<ConceptLabel> conceptLabels, List<Long> notations,
+	public long createUmlsConcept(ConceptType conceptType, List<ConceptLabel> conceptLabelIds, List<Long> notations,
 			String fullText) {
 		Map<String, Object> properties = new HashMap<String, Object>();
 		final String conceptUuid = uuidGeneratorService.generateRandomUuid();
@@ -330,7 +330,7 @@ public class BulkImportServiceImpl implements BulkImportService {
 		conceptFullTextIndex.add(conceptNodeId, properties);
 		properties.clear();
 		// creating rlsp to labels
-		for (ConceptLabel conceptLabel : conceptLabels) {
+		for (ConceptLabel conceptLabel : conceptLabelIds) {
 			properties.put(LABEL_TYPE.name(), conceptLabel.getLabelType().getId());
 			batchInserter.createRelationship(conceptNodeId, Long.valueOf(conceptLabel.getText()),
 					RelationshipTypeConstant.HAS_LABEL, properties);

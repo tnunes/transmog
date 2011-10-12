@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,6 +32,7 @@ public class ConceptWriter {
 	private Connection connection;
 	private Statement statement;
 	private UmlsCacheService umlsCacheService;
+	private Collection<String> ignoreCuis;
 
 	// constants
 	private static final String GET_ALL_CUI_SQL = "select CUI, SUI, TS, ISPREF, STT, LAT, STR, SAB, CODE from MRCONSO ORDER BY CUI";
@@ -76,31 +78,35 @@ public class ConceptWriter {
 				String str = rs.getString("STR");
 				String sab = rs.getString("SAB");
 				String code = rs.getString("CODE");
-				String sui = rs.getString("SUI");
 				if (previousCui != null && !cui.equals(previousCui)) {
 					NotationImpl notationImpl = new NotationImpl(umlsCacheService.getValue(UmlsUtils.DEFAULT_SAB),
 							previousCui);
 					long cuiNotationNodeId = bulkImportService.createNotation(notationImpl);
 					notations.add(cuiNotationNodeId);
 					fullText.add(previousCui);
-					long uuid = bulkImportService.createUmlsConcept(ConceptType.CONCEPT, conceptLabels, notations,
+					if(! ignoreCuis.contains(previousCui)){
+						long uuid = bulkImportService.createUmlsConcept(ConceptType.CONCEPT, conceptLabels, notations,
 							UmlsUtils.setToString(fullText));
+						umlsCacheService.add(new KeyValue(previousCui, String.valueOf(uuid)));
+					}else{
+						logger.info("ignoring cui {}", previousCui);
+					}
 					fullText.clear();
 					conceptLabels.clear();
 					notations.clear();
 					// add cui to cache
-					umlsCacheService.add(new KeyValue(previousCui, String.valueOf(uuid)));
+					
 					if (++conceptInsertCounter % UmlsUtils.BATCH_SIZE == 0) {
 						logger.info("inserted concepts: {}", conceptInsertCounter);
 					}
 				}
 				// labels
-				String value = umlsCacheService.getValue(sui);
+				String value = umlsCacheService.getValue(str);
 				long labelNodeId = 0;
 				if (value == null) {
 					Label label = new LabelImpl(UmlsUtils.getLanguage(lat), str);
 					labelNodeId = bulkImportService.createLabel(label);
-					umlsCacheService.add(new KeyValue(sui, String.valueOf(labelNodeId)));
+					umlsCacheService.add(new KeyValue(str, String.valueOf(labelNodeId)));
 				} else {
 					labelNodeId = Long.valueOf(value);
 				}
@@ -137,6 +143,11 @@ public class ConceptWriter {
 	public void destroy() throws SQLException {
 		statement.close();
 		connection.close();
+	}
+
+	public void setIgnoreCuis(Collection<String> ignoreCuis) {
+		this.ignoreCuis = ignoreCuis;
+		
 	}
 
 }

@@ -18,7 +18,7 @@ public interface BulkImportService {
 
 	long createLabel(Label label);
 
-	long createUmlsConcept(ConceptType conceptType, List<ConceptLabel> conceptLabels, List<Long> notations,
+	long createUmlsConcept(ConceptType conceptType, List<ConceptLabel> conceptLabelIds, List<Long> notations,
 			String fullText);
 
 	long createNotation(Notation notation);

@@ -2,6 +2,7 @@ package org.biosemantics.datasource.umls;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Set;
 
 import org.biosemantics.datasource.umls.concept.ConceptSchemeWriter;
 import org.biosemantics.datasource.umls.concept.ConceptWriter;
@@ -50,11 +51,14 @@ public class ImportClient {
 
 	public void init() throws SQLException, IOException {
 		domainWriter.writeAll();
+		Set<String> domainCuis =  domainWriter.getDomainCuis();
+		logger.info("domain cuis {}", domainCuis.toString());
 		domainWriter.destroy();
 		predicateWriter.writeAll();
 		predicateWriter.destroy();
 		conceptSchemeWriter.writeAll();
 		conceptSchemeWriter.destroy();
+		conceptWriter.setIgnoreCuis(domainCuis);
 		conceptWriter.writeAll();
 		conceptWriter.destroy();
 		schemeRlspWriter.writeAll();
