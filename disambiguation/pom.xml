@@ -196,7 +196,6 @@
 		<module>datasource</module>
 		<module>conceptstore-impl-rmi-exporter</module>
 		<module>conceptstore-bulk-import-impl</module>
-		<module>conceptstore-scripts</module>
 		<module>conceptstore-web</module>
 	</modules>
 </project>
