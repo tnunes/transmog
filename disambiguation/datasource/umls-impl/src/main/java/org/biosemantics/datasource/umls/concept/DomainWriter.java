@@ -40,10 +40,12 @@ public class DomainWriter {
 	// private static final String GET_ALL_DOMAINS_SQL = "SELECT RSAB, RCUI, VCUI, SON from MRSAB";
 	private static final String GET_ALL_DISTINCT_DOMAINS_SQL = "SELECT DISTINCT(VSAB) from MRSAB";
 	private static final String GET_ALL_DOMAIN_LABELS_SQL = "SELECT SON, RCUI, VCUI from MRSAB where VSAB = ?";
-//	private static final String GET_UMLS_DOMAIN = "SELECT SON, VSAB, RSAB from MRSAB where SON = \"UMLS Metathesaurus\" ";
+	// private static final String GET_UMLS_DOMAIN =
+	// "SELECT SON, VSAB, RSAB from MRSAB where SON = \"UMLS Metathesaurus\" ";
 	private static final String GET_CONCEPT_LABELS = "select CUI, TS, ISPREF, STT, LAT, STR from MRCONSO where CUI = ? ";
-	private static final Logger logger = LoggerFactory.getLogger(DomainWriter.class);//NOPMD
+	private static final Logger logger = LoggerFactory.getLogger(DomainWriter.class);// NOPMD
 	private Set<String> domainCuis = new HashSet<String>();
+
 	public Set<String> getDomainCuis() {
 		return domainCuis;
 	}
@@ -68,9 +70,8 @@ public class DomainWriter {
 		connection = dataSource.getConnection();
 		statement = connection.createStatement();
 		preparedStatement = connection.prepareStatement(GET_ALL_DOMAIN_LABELS_SQL);
-		conceptLabelPreparedStatement =  connection.prepareStatement(GET_CONCEPT_LABELS);
+		conceptLabelPreparedStatement = connection.prepareStatement(GET_CONCEPT_LABELS);
 	}
-	
 
 	public void writeAll() throws SQLException {
 		ResultSet rs = statement.executeQuery(GET_ALL_DISTINCT_DOMAINS_SQL);
@@ -85,21 +86,24 @@ public class DomainWriter {
 				conceptLabels.add(new ConceptLabelImpl(new LabelImpl(null, String.valueOf(rsabLabelId)),
 						LabelType.HIDDEN));
 				fullText.add(vsab);
-				//get all SON for this RSAB
+				// get all SON for this RSAB
 				preparedStatement.setString(1, vsab);
 				ResultSet labelResultSet = preparedStatement.executeQuery();
+				String son = null;
+				String rcui = null;
+				String vcui = null;
 				while (labelResultSet.next()) {
-					String son = labelResultSet.getString("SON");
-					String rcui = labelResultSet.getString("SON");
-					String vcui = labelResultSet.getString("SON");
+					son = labelResultSet.getString("SON");
+					rcui = labelResultSet.getString("RCUI");
+					vcui = labelResultSet.getString("VCUI");
 					Set<String> cuis = new HashSet<String>();
-					if(!StringUtils.isEmpty(rcui)){
+					if (!StringUtils.isEmpty(rcui)) {
 						cuis.add(rcui);
 					}
-					if(!StringUtils.isEmpty(vcui)){
+					if (!StringUtils.isEmpty(vcui)) {
 						cuis.add(vcui);
 					}
-					if(CollectionUtils.isEmpty(cuis)){
+					if (!CollectionUtils.isEmpty(cuis)) {
 						List<ConceptLabel> cuiConceptLabels = getConceptLabels(cuis);
 						conceptLabels.addAll(cuiConceptLabels);
 						domainCuis.addAll(cuis);
@@ -116,10 +120,16 @@ public class DomainWriter {
 					}
 				}
 				labelResultSet.close();
-				
+
 				long id = bulkImportService.createUmlsConcept(ConceptType.DOMAIN, conceptLabels, null,
 						UmlsUtils.setToString(fullText));
 				umlsCacheService.add(new KeyValue(vsab, String.valueOf(id)));
+				if (!StringUtils.isEmpty(rcui)) {
+					umlsCacheService.add(new KeyValue(rcui, String.valueOf(id)));
+				}
+				if (!StringUtils.isEmpty(vcui)) {
+					umlsCacheService.add(new KeyValue(vcui, String.valueOf(id)));
+				}
 				ctr++;
 			}
 			logger.info("{} domains created", ctr);
@@ -132,19 +142,21 @@ public class DomainWriter {
 		List<ConceptLabel> conceptLabels = new ArrayList<ConceptLabel>();
 		for (String cui : cuis) {
 			conceptLabelPreparedStatement.setString(1, cui);
-			ResultSet labelResultSet = preparedStatement.executeQuery();
+			ResultSet labelResultSet = conceptLabelPreparedStatement.executeQuery();
 			while (labelResultSet.next()) {
-				String str =labelResultSet.getString("STR");
-				String lat =labelResultSet.getString("LAT");
+				String str = labelResultSet.getString("STR");
+				String lat = labelResultSet.getString("LAT");
 				String ts = labelResultSet.getString("TS");
 				String isPref = labelResultSet.getString("ISPREF");
 				String stt = labelResultSet.getString("STT");
-				String value  = umlsCacheService.getValue(str);
-				if(value == null){
-					value = String.valueOf(bulkImportService.createLabel(new LabelImpl(UmlsUtils.getLanguage(lat), str)));
+				String value = umlsCacheService.getValue(str);
+				if (value == null) {
+					value = String
+							.valueOf(bulkImportService.createLabel(new LabelImpl(UmlsUtils.getLanguage(lat), str)));
 					umlsCacheService.add(new KeyValue(str, value));
 				}
-				conceptLabels.add(new ConceptLabelImpl(new LabelImpl(null, value), UmlsUtils.getLabelType(ts, isPref, stt)));
+				conceptLabels.add(new ConceptLabelImpl(new LabelImpl(null, value), UmlsUtils.getLabelType(ts, isPref,
+						stt)));
 			}
 		}
 		return conceptLabels;
@@ -160,10 +172,10 @@ public class DomainWriter {
 				String vsab = rs.getString("VSAB");
 				Label rsabLabel = new LabelImpl(Language.EN, vsab);
 				long vsabLabel = bulkImportService.createLabel(rsabLabel);
-				conceptLabels.add(new ConceptLabelImpl(new LabelImpl(null, String.valueOf(vsabLabel)),
-						LabelType.HIDDEN));
+				conceptLabels
+						.add(new ConceptLabelImpl(new LabelImpl(null, String.valueOf(vsabLabel)), LabelType.HIDDEN));
 				fullText.add(vsab);
-				//get all SON for this RSAB
+				// get all SON for this RSAB
 				preparedStatement.setString(1, vsab);
 				ResultSet labelResultSet = preparedStatement.executeQuery();
 				while (labelResultSet.next()) {
@@ -180,7 +192,7 @@ public class DomainWriter {
 					}
 				}
 				labelResultSet.close();
-				
+
 				long id = bulkImportService.createUmlsConcept(ConceptType.DOMAIN, conceptLabels, null,
 						UmlsUtils.setToString(fullText));
 				umlsCacheService.add(new KeyValue(vsab, String.valueOf(id)));
