@@ -36,8 +36,8 @@ public class DomainWriter {
 	private PreparedStatement preparedStatement;
 
 	// private static final String GET_ALL_DOMAINS_SQL = "SELECT RSAB, RCUI, VCUI, SON from MRSAB";
-	private static final String GET_ALL_DISTINCT_DOMAINS_SQL = "SELECT DISTINCT(RSAB) from MRSAB";
-	private static final String GET_ALL_DOMAIN_LABELS_SQL = "SELECT DISTINCT(SON) from MRSAB where RSAB = ?";
+	private static final String GET_ALL_DISTINCT_DOMAINS_SQL = "SELECT DISTINCT(VSAB) from MRSAB";
+	private static final String GET_ALL_DOMAIN_LABELS_SQL = "SELECT DISTINCT(SON) from MRSAB where VSAB = ?";
 	private static final Logger logger = LoggerFactory.getLogger(DomainWriter.class);//NOPMD
 
 	@Required
@@ -69,14 +69,14 @@ public class DomainWriter {
 		try {
 			while (rs.next()) {
 				List<ConceptLabel> conceptLabels = new ArrayList<ConceptLabel>();
-				String rsab = rs.getString("RSAB");
-				Label rsabLabel = new LabelImpl(Language.EN, rsab);
+				String vsab = rs.getString("VSAB");
+				Label rsabLabel = new LabelImpl(Language.EN, vsab);
 				long rsabLabelId = bulkImportService.createLabel(rsabLabel);
 				conceptLabels.add(new ConceptLabelImpl(new LabelImpl(null, String.valueOf(rsabLabelId)),
 						LabelType.HIDDEN));
-				fullText.add(rsab);
+				fullText.add(vsab);
 				//get all SON for this RSAB
-				preparedStatement.setString(1, rsab);
+				preparedStatement.setString(1, vsab);
 				ResultSet labelResultSet = preparedStatement.executeQuery();
 				while (labelResultSet.next()) {
 					String son = labelResultSet.getString("SON");
@@ -95,7 +95,7 @@ public class DomainWriter {
 				
 				long id = bulkImportService.createUmlsConcept(ConceptType.DOMAIN, conceptLabels, null,
 						UmlsUtils.setToString(fullText));
-				umlsCacheService.add(new KeyValue(rsab, String.valueOf(id)));
+				umlsCacheService.add(new KeyValue(vsab, String.valueOf(id)));
 				ctr++;
 			}
 			logger.info("{} domains created", ctr);

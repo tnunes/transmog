@@ -13,6 +13,7 @@ public abstract class UmlsUtils {
 	public static final String SEPERATOR = " ";
 	public static final String NOCODE = "NOCODE";
 	public static final int BATCH_SIZE = 10000;
+	public static final int MAX_RLSP_WEIGHT = 1000000;
 
 	/*
 	 * EN("en", "eng"), EU("eu", "baq"), CS("cs", "cze"), DA("da", "dan"), NL("nl", "dut"), FI("fi", "fin"), FR("fr",

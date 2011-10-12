@@ -11,6 +11,7 @@ import org.biosemantics.conceptstore.common.domain.ConceptRelationshipSource;
 import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
 import org.biosemantics.conceptstore.utils.domain.impl.ConceptRelationshipImpl;
 import org.biosemantics.datasource.umls.cache.UmlsCacheService;
+import org.biosemantics.datasource.umls.concept.UmlsUtils;
 import org.biosemantics.disambiguation.bulkimport.service.BulkImportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +65,7 @@ public class SchemeRlspWriter {
 				if (subjectValue != null && predicateValue != null && objectValue != null) {
 					ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(subjectValue,
 							objectValue, predicateValue, ConceptRelationshipType.RELATED,
-							ConceptRelationshipSource.AUTHORITATIVE, Integer.MAX_VALUE);
+							ConceptRelationshipSource.AUTHORITATIVE, UmlsUtils.MAX_RLSP_WEIGHT);
 					bulkImportService.validateAndCreateRelationship(conceptRelationshipImpl);
 					ctr++;
 				} else {
