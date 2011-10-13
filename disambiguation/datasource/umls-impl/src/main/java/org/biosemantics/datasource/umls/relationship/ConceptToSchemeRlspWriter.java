@@ -4,12 +4,14 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collection;
 
 import javax.sql.DataSource;
 
 import org.biosemantics.conceptstore.common.domain.ConceptRelationshipSource;
 import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
 import org.biosemantics.conceptstore.utils.domain.impl.ConceptRelationshipImpl;
+import org.biosemantics.datasource.umls.IgnoredCuiFileReader;
 import org.biosemantics.datasource.umls.cache.UmlsCacheService;
 import org.biosemantics.datasource.umls.concept.UmlsUtils;
 import org.biosemantics.disambiguation.bulkimport.service.BulkImportService;
@@ -24,6 +26,8 @@ public class ConceptToSchemeRlspWriter {
 	private DataSource dataSource;
 	private Connection connection;
 	private Statement statement;
+	private Collection<String> ignoreCuis;
+	private IgnoredCuiFileReader ignoredCuiFileReader;
 	private static final String GET_CONCEPT_TO_SCHEME_RELATIONS_SQL = "SELECT CUI, STY FROM MRSTY";
 	private static final Logger logger = LoggerFactory.getLogger(ConceptToSchemeRlspWriter.class);// NOPMD
 
@@ -42,6 +46,12 @@ public class ConceptToSchemeRlspWriter {
 		this.umlsCacheService = umlsCacheService;
 	}
 
+	@Required
+	public void setIgnoredCuiFileReader(IgnoredCuiFileReader ignoredCuiFileReader) {
+		this.ignoredCuiFileReader = ignoredCuiFileReader;
+		ignoreCuis = this.ignoredCuiFileReader.getIgnoredCuis();
+	}
+
 	public void init() throws SQLException {
 		// streaming connection to MYSQL see:
 		connection = dataSource.getConnection();
@@ -55,6 +65,10 @@ public class ConceptToSchemeRlspWriter {
 		try {
 			while (rs.next()) {
 				String cui = rs.getString("CUI");
+				if (ignoreCuis.contains(cui)) {
+					logger.info("ignoring concept scheme relationships for cui{}", cui);
+					continue;
+				}
 				String sty = rs.getString("STY");
 				String subjectValue = umlsCacheService.getValue(cui);
 				String objectValue = umlsCacheService.getValue(sty);

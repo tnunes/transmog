@@ -43,6 +43,7 @@
 		<property name="bulkImportService" ref="bulkImportService"></property>
 		<property name="dataSource" ref="dataSource"></property>
 		<property name="umlsCacheService" ref="umlsCacheService"></property>
+		<property name="ignoredCuiFileReader" ref="ignoredCuiReader"></property>
 	</bean>
 
 	<bean id="schemeRlspWriter" class="org.biosemantics.datasource.umls.relationship.SchemeRlspWriter">
@@ -55,19 +56,24 @@
 		<property name="bulkImportService" ref="bulkImportService"></property>
 		<property name="dataSource" ref="dataSource"></property>
 		<property name="umlsCacheService" ref="umlsCacheService"></property>
+		<property name="ignoredCuiFileReader" ref="ignoredCuiReader"></property>
 	</bean>
 
 	<bean id="conceptFactualRlspWriter" class="org.biosemantics.datasource.umls.relationship.ConceptFactualRlspWriter">
 		<property name="bulkImportService" ref="bulkImportService"></property>
 		<property name="dataSource" ref="dataSource"></property>
 		<property name="umlsCacheService" ref="umlsCacheService"></property>
+		<property name="ignoredCuiFileReader" ref="ignoredCuiReader"></property>
 	</bean>
 
 	<bean id="conceptCooccuranceRlspWriter" class="org.biosemantics.datasource.umls.relationship.ConceptCooccuranceRlspWriter">
 		<property name="bulkImportService" ref="bulkImportService"></property>
 		<property name="dataSource" ref="dataSource"></property>
 		<property name="umlsCacheService" ref="umlsCacheService"></property>
+		<property name="ignoredCuiFileReader" ref="ignoredCuiReader"></property>
 	</bean>
+	
+	<bean id="ignoredCuiReader" class="org.biosemantics.datasource.umls.IgnoredCuiFileReader"></bean>
 
 
 </beans>

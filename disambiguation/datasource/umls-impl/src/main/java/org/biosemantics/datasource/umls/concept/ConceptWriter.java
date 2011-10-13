@@ -17,6 +17,7 @@ import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.Label;
 import org.biosemantics.conceptstore.utils.domain.impl.LabelImpl;
 import org.biosemantics.conceptstore.utils.domain.impl.NotationImpl;
+import org.biosemantics.datasource.umls.IgnoredCuiFileReader;
 import org.biosemantics.datasource.umls.cache.KeyValue;
 import org.biosemantics.datasource.umls.cache.UmlsCacheService;
 import org.biosemantics.disambiguation.bulkimport.service.BulkImportService;
@@ -33,6 +34,7 @@ public class ConceptWriter {
 	private Statement statement;
 	private UmlsCacheService umlsCacheService;
 	private Collection<String> ignoreCuis;
+	private IgnoredCuiFileReader ignoredCuiFileReader;
 
 	// constants
 	private static final String GET_ALL_CUI_SQL = "select CUI, SUI, TS, ISPREF, STT, LAT, STR, SAB, CODE from MRCONSO ORDER BY CUI";
@@ -51,6 +53,13 @@ public class ConceptWriter {
 	@Required
 	public final void setUmlsCacheService(UmlsCacheService umlsCacheService) {
 		this.umlsCacheService = umlsCacheService;
+	}
+	
+	
+	@Required
+	public void setIgnoredCuiFileReader(IgnoredCuiFileReader ignoredCuiFileReader) {
+		this.ignoredCuiFileReader = ignoredCuiFileReader;
+		ignoreCuis = this.ignoredCuiFileReader.getIgnoredCuis();
 	}
 
 	public void init() throws SQLException {
@@ -145,8 +154,8 @@ public class ConceptWriter {
 		connection.close();
 	}
 
-	public void setIgnoreCuis(Collection<String> ignoreCuis) {
-		this.ignoreCuis = ignoreCuis;
+	public void addIgnoreCuis(Collection<String> ignoreCuis) {
+		this.ignoreCuis.addAll(ignoreCuis);
 		
 	}
 

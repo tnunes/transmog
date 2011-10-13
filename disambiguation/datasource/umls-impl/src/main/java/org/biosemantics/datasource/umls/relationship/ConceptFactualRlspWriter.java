@@ -4,12 +4,14 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collection;
 
 import javax.sql.DataSource;
 
 import org.biosemantics.conceptstore.common.domain.ConceptRelationshipSource;
 import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
 import org.biosemantics.conceptstore.utils.domain.impl.ConceptRelationshipImpl;
+import org.biosemantics.datasource.umls.IgnoredCuiFileReader;
 import org.biosemantics.datasource.umls.cache.KeyValue;
 import org.biosemantics.datasource.umls.cache.UmlsCacheService;
 import org.biosemantics.datasource.umls.concept.UmlsUtils;
@@ -24,6 +26,8 @@ public class ConceptFactualRlspWriter {
 	private DataSource dataSource;
 	private Connection connection;
 	private Statement statement;
+	private Collection<String> ignoreCuis;
+	private IgnoredCuiFileReader ignoredCuiFileReader;
 	private static final String GET_ALL_FACTUAL_RLSP_SQL = "select CUI1, CUI2, REL from MRREL where CUI1 != CUI2";
 	private static final Logger logger = LoggerFactory.getLogger(ConceptFactualRlspWriter.class);//NOPMD
 
@@ -41,6 +45,12 @@ public class ConceptFactualRlspWriter {
 	public final void setUmlsCacheService(UmlsCacheService umlsCacheService) {
 		this.umlsCacheService = umlsCacheService;
 	}
+	
+	@Required
+	public void setIgnoredCuiFileReader(IgnoredCuiFileReader ignoredCuiFileReader) {
+		this.ignoredCuiFileReader = ignoredCuiFileReader;
+		ignoreCuis = this.ignoredCuiFileReader.getIgnoredCuis();
+	}
 
 	public void init() throws SQLException {
 		// streaming connection to MYSQL see:
@@ -56,6 +66,10 @@ public class ConceptFactualRlspWriter {
 			while (rs.next()) {
 				String cui1 = rs.getString("CUI1");
 				String cui2 = rs.getString("CUI2");
+				if(ignoreCuis.contains(cui1) || ignoreCuis.contains(cui2)){
+					logger.info("ignoring factual relationships for cui1 {} cui2 {}",new Object[]{cui1, cui2} );
+					continue;
+				}
 				String rel = rs.getString("REL");
 				// factual relationships are stored in the form cui2->rel->cui1 hence inverting subject object here
 				String subjectValue = umlsCacheService.getValue(cui1);

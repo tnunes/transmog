@@ -58,7 +58,7 @@ public class ImportClient {
 		predicateWriter.destroy();
 		conceptSchemeWriter.writeAll();
 		conceptSchemeWriter.destroy();
-		conceptWriter.setIgnoreCuis(domainCuis);
+		conceptWriter.addIgnoreCuis(domainCuis);
 		conceptWriter.writeAll();
 		conceptWriter.destroy();
 		schemeRlspWriter.writeAll();
