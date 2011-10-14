@@ -10,6 +10,7 @@ import org.biosemantics.conceptstore.common.domain.Notation;
 
 public interface BulkImportService {
 
+	
 	long createRelationship(ConceptRelationship conceptRelationship);
 
 	boolean relationshipExists(ConceptRelationship conceptRelationship);
