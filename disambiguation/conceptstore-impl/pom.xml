@@ -6,9 +6,7 @@
 		<groupId>org.biosemantics</groupId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
-	<groupId>org.biosemantics</groupId>
 	<artifactId>conceptstore-impl</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
 	<name>conceptstore-impl</name>
 	<description>An implementation of concept store for disambiguation.</description>
 	<dependencies>
@@ -26,8 +24,8 @@
 		</dependency>
 		<!-- Neo4j graph database -->
 		<dependency>
-			<groupId>org.neo4j</groupId>
-			<artifactId>neo4j</artifactId>
+			<groupId>org.neo4j.app</groupId>
+			<artifactId>neo4j-server</artifactId>
 			<exclusions>
 				<!-- Exclude SLF4j implementation for logback -->
 				<exclusion>
@@ -39,6 +37,18 @@
 		<dependency>
 			<groupId>org.neo4j.app</groupId>
 			<artifactId>neo4j-server</artifactId>
+			<classifier>static-web</classifier>
+			<exclusions>
+				<!-- Exclude SLF4j implementation for logback -->
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-jdk14</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.neo4j</groupId>
+			<artifactId>neo4j-advanced</artifactId>
 			<exclusions>
 				<!-- Exclude SLF4j implementation for logback -->
 				<exclusion>
