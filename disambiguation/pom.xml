@@ -35,7 +35,7 @@
 		<org.springframework.version>3.0.5.RELEASE</org.springframework.version>
 		<junit.version>4.8.2</junit.version>
 		<org.jmock.version>2.5.1</org.jmock.version>
-		<org.neo4j>1.5.M01</org.neo4j>
+		<neo4j-version>1.5</neo4j-version>
 		<net.sf.opencsv>2.1</net.sf.opencsv>
 		<mysql-connector-java>5.1.16</mysql-connector-java>
 		<commons.dbcp>1.4</commons.dbcp>
@@ -67,6 +67,19 @@
 			<id>nexus-server-id</id>
 			<url>${nexus.server.url}/content/groups/public/</url>
 		</repository>
+
+		<repository>
+			<id>neo4j-release-repository</id>
+			<name>Neo4j Maven 2 release repository</name>
+			<url>http://m2.neo4j.org/releases</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+
 	</repositories>
 
 	<dependencyManagement>
@@ -166,15 +179,20 @@
 			</dependency>
 			<dependency>
 				<groupId>org.neo4j</groupId>
-				<artifactId>neo4j</artifactId>
-				<version>${org.neo4j}</version>
+				<artifactId>neo4j-advanced</artifactId>
+				<version>${neo4j-version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.neo4j.app</groupId>
 				<artifactId>neo4j-server</artifactId>
-				<version>${org.neo4j}</version>
+				<version>${neo4j-version}</version>
 			</dependency>
-			
+			<dependency>
+				<groupId>org.neo4j.app</groupId>
+				<artifactId>neo4j-server</artifactId>
+				<classifier>static-web</classifier>
+				<version>${neo4j-version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	<build>
