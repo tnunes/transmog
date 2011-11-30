@@ -127,8 +127,8 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 				// otherwise link with existing notations
 				Node notationNode = null;
 				if (optimise) {
-					notationNode = notationStorageServiceLocal.getNotationNode(notation.getCode(),
-							notation.getDomain());
+					notationNode = notationStorageServiceLocal
+							.getNotationNode(notation.getCode(), notation.getDomain());
 				}
 				if (notationNode == null) {
 					notationNode = notationStorageServiceLocal.createNotationNode(notation);
@@ -171,14 +171,18 @@ public class ConceptStorageServiceLocalImpl implements ConceptStorageServiceLoca
 	public Collection<Concept> getConceptsByFullTextQuery(String fulltextQuery, int maxResults) {
 		IndexHits<Node> nodes = fulltextIndex.query(CONCEPT_FULL_TEXT_KEY.name(), fulltextQuery);
 		Collection<Concept> concepts = new HashSet<Concept>(maxResults);
-		int ctr = 0;
-		for (Node node : nodes) {
-			ctr++;
-			if (ctr > maxResults) {
-				break;
-			} else {
-				concepts.add(new ConceptImpl(node));
+		try {
+			int ctr = 0;
+			for (Node node : nodes) {
+				ctr++;
+				if (ctr > maxResults) {
+					break;
+				} else {
+					concepts.add(new ConceptImpl(node));
+				}
 			}
+		} finally {
+			nodes.close();
 		}
 		return concepts;
 	}

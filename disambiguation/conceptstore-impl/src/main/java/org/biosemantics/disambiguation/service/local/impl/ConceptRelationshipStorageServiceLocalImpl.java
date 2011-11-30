@@ -77,8 +77,6 @@ public class ConceptRelationshipStorageServiceLocalImpl implements ConceptRelati
 			relationship.setProperty(ConceptRelationshipImpl.PREDICATE_CONCEPT_UUID_PROPERTY,
 					conceptRelationship.getPredicateConceptUuid());
 		}
-		relationship.setProperty(ConceptRelationshipImpl.RLSP_CATEGORY_PROPERTY, conceptRelationship
-				.getSource().getId());
 		// add sources
 		if (conceptRelationship.getTags() != null && conceptRelationship.getTags().length > 0) {
 			relationship.setProperty(PropertyConstant.TAGS.name(), conceptRelationship.getTags());
@@ -98,7 +96,8 @@ public class ConceptRelationshipStorageServiceLocalImpl implements ConceptRelati
 	@Override
 	public Collection<ConceptRelationship> getAllRelationshipsForConcept(String uuid) {
 		Node node = conceptStorageServiceLocal.getConceptNode(uuid);
-		Iterable<Relationship> relationships = node.getRelationships(ConceptRelationshipType.HAS_NARROWER_CONCEPT, Direction.OUTGOING);
+		Iterable<Relationship> relationships = node.getRelationships(ConceptRelationshipType.HAS_NARROWER_CONCEPT,
+				Direction.OUTGOING);
 		List<ConceptRelationship> conceptRelationships = new ArrayList<ConceptRelationship>();
 		for (Relationship relationship : relationships) {
 			conceptRelationships.add(new ConceptRelationshipImpl(relationship));
@@ -136,10 +135,7 @@ public class ConceptRelationshipStorageServiceLocalImpl implements ConceptRelati
 			// get all relationships for one node: check if there is a rlsp with other node
 			if (foundRelationship.getOtherNode(startNode).equals(endNode)) {
 				// rlsp exists between the concepts: check if it is the same type
-				if (foundRelationship.getType().name()
-						.equals(conceptRelationship.getType().name())
-						&& ((Integer) foundRelationship.getProperty(ConceptRelationshipImpl.RLSP_CATEGORY_PROPERTY))
-								.equals(conceptRelationship.getSource().getId())) {
+				if (foundRelationship.getType().name().equals(conceptRelationship.getType().name())) {
 					return true;
 				}
 				if (conceptRelationship.getType() == ConceptRelationshipType.HAS_BROADER_CONCEPT) {

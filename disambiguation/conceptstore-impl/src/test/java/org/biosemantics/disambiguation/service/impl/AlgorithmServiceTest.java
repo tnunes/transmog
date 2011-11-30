@@ -6,9 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.biosemantics.conceptstore.common.domain.Concept;
-import org.biosemantics.conceptstore.common.domain.ConceptRelationshipSource;
-import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
+import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.service.ConceptRelationshipStorageService;
 import org.biosemantics.conceptstore.utils.domain.impl.ConceptRelationshipImpl;
 import org.biosemantics.disambiguation.service.local.AlgorithmServiceLocal;
@@ -44,16 +43,16 @@ public class AlgorithmServiceTest extends AbstractTransactionalDataSource {
 		Concept end = TestUtility.createFullConcept();
 		String endUuid = conceptStorageServiceLocal.createConcept(ConceptType.CONCEPT, end);
 		ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(startUuid, middle1Uuid, null,
-				ConceptRelationshipType.RELATED, ConceptRelationshipSource.AUTHORITATIVE, 1);
+				ConceptRelationshipType.RELATED, 1);
 		conceptRelationshipStorageService.createRelationship(conceptRelationshipImpl);
 		conceptRelationshipImpl = new ConceptRelationshipImpl(middle1Uuid, middle2Uuid, null,
-				ConceptRelationshipType.RELATED, ConceptRelationshipSource.AUTHORITATIVE, 1);
+				ConceptRelationshipType.RELATED, 1);
 		conceptRelationshipStorageService.createRelationship(conceptRelationshipImpl);
 		conceptRelationshipImpl = new ConceptRelationshipImpl(middle2Uuid, middle3Uuid, null,
-				ConceptRelationshipType.RELATED, ConceptRelationshipSource.AUTHORITATIVE, 1);
+				ConceptRelationshipType.RELATED, 1);
 		conceptRelationshipStorageService.createRelationship(conceptRelationshipImpl);
 		conceptRelationshipImpl = new ConceptRelationshipImpl(middle3Uuid, endUuid, null,
-				ConceptRelationshipType.RELATED, ConceptRelationshipSource.AUTHORITATIVE, 1);
+				ConceptRelationshipType.RELATED, 1);
 		conceptRelationshipStorageService.createRelationship(conceptRelationshipImpl);
 
 		// find shortest path (start->middle1->middle2->middle3->middle4->end)
@@ -90,20 +89,20 @@ public class AlgorithmServiceTest extends AbstractTransactionalDataSource {
 		Concept end = TestUtility.createFullConcept();
 		String endUuid = conceptStorageServiceLocal.createConcept(ConceptType.CONCEPT, end);
 		ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(startUuid, middle1Uuid, null,
-				ConceptRelationshipType.RELATED, ConceptRelationshipSource.AUTHORITATIVE, 1);
+				ConceptRelationshipType.RELATED, 1);
 		conceptRelationshipStorageService.createRelationship(conceptRelationshipImpl);
 		conceptRelationshipImpl = new ConceptRelationshipImpl(middle1Uuid, middle2Uuid, null,
-				ConceptRelationshipType.RELATED, ConceptRelationshipSource.AUTHORITATIVE, 1);
+				ConceptRelationshipType.RELATED, 1);
 		conceptRelationshipStorageService.createRelationship(conceptRelationshipImpl);
 		conceptRelationshipImpl = new ConceptRelationshipImpl(middle2Uuid, middle3Uuid, null,
-				ConceptRelationshipType.RELATED, ConceptRelationshipSource.AUTHORITATIVE, 1);
+				ConceptRelationshipType.RELATED, 1);
 		conceptRelationshipStorageService.createRelationship(conceptRelationshipImpl);
 		conceptRelationshipImpl = new ConceptRelationshipImpl(middle3Uuid, endUuid, null,
-				ConceptRelationshipType.RELATED, ConceptRelationshipSource.AUTHORITATIVE, 1);
+				ConceptRelationshipType.RELATED, 1);
 		conceptRelationshipStorageService.createRelationship(conceptRelationshipImpl);
 		// create a shorter path than one above (start->middle1->end)
 		conceptRelationshipImpl = new ConceptRelationshipImpl(middle1Uuid, endUuid, null,
-				ConceptRelationshipType.RELATED, ConceptRelationshipSource.AUTHORITATIVE, 1);
+				ConceptRelationshipType.RELATED, 1);
 		conceptRelationshipStorageService.createRelationship(conceptRelationshipImpl);
 
 		// find shortest path : in this case : (start->middle1->end)

@@ -1,8 +1,7 @@
 package org.biosemantics.disambiguation.service.impl;
 
-import org.biosemantics.conceptstore.common.domain.ConceptRelationshipSource;
-import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
+import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.utils.domain.impl.ConceptRelationshipImpl;
 import org.biosemantics.disambiguation.service.local.ConceptRelationshipStorageServiceLocal;
 import org.biosemantics.disambiguation.service.local.ConceptStorageServiceLocal;
@@ -24,7 +23,7 @@ public class ConceptRelationshipStorageServiceTest extends AbstractTransactional
 				.createConcept(ConceptType.CONCEPT, TestUtility.createFullConcept());
 		String toUuid = conceptStorageServiceLocal.createConcept(ConceptType.CONCEPT, TestUtility.createFullConcept());
 		ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(fromUuid, toUuid, null,
-				ConceptRelationshipType.RELATED, ConceptRelationshipSource.HYPOTHETICAL, 100);
+				ConceptRelationshipType.RELATED, 100);
 		String uuid = conceptRelationshipStorageServiceLocal.createRelationship(conceptRelationshipImpl);
 		Assert.assertNotNull(uuid);
 	}
@@ -35,7 +34,7 @@ public class ConceptRelationshipStorageServiceTest extends AbstractTransactional
 				.createConcept(ConceptType.CONCEPT, TestUtility.createFullConcept());
 		String toUuid = conceptStorageServiceLocal.createConcept(ConceptType.CONCEPT, TestUtility.createFullConcept());
 		ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(fromUuid, toUuid, null,
-				ConceptRelationshipType.RELATED, ConceptRelationshipSource.HYPOTHETICAL, 100);
+				ConceptRelationshipType.RELATED, 100);
 		String uuid = conceptRelationshipStorageServiceLocal.createRelationship(conceptRelationshipImpl);
 		Assert.assertNotNull(uuid);
 		boolean exists = conceptRelationshipStorageServiceLocal.relationshipExists(conceptRelationshipImpl);
@@ -48,7 +47,7 @@ public class ConceptRelationshipStorageServiceTest extends AbstractTransactional
 				.createConcept(ConceptType.CONCEPT, TestUtility.createFullConcept());
 		String toUuid = conceptStorageServiceLocal.createConcept(ConceptType.CONCEPT, TestUtility.createFullConcept());
 		ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(fromUuid, toUuid, null,
-				ConceptRelationshipType.RELATED, ConceptRelationshipSource.HYPOTHETICAL, 100);
+				ConceptRelationshipType.RELATED, 100);
 		boolean exists = conceptRelationshipStorageServiceLocal.relationshipExists(conceptRelationshipImpl);
 		Assert.assertFalse(exists);
 		conceptRelationshipStorageServiceLocal.createRelationship(conceptRelationshipImpl);
@@ -63,13 +62,13 @@ public class ConceptRelationshipStorageServiceTest extends AbstractTransactional
 		String toUuid = conceptStorageServiceLocal.createConcept(ConceptType.CONCEPT, TestUtility.createFullConcept());
 
 		ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(fromUuid, toUuid, null,
-				ConceptRelationshipType.HAS_BROADER_CONCEPT, ConceptRelationshipSource.HYPOTHETICAL, 100, null);
+				ConceptRelationshipType.HAS_BROADER_CONCEPT, 100, null);
 		boolean exists = conceptRelationshipStorageServiceLocal.relationshipExists(conceptRelationshipImpl);
 		Assert.assertFalse(exists);
 		conceptRelationshipStorageServiceLocal.createRelationship(conceptRelationshipImpl);
 
 		ConceptRelationshipImpl oppositeRelationship = new ConceptRelationshipImpl(toUuid, fromUuid, null,
-				ConceptRelationshipType.HAS_NARROWER_CONCEPT, ConceptRelationshipSource.HYPOTHETICAL, 100, null);
+				ConceptRelationshipType.HAS_NARROWER_CONCEPT, 100, null);
 		exists = conceptRelationshipStorageServiceLocal.relationshipExists(oppositeRelationship);
 		Assert.assertTrue(exists);
 	}
@@ -81,13 +80,13 @@ public class ConceptRelationshipStorageServiceTest extends AbstractTransactional
 		String toUuid = conceptStorageServiceLocal.createConcept(ConceptType.CONCEPT, TestUtility.createFullConcept());
 
 		ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(fromUuid, toUuid, null,
-				ConceptRelationshipType.HAS_NARROWER_CONCEPT, ConceptRelationshipSource.AUTHORITATIVE, 100, null);
+				ConceptRelationshipType.HAS_NARROWER_CONCEPT, 100, null);
 		boolean exists = conceptRelationshipStorageServiceLocal.relationshipExists(conceptRelationshipImpl);
 		Assert.assertFalse(exists);
 		conceptRelationshipStorageServiceLocal.createRelationship(conceptRelationshipImpl);
 
 		ConceptRelationshipImpl oppositeRelationship = new ConceptRelationshipImpl(toUuid, fromUuid, null,
-				ConceptRelationshipType.HAS_BROADER_CONCEPT, ConceptRelationshipSource.AUTHORITATIVE, 100, null);
+				ConceptRelationshipType.HAS_BROADER_CONCEPT, 100, null);
 		exists = conceptRelationshipStorageServiceLocal.relationshipExists(oppositeRelationship);
 		Assert.assertTrue(exists);
 	}
@@ -99,7 +98,7 @@ public class ConceptRelationshipStorageServiceTest extends AbstractTransactional
 		String toUuid = conceptStorageServiceLocal.createConcept(ConceptType.CONCEPT, TestUtility.createFullConcept());
 
 		ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(fromUuid, toUuid, null,
-				ConceptRelationshipType.HAS_NARROWER_CONCEPT, ConceptRelationshipSource.AUTHORITATIVE, 100, null);
+				ConceptRelationshipType.HAS_NARROWER_CONCEPT, 100, null);
 		String uuid1 = conceptRelationshipStorageServiceLocal.createRelationship(conceptRelationshipImpl);
 		String uuid2 = conceptRelationshipStorageServiceLocal.createRelationship(conceptRelationshipImpl);
 		String uuid3 = conceptRelationshipStorageServiceLocal.createRelationship(conceptRelationshipImpl);

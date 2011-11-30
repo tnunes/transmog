@@ -6,5 +6,6 @@ public interface AlgorithmServiceLocal {
 	
 	Path dijkstra(String fromConceptUuid, String toConceptUuid);
 	Iterable<Path> shortestPath(String fromConceptUuid, String toConceptUuid, int maxDepth);
+	Path shortestSinglePath(String fromConceptUuid, String toConceptUuid, int maxDepth);
 
 }

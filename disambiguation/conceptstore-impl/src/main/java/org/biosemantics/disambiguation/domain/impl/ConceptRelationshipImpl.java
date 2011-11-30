@@ -1,11 +1,12 @@
 package org.biosemantics.disambiguation.domain.impl;
 
+import static org.biosemantics.disambiguation.common.PropertyConstant.UUID;
+import static org.biosemantics.disambiguation.common.PropertyConstant.WEIGHT;
+
 import org.biosemantics.conceptstore.common.domain.ConceptRelationship;
-import org.biosemantics.conceptstore.common.domain.ConceptRelationshipSource;
 import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
 import org.biosemantics.disambiguation.common.PropertyConstant;
 import org.neo4j.graphdb.Relationship;
-import static org.biosemantics.disambiguation.common.PropertyConstant.*;
 
 import com.google.common.base.Objects;
 
@@ -13,7 +14,6 @@ public class ConceptRelationshipImpl implements ConceptRelationship {
 
 	private static final long serialVersionUID = -1908002768195644773L;
 	public static final String PREDICATE_CONCEPT_UUID_PROPERTY = "predicateConceptUuid";
-	public static final String RLSP_CATEGORY_PROPERTY = "rlspCategory";
 	public static final String SOURCES_PROPERTY = "sources";
 
 	private Relationship underlyingRelationship;
@@ -74,11 +74,6 @@ public class ConceptRelationshipImpl implements ConceptRelationship {
 	public String toString() {
 		return Objects.toStringHelper(this).add(UUID.name(), getUuid()).add(WEIGHT.name(), getWeight())
 				.add(PREDICATE_CONCEPT_UUID_PROPERTY, getPredicateConceptUuid()).toString();
-	}
-
-	@Override
-	public ConceptRelationshipSource getSource() {
-		return ConceptRelationshipSource.fromId((Integer) underlyingRelationship.getProperty(RLSP_CATEGORY_PROPERTY));
 	}
 
 	@Override

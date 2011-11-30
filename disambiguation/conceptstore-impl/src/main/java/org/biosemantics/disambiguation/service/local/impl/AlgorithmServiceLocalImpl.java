@@ -35,7 +35,7 @@ public class AlgorithmServiceLocalImpl implements AlgorithmServiceLocal {
 
 					@Override
 					public Double getCost(Relationship relationship, Direction direction) {
-						return Double.valueOf(1 / (Integer) relationship.getProperty(WEIGHT.name()));
+						return Double.valueOf(1 / (Double) relationship.getProperty(WEIGHT.name()));
 					}
 				});
 		WeightedPath path = finder.findSinglePath(from, to);
@@ -52,5 +52,16 @@ public class AlgorithmServiceLocalImpl implements AlgorithmServiceLocal {
 				ConceptRelationshipType.IN_SCHEME, Direction.BOTH), maxDepth);
 		Iterable<Path> paths = finder.findAllPaths(from, to);
 		return paths;
+	}
+
+	@Override
+	public Path shortestSinglePath(String fromConceptUuid, String toConceptUuid, int maxDepth) {
+		Node from = conceptStorageServiceLocal.getConceptNode(fromConceptUuid);
+		Node to = conceptStorageServiceLocal.getConceptNode(toConceptUuid);
+		PathFinder<Path> finder = GraphAlgoFactory.shortestPath(Traversal.expanderForTypes(
+				ConceptRelationshipType.RELATED, Direction.BOTH, ConceptRelationshipType.HAS_BROADER_CONCEPT,
+				Direction.BOTH, ConceptRelationshipType.HAS_NARROWER_CONCEPT, Direction.BOTH,
+				ConceptRelationshipType.IN_SCHEME, Direction.BOTH), maxDepth);
+		return finder.findSinglePath(from, to);
 	}
 }
