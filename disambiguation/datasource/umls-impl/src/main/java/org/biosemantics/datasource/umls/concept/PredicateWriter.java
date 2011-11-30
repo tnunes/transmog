@@ -38,7 +38,7 @@ public class PredicateWriter {
 	private String predicatesTsvFile;
 
 	private static final String GET_CONCEPT_SCHEME_PREDICATES_SQL = "select distinct RL as RL from SRSTRE2";
-	private static final Logger logger = LoggerFactory.getLogger(PredicateWriter.class);//NOPMD
+	private static final Logger logger = LoggerFactory.getLogger(PredicateWriter.class);// NOPMD
 
 	@Required
 	public final void setBulkImportService(BulkImportService bulkImportService) {
@@ -91,27 +91,55 @@ public class PredicateWriter {
 
 		for (String predicateString : predicates) {
 			List<ConceptLabel> conceptLabels = new ArrayList<ConceptLabel>();
-			String value = umlsCacheService.getValue(predicateString);
+			String value = umlsCacheService.getValue(Language.EN.name() + predicateString);
 			if (value == null) {
-				long prefLabelNodeId = bulkImportService.createLabel(new LabelImpl(Language.EN, predicateString));
-				conceptLabels.add(new ConceptLabelImpl(new LabelImpl(null, String.valueOf(prefLabelNodeId)),
-						LabelType.PREFERRED));
-
-				String updatedPredicateString = predicateString.replace('_', ' ');
-				long altLabelNodeId = bulkImportService.createLabel(new LabelImpl(Language.EN,
-						updatedPredicateString));
-				conceptLabels.add(new ConceptLabelImpl(new LabelImpl(null, String.valueOf(altLabelNodeId)),
-						LabelType.ALTERNATE));
-				StringBuilder fullText = new StringBuilder(predicateString);
-				long conceptNodeId = bulkImportService.createUmlsConcept(ConceptType.PREDICATE, conceptLabels, null,
-						fullText.toString());
-				umlsCacheService.add(new KeyValue(predicateString, String.valueOf(conceptNodeId)));
+				value = String.valueOf(bulkImportService.createLabel(new LabelImpl(Language.EN, predicateString)));
+				umlsCacheService.add(new KeyValue(Language.EN.name() + predicateString, value));
 			}
-		}
+			conceptLabels.add(new ConceptLabelImpl(new LabelImpl(Language.EN, value), LabelType.PREFERRED));
 
+			String updatedPredicateString = predicateString.replace('_', ' ');
+			value = umlsCacheService.getValue(Language.EN.name() + updatedPredicateString);
+			if (value == null) {
+				value = String.valueOf(bulkImportService
+						.createLabel(new LabelImpl(Language.EN, updatedPredicateString)));
+				umlsCacheService.add(new KeyValue(Language.EN.name() + updatedPredicateString, value));
+			}
+			conceptLabels.add(new ConceptLabelImpl(new LabelImpl(Language.EN, value), LabelType.ALTERNATE));
+			StringBuilder fullText = new StringBuilder(predicateString).append(UmlsUtils.SEPERATOR).append(
+					updatedPredicateString);
+			long conceptNodeId = bulkImportService.createUmlsConcept(ConceptType.PREDICATE, conceptLabels, null,
+					fullText.toString());
+			umlsCacheService.add(new KeyValue(predicateString, String.valueOf(conceptNodeId)));
+		}
 		logger.info("{} predicates created", predicates.size());
 
 	}
+
+//	public void writeAllToFile() throws IOException, SQLException {
+//		Set<String> predicates = new HashSet<String>();
+//		CSVReader csvReader = new CSVReader(new FileReader(predicatesTsvFile), '\t');
+//		List<String[]> allLines = csvReader.readAll();
+//		for (String[] line : allLines) {
+//			String column = line[0].trim();
+//			predicates.add(column);
+//		}
+//		csvReader.close();
+//		ResultSet rs = statement.executeQuery(GET_CONCEPT_SCHEME_PREDICATES_SQL);
+//		try {
+//			while (rs.next()) {
+//				String rl = rs.getString("RL");
+//				predicates.add(rl);
+//			}
+//		} finally {
+//			rs.close();
+//		}
+//		CSVWriter csvWriter = new CSVWriter(new FileWriter(new File("/Users/bhsingh/Desktop/predicates.txt")));
+//		for (String string : predicates) {
+//			csvWriter.writeNext(new String[] { string });
+//		}
+//		csvWriter.close();
+//	}
 
 	public void destroy() throws SQLException {
 		statement.close();

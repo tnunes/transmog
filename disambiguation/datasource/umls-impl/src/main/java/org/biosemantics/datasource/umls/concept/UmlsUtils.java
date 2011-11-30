@@ -5,6 +5,8 @@ import java.util.Set;
 import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
 import org.biosemantics.conceptstore.common.domain.LabelType;
 import org.biosemantics.conceptstore.common.domain.Language;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class UmlsUtils {
 
@@ -13,7 +15,8 @@ public abstract class UmlsUtils {
 	public static final String SEPERATOR = " ";
 	public static final String NOCODE = "NOCODE";
 	public static final int BATCH_SIZE = 10000;
-	public static final int MAX_RLSP_WEIGHT = 1000000;
+	public static final int MAX_RLSP_WEIGHT = 100;
+	private static final Logger logger = LoggerFactory.getLogger(UmlsUtils.class);
 
 	/*
 	 * EN("en", "eng"), EU("eu", "baq"), CS("cs", "cze"), DA("da", "dan"), NL("nl", "dut"), FI("fi", "fin"), FR("fr",
@@ -67,8 +70,8 @@ public abstract class UmlsUtils {
 		} else if (lat.equalsIgnoreCase(SCR)) {
 			return Language.HR;
 		}
-		//default
-		
+		// default
+
 		return Language.EN;
 	}
 
@@ -80,34 +83,40 @@ public abstract class UmlsUtils {
 		}
 	}
 
-	// available values for rel in UMLS:
-	// http://www.nlm.nih.gov/research/umls/knowledge_sources/metathesaurus/release/abbreviations.html
-	/*
-	REL   (Relationship)
-	AQ	Allowed qualifier
-	CHD	has child relationship in a Metathesaurus source vocabulary
-	DEL	Deleted concept
-	PAR	has parent relationship in a Metathesaurus source vocabulary
-	QB	can be qualified by.
-	RB	has a broader relationship
-	RL	the relationship is similar or "alike". the two concepts are similar or "alike". In the current edition of the Metathesaurus, most relationships with this attribute are mappings provided by a source, named in SAB and SL; hence concepts linked by this relationship may be synonymous, i.e. self-referential: CUI1 = CUI2. In previous releases, some MeSH Supplementary Concept relationships were represented in this way.
-	RN	has a narrower relationship
-	RO	has relationship other than synonymous, narrower, or broader
-	RQ	related and possibly synonymous.
-	RU	Related, unspecified
-	SIB	has sibling relationship in a Metathesaurus source vocabulary.
-	SY	source asserted synonymy.
-	XR	Not related, no mapping
-	Empty relationship 
-	 */
+	// AQ Allowed qualifier
+	// CHD has child relationship in a Metathesaurus source vocabulary
+	// DEL Deleted concept
+	// PAR has parent relationship in a Metathesaurus source vocabulary
+	// QB can be qualified by.
+	// RB has a broader relationship
+	// RL the relationship is similar or "alike". the two concepts are similar or "alike". In the current edition of the
+	// Metathesaurus, most relationships with this attribute are mappings provided by a source, named in SAB and SL;
+	// hence concepts linked by this relationship may be synonymous, i.e. self-referential: CUI1 = CUI2. In previous
+	// releases, some MeSH Supplementary Concept relationships were represented in this way.
+	// RN has a narrower relationship
+	// RO has relationship other than synonymous, narrower, or broader
+	// RQ related and possibly synonymous.
+	// RU Related, unspecified
+	// SIB has sibling relationship in a Metathesaurus source vocabulary.
+	// SY source asserted synonymy.
+	// XR Not related, no mapping.
+	// Empty relationship
+
 	public static ConceptRelationshipType getConceptRelationshipType(String rel) {
 		ConceptRelationshipType semanticRelationshipCategory = ConceptRelationshipType.RELATED;
 		String relUpper = rel.toUpperCase().trim();
-		if (relUpper.equals("CHD") || relUpper.equals("RN")) {
-			semanticRelationshipCategory = ConceptRelationshipType.HAS_NARROWER_CONCEPT;
-		} else if (relUpper.equals("PAR") || relUpper.equals("RB")) {
-			semanticRelationshipCategory = ConceptRelationshipType.HAS_BROADER_CONCEPT;
+		if (relUpper.equals("CHD") || relUpper.equals("RB") || relUpper.equals("RO") || relUpper.equals("SIB")
+				|| relUpper.equals("SY")) {
+			if (relUpper.equals("CHD")) {
+				semanticRelationshipCategory = ConceptRelationshipType.HAS_CHILD_CONCEPT;
+			} else if (relUpper.equals("RB")) {
+				semanticRelationshipCategory = ConceptRelationshipType.HAS_BROADER_CONCEPT;
+			}
+		} else {
+			logger.error("REL  = {} received. Illegal value for relationships.", rel);
+			throw new IllegalArgumentException();
 		}
+
 		return semanticRelationshipCategory;
 	}
 
@@ -118,5 +127,19 @@ public abstract class UmlsUtils {
 		}
 		return stringBuilder.toString();
 	}
+
+	public static double getRlspWeight(String rel) {
+		String relUpper = rel.toUpperCase().trim();
+		if (relUpper.equals("CHD") || relUpper.equals("RB")) {
+			return MAX_RLSP_WEIGHT;
+		} else if (relUpper.equals("RO") || relUpper.equals("SIB") || relUpper.equals("SY")) {
+			return MAX_RLSP_WEIGHT / 2;
+		} else {
+			logger.error("REL  = {} received. Illegal value for relationships.", rel);
+			throw new IllegalArgumentException();
+		}
+	}
+	
+	
 
 }

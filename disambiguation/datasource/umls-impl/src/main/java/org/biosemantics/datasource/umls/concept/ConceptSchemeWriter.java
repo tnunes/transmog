@@ -33,7 +33,7 @@ public class ConceptSchemeWriter {
 	private Connection connection;
 	private Statement statement;
 
-	private static final String GET_ALL_CONCEPT_SCHEMES_SQL = "select STY_RL, UI, DEF from SRDEF where RT='STY'";
+	private static final String GET_ALL_CONCEPT_SCHEMES_SQL = "select ABR, STY_RL, UI, DEF from SRDEF where RT='STY'";
 	private static final Logger logger = LoggerFactory.getLogger(ConceptSchemeWriter.class);// NOPMD
 
 	@Required
@@ -65,17 +65,35 @@ public class ConceptSchemeWriter {
 			while (rs.next()) {
 				String styRl = rs.getString("STY_RL");
 				String ui = rs.getString("UI");
-				Label label = new LabelImpl(Language.EN, styRl);
-				long labelNodeId = bulkImportService.createLabel(label);
-				List<ConceptLabel> conceptLabels = new ArrayList<ConceptLabel>();
-				conceptLabels.add(new ConceptLabelImpl(new LabelImpl(null, String.valueOf(labelNodeId)),
-						LabelType.PREFERRED));
+				String abr = rs.getString("ABR");
 
-				Notation notation = new NotationImpl(umlsCacheService.getValue(UmlsUtils.DEFAULT_SAB), ui);
-				long notationNodeId = bulkImportService.createNotation(notation);
+				List<ConceptLabel> conceptLabels = new ArrayList<ConceptLabel>();
 				List<Long> notations = new ArrayList<Long>();
-				notations.add(notationNodeId);
-				StringBuilder fullText = new StringBuilder(styRl).append(UmlsUtils.SEPERATOR).append(ui);
+
+				String value = umlsCacheService.getValue(Language.EN.name() + styRl);
+				if (value == null) {
+					value = String.valueOf(bulkImportService.createLabel(new LabelImpl(Language.EN, styRl)));
+					umlsCacheService.add(new KeyValue(Language.EN.name() + styRl, value));
+				}
+				conceptLabels.add(new ConceptLabelImpl(new LabelImpl(Language.EN, value), LabelType.PREFERRED));
+
+				value = umlsCacheService.getValue(Language.EN.name() + abr);
+				if (value == null) {
+					value = String.valueOf(bulkImportService.createLabel(new LabelImpl(Language.EN, abr)));
+					umlsCacheService.add(new KeyValue(Language.EN.name() + abr, value));
+				}
+				conceptLabels.add(new ConceptLabelImpl(new LabelImpl(Language.EN, value), LabelType.ALTERNATE));
+
+				value = umlsCacheService.getValue(UmlsUtils.DEFAULT_SAB + ui);
+				if (value == null) {
+					Notation notation = new NotationImpl(umlsCacheService.getDomainNode(UmlsUtils.DEFAULT_SAB), ui);
+					value = String.valueOf(bulkImportService.createNotation(notation));
+					umlsCacheService.add(new KeyValue(UmlsUtils.DEFAULT_SAB + ui, value));
+				}
+
+				notations.add(Long.valueOf(value));
+				StringBuilder fullText = new StringBuilder(styRl).append(UmlsUtils.SEPERATOR).append(ui)
+						.append(UmlsUtils.SEPERATOR).append(abr);
 				long conceptNodeId = bulkImportService.createUmlsConcept(ConceptType.CONCEPT_SCHEME, conceptLabels,
 						notations, fullText.toString());
 				umlsCacheService.add(new KeyValue(styRl, String.valueOf(conceptNodeId)));

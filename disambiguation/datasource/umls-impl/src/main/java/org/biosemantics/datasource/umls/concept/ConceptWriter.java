@@ -15,6 +15,7 @@ import javax.sql.DataSource;
 import org.biosemantics.conceptstore.common.domain.ConceptLabel;
 import org.biosemantics.conceptstore.common.domain.ConceptType;
 import org.biosemantics.conceptstore.common.domain.Label;
+import org.biosemantics.conceptstore.common.domain.Language;
 import org.biosemantics.conceptstore.utils.domain.impl.LabelImpl;
 import org.biosemantics.conceptstore.utils.domain.impl.NotationImpl;
 import org.biosemantics.datasource.umls.IgnoredCuiFileReader;
@@ -38,7 +39,7 @@ public class ConceptWriter {
 
 	// constants
 	private static final String GET_ALL_CUI_SQL = "select CUI, SUI, TS, ISPREF, STT, LAT, STR, SAB, CODE from MRCONSO ORDER BY CUI";
-	private static final Logger logger = LoggerFactory.getLogger(ConceptWriter.class);//NOPMD
+	private static final Logger logger = LoggerFactory.getLogger(ConceptWriter.class);// NOPMD
 
 	@Required
 	public final void setDataSource(DataSource dataSource) {
@@ -54,8 +55,7 @@ public class ConceptWriter {
 	public final void setUmlsCacheService(UmlsCacheService umlsCacheService) {
 		this.umlsCacheService = umlsCacheService;
 	}
-	
-	
+
 	@Required
 	public void setIgnoredCuiFileReader(IgnoredCuiFileReader ignoredCuiFileReader) {
 		this.ignoredCuiFileReader = ignoredCuiFileReader;
@@ -88,34 +88,35 @@ public class ConceptWriter {
 				String sab = rs.getString("SAB");
 				String code = rs.getString("CODE");
 				if (previousCui != null && !cui.equals(previousCui)) {
-					NotationImpl notationImpl = new NotationImpl(umlsCacheService.getValue(UmlsUtils.DEFAULT_SAB),
+					NotationImpl notationImpl = new NotationImpl(umlsCacheService.getDomainNode(UmlsUtils.DEFAULT_SAB),
 							previousCui);
 					long cuiNotationNodeId = bulkImportService.createNotation(notationImpl);
 					notations.add(cuiNotationNodeId);
 					fullText.add(previousCui);
-					if(! ignoreCuis.contains(previousCui)){
+					if (!ignoreCuis.contains(previousCui)) {
 						long uuid = bulkImportService.createUmlsConcept(ConceptType.CONCEPT, conceptLabels, notations,
-							UmlsUtils.setToString(fullText));
+								UmlsUtils.setToString(fullText));
 						umlsCacheService.add(new KeyValue(previousCui, String.valueOf(uuid)));
-					}else{
+					} else {
 						logger.info("ignoring cui {}", previousCui);
 					}
 					fullText.clear();
 					conceptLabels.clear();
 					notations.clear();
 					// add cui to cache
-					
+
 					if (++conceptInsertCounter % UmlsUtils.BATCH_SIZE == 0) {
 						logger.info("inserted concepts: {}", conceptInsertCounter);
 					}
 				}
 				// labels
-				String value = umlsCacheService.getValue(str);
+				Language language = UmlsUtils.getLanguage(lat);
+				String value = umlsCacheService.getValue(language.name() + str);
 				long labelNodeId = 0;
 				if (value == null) {
-					Label label = new LabelImpl(UmlsUtils.getLanguage(lat), str);
+					Label label = new LabelImpl(language, str);
 					labelNodeId = bulkImportService.createLabel(label);
-					umlsCacheService.add(new KeyValue(str, String.valueOf(labelNodeId)));
+					umlsCacheService.add(new KeyValue(language.name() + str, String.valueOf(labelNodeId)));
 				} else {
 					labelNodeId = Long.valueOf(value);
 				}
@@ -127,13 +128,14 @@ public class ConceptWriter {
 					long notationNodeId = 0;
 					String notationValue = umlsCacheService.getValue(sab + code);
 					if (notationValue == null) {
-						String domainUuid = umlsCacheService.getValue(sab);
+						String domainUuid = umlsCacheService.getDomainNode(sab);
 						if (domainUuid == null) {
-							throw new IllegalStateException("domainUUid not found for sab = " + sab);
+							logger.error("no domain node id found for domain SAB = {}", sab);
+							throw new IllegalStateException();
 						}
 						NotationImpl notationImpl = new NotationImpl(domainUuid, code);
 						notationNodeId = bulkImportService.createNotation(notationImpl);
-						umlsCacheService.add(new KeyValue(sab+code, String.valueOf(notationNodeId)));
+						umlsCacheService.add(new KeyValue(sab + code, String.valueOf(notationNodeId)));
 					} else {
 						notationNodeId = Long.valueOf(notationValue);
 					}
@@ -156,7 +158,7 @@ public class ConceptWriter {
 
 	public void addIgnoreCuis(Collection<String> ignoreCuis) {
 		this.ignoreCuis.addAll(ignoreCuis);
-		
+
 	}
 
 }

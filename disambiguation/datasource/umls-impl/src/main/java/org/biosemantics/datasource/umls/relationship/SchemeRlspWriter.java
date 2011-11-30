@@ -7,7 +7,6 @@ import java.sql.Statement;
 
 import javax.sql.DataSource;
 
-import org.biosemantics.conceptstore.common.domain.ConceptRelationshipSource;
 import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
 import org.biosemantics.conceptstore.utils.domain.impl.ConceptRelationshipImpl;
 import org.biosemantics.datasource.umls.cache.UmlsCacheService;
@@ -26,7 +25,7 @@ public class SchemeRlspWriter {
 	private Statement statement;
 	// avoiding self linking records: as self rlsps are not supported by neo4j
 	private static final String GET_CONCEPT_SCHEME_RELATIONS_SQL = "select STY1, RL, STY2 from SRSTRE2  where STY1 != STY2";
-	private static final Logger logger = LoggerFactory.getLogger(SchemeRlspWriter.class);//NOPMD
+	private static final Logger logger = LoggerFactory.getLogger(SchemeRlspWriter.class);// NOPMD
 
 	@Required
 	public final void setBulkImportService(BulkImportService bulkImportService) {
@@ -64,8 +63,7 @@ public class SchemeRlspWriter {
 				String objectValue = umlsCacheService.getValue(sty2);
 				if (subjectValue != null && predicateValue != null && objectValue != null) {
 					ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(subjectValue,
-							objectValue, predicateValue, ConceptRelationshipType.RELATED,
-							ConceptRelationshipSource.AUTHORITATIVE, UmlsUtils.MAX_RLSP_WEIGHT);
+							objectValue, predicateValue, getRelationship(rl), UmlsUtils.MAX_RLSP_WEIGHT);
 					bulkImportService.validateAndCreateRelationship(conceptRelationshipImpl);
 					ctr++;
 				} else {
@@ -79,6 +77,63 @@ public class SchemeRlspWriter {
 			rs.close();
 
 		}
+	}
+
+	// affects
+	// associated_with
+	// co-occurs_with
+	// complicates
+	// isa : CHILD
+	// issue_in
+	// location_of
+	// manifestation_of
+	// occurs_in
+	// part_of : NAR
+	// result_of
+	// exhibits
+	// interacts_with
+	// performs
+	// produces
+	// uses
+	// property_of
+	// causes
+	// consists_of : BR
+	// ingredient_of : NAR
+	// diagnoses
+	// disrupts
+	// prevents
+	// treats
+	// process_of
+	// adjacent_to
+	// conceptual_part_of: BR
+	// connected_to
+	// traverses
+	// branch_of
+	// contains : BR
+	// developmental_form_of
+	// interconnects
+	// surrounds
+	// tributary_of
+	// derivative_of
+	// precedes
+	// degree_of
+	// measurement_of
+	// analyzes
+	// assesses_effect_of
+	// measures
+	// method_of
+	// conceptually_related_to
+	// evaluation_of
+	// carries_out
+	// manages
+	// indicates
+	// practices
+	private ConceptRelationshipType getRelationship(String rl) {
+
+		if (rl.equals("isa")) {
+			return ConceptRelationshipType.HAS_CHILD_CONCEPT;
+		}
+		return ConceptRelationshipType.RELATED;
 	}
 
 	public void destroy() throws SQLException {

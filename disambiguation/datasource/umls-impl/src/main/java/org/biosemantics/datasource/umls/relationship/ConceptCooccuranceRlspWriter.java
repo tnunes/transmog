@@ -8,7 +8,6 @@ import java.util.Collection;
 
 import javax.sql.DataSource;
 
-import org.biosemantics.conceptstore.common.domain.ConceptRelationshipSource;
 import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
 import org.biosemantics.conceptstore.utils.domain.impl.ConceptRelationshipImpl;
 import org.biosemantics.datasource.umls.IgnoredCuiFileReader;
@@ -45,7 +44,7 @@ public class ConceptCooccuranceRlspWriter {
 	public final void setUmlsCacheService(UmlsCacheService umlsCacheService) {
 		this.umlsCacheService = umlsCacheService;
 	}
-	
+
 	@Required
 	public void setIgnoredCuiFileReader(IgnoredCuiFileReader ignoredCuiFileReader) {
 		this.ignoredCuiFileReader = ignoredCuiFileReader;
@@ -66,8 +65,8 @@ public class ConceptCooccuranceRlspWriter {
 			while (rs.next()) {
 				String cui1 = rs.getString("CUI1");
 				String cui2 = rs.getString("CUI2");
-				if(ignoreCuis.contains(cui1) || ignoreCuis.contains(cui2)){
-					logger.info("ignoring cooc relationships for cui1 {} cui2 {}",new Object[]{cui1, cui2} );
+				if (ignoreCuis.contains(cui1) || ignoreCuis.contains(cui2)) {
+					logger.info("ignoring cooc relationships for cui1 {} cui2 {}", new Object[] { cui1, cui2 });
 					continue;
 				}
 				int cof = rs.getInt("COF");
@@ -76,11 +75,11 @@ public class ConceptCooccuranceRlspWriter {
 				if (subjectValue != null && objectValue != null) {
 					if (!checkExists(subjectValue, objectValue)) {
 						ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(subjectValue,
-								objectValue, null, ConceptRelationshipType.RELATED,
-								ConceptRelationshipSource.AUTHORITATIVE, cof);
+								objectValue, null, ConceptRelationshipType.CO_OCCURANCE, cof);
 						bulkImportService.createRelationship(conceptRelationshipImpl);
 						// add to cache
-						umlsCacheService.add(new KeyValue(subjectValue + objectValue, subjectValue));
+						umlsCacheService.addRelationship(subjectValue + objectValue
+								+ ConceptRelationshipType.CO_OCCURANCE.name());
 						if (++ctr % UmlsUtils.BATCH_SIZE == 0) {
 							logger.info("inserted concept-concept rlsp: {}", ctr);
 						}
@@ -97,8 +96,9 @@ public class ConceptCooccuranceRlspWriter {
 	}
 
 	private boolean checkExists(String subjectValue, String objectValue) {
-		if (umlsCacheService.getValue(subjectValue + objectValue) == null) {
-			if (umlsCacheService.getValue(objectValue + subjectValue) == null) {
+		if (umlsCacheService.getRelationship(subjectValue + objectValue + ConceptRelationshipType.CO_OCCURANCE.name())) {
+			if (umlsCacheService.getRelationship(objectValue + subjectValue
+					+ ConceptRelationshipType.CO_OCCURANCE.name())) {
 				return false;
 			} else {
 				return true;
@@ -107,7 +107,7 @@ public class ConceptCooccuranceRlspWriter {
 			return true;
 		}
 	}
-	
+
 	public void destroy() throws SQLException {
 		statement.close();
 		connection.close();

@@ -8,7 +8,6 @@ import java.util.Collection;
 
 import javax.sql.DataSource;
 
-import org.biosemantics.conceptstore.common.domain.ConceptRelationshipSource;
 import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
 import org.biosemantics.conceptstore.utils.domain.impl.ConceptRelationshipImpl;
 import org.biosemantics.datasource.umls.IgnoredCuiFileReader;
@@ -74,8 +73,7 @@ public class ConceptToSchemeRlspWriter {
 				String objectValue = umlsCacheService.getValue(sty);
 				if (subjectValue != null && objectValue != null) {
 					ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(subjectValue,
-							objectValue, null, ConceptRelationshipType.IN_SCHEME,
-							ConceptRelationshipSource.AUTHORITATIVE, UmlsUtils.MAX_RLSP_WEIGHT);
+							objectValue, null, ConceptRelationshipType.IN_SCHEME, UmlsUtils.MAX_RLSP_WEIGHT);
 					bulkImportService.validateAndCreateRelationship(conceptRelationshipImpl);
 					if (++ctr % UmlsUtils.BATCH_SIZE == 0) {
 						logger.info("inserted concept-scheme rlsp: {}", ctr);

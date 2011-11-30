@@ -8,11 +8,9 @@ import java.util.Collection;
 
 import javax.sql.DataSource;
 
-import org.biosemantics.conceptstore.common.domain.ConceptRelationshipSource;
 import org.biosemantics.conceptstore.common.domain.ConceptRelationshipType;
 import org.biosemantics.conceptstore.utils.domain.impl.ConceptRelationshipImpl;
 import org.biosemantics.datasource.umls.IgnoredCuiFileReader;
-import org.biosemantics.datasource.umls.cache.KeyValue;
 import org.biosemantics.datasource.umls.cache.UmlsCacheService;
 import org.biosemantics.datasource.umls.concept.UmlsUtils;
 import org.biosemantics.disambiguation.bulkimport.service.BulkImportService;
@@ -28,8 +26,8 @@ public class ConceptFactualRlspWriter {
 	private Statement statement;
 	private Collection<String> ignoreCuis;
 	private IgnoredCuiFileReader ignoredCuiFileReader;
-	private static final String GET_ALL_FACTUAL_RLSP_SQL = "select CUI1, CUI2, REL from MRREL where CUI1 != CUI2";
-	private static final Logger logger = LoggerFactory.getLogger(ConceptFactualRlspWriter.class);//NOPMD
+	private static final String GET_ALL_FACTUAL_RLSP_SQL = "select CUI1, CUI2, REL from MRREL where CUI1 != CUI2 AND REL IN ('CHD', 'RB', 'RO', 'SIB', 'SY')";// 14953305
+	private static final Logger logger = LoggerFactory.getLogger(ConceptFactualRlspWriter.class);// NOPMD
 
 	@Required
 	public final void setBulkImportService(BulkImportService bulkImportService) {
@@ -45,7 +43,7 @@ public class ConceptFactualRlspWriter {
 	public final void setUmlsCacheService(UmlsCacheService umlsCacheService) {
 		this.umlsCacheService = umlsCacheService;
 	}
-	
+
 	@Required
 	public void setIgnoredCuiFileReader(IgnoredCuiFileReader ignoredCuiFileReader) {
 		this.ignoredCuiFileReader = ignoredCuiFileReader;
@@ -66,8 +64,8 @@ public class ConceptFactualRlspWriter {
 			while (rs.next()) {
 				String cui1 = rs.getString("CUI1");
 				String cui2 = rs.getString("CUI2");
-				if(ignoreCuis.contains(cui1) || ignoreCuis.contains(cui2)){
-					logger.info("ignoring factual relationships for cui1 {} cui2 {}",new Object[]{cui1, cui2} );
+				if (ignoreCuis.contains(cui1) || ignoreCuis.contains(cui2)) {
+					logger.info("ignoring factual relationships for cui1 {} cui2 {}", new Object[] { cui1, cui2 });
 					continue;
 				}
 				String rel = rs.getString("REL");
@@ -78,12 +76,11 @@ public class ConceptFactualRlspWriter {
 				if (subjectValue != null && objectValue != null) {
 					if (!checkExists(subjectValue, objectValue, semanticRelationshipCategory)) {
 						ConceptRelationshipImpl conceptRelationshipImpl = new ConceptRelationshipImpl(subjectValue,
-								objectValue, null, semanticRelationshipCategory,
-								ConceptRelationshipSource.AUTHORITATIVE, UmlsUtils.MAX_RLSP_WEIGHT);
-						bulkImportService.createRelationship(conceptRelationshipImpl);
+								objectValue, null, semanticRelationshipCategory, UmlsUtils.getRlspWeight(rel));
+						long rlspId = bulkImportService.createRelationship(conceptRelationshipImpl);
 						// add to cache
-						umlsCacheService.add(new KeyValue(subjectValue + objectValue
-								+ semanticRelationshipCategory.name(), subjectValue));
+						umlsCacheService.addRelationship(subjectValue + objectValue
+								+ semanticRelationshipCategory.name());
 						if (++ctr % UmlsUtils.BATCH_SIZE == 0) {
 							logger.info("inserted concept-concept rlsp: {}", ctr);
 						}
@@ -100,45 +97,15 @@ public class ConceptFactualRlspWriter {
 
 	private boolean checkExists(String subjectValue, String objectValue,
 			ConceptRelationshipType semanticRelationshipCategory) {
-		switch (semanticRelationshipCategory) {
-		case RELATED:
-			if (umlsCacheService.getValue(subjectValue + objectValue + semanticRelationshipCategory.name()) == null) {
-				if (umlsCacheService.getValue(objectValue + subjectValue + semanticRelationshipCategory.name()) == null) {
-					return false;
-				} else {
-					return true;
-				}
+		if (!umlsCacheService.getRelationship(subjectValue + objectValue + semanticRelationshipCategory.name())) {
+			if (!umlsCacheService.getRelationship(objectValue + subjectValue + semanticRelationshipCategory.name())) {
+				return false;
 			} else {
 				return true;
 			}
-		case HAS_BROADER_CONCEPT:
-			if (umlsCacheService.getValue(subjectValue + objectValue
-					+ ConceptRelationshipType.HAS_BROADER_CONCEPT.name()) == null) {
-				if (umlsCacheService.getValue(objectValue + subjectValue
-						+ ConceptRelationshipType.HAS_NARROWER_CONCEPT.name()) == null) {
-					return false;
-				} else {
-					return true;
-				}
-			} else {
-				return true;
-			}
-		case HAS_NARROWER_CONCEPT:
-			if (umlsCacheService.getValue(subjectValue + objectValue
-					+ ConceptRelationshipType.HAS_NARROWER_CONCEPT.name()) == null) {
-				if (umlsCacheService.getValue(objectValue + subjectValue
-						+ ConceptRelationshipType.HAS_BROADER_CONCEPT.name()) == null) {
-					return false;
-				} else {
-					return true;
-				}
-			} else {
-				return true;
-			}
-		default:
-			throw new IllegalStateException("semantic relation not found");
+		} else {
+			return true;
 		}
-
 	}
 
 	public void destroy() throws SQLException {
