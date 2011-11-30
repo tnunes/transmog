@@ -23,4 +23,7 @@ public interface BulkImportService {
 			String fullText);
 
 	long createNotation(Notation notation);
+
+	void updateUmlsConcept(Long conceptNodeId, ConceptType conceptType, List<ConceptLabel> conceptLabelIds,
+			List<Long> notations, String fullText);
 }

@@ -42,6 +42,7 @@ import org.neo4j.kernel.impl.batchinsert.BatchInserterImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.util.CollectionUtils;
 
 public class BulkImportServiceImpl implements BulkImportService {
 
@@ -261,7 +262,6 @@ public class BulkImportServiceImpl implements BulkImportService {
 			Map<String, Object> properties = new HashMap<String, Object>();
 			String relationshipUuid = uuidGeneratorService.generateRandomUuid();
 			properties.put(UUID.name(), relationshipUuid);
-			properties.put(ConceptRelationshipImpl.RLSP_CATEGORY_PROPERTY, conceptRelationship.getSource().getId());
 			if (!StringUtils.isBlank(conceptRelationship.getPredicateConceptUuid())) {
 				properties.put(ConceptRelationshipImpl.PREDICATE_CONCEPT_UUID_PROPERTY,
 						getUuidforNodeId(Long.valueOf(conceptRelationship.getPredicateConceptUuid())));
@@ -296,8 +296,8 @@ public class BulkImportServiceImpl implements BulkImportService {
 	@Override
 	public long createNotation(Notation notation) {
 		Map<String, Object> properties = new HashMap<String, Object>();
-		String domainUuid = (String) batchInserter.getGraphDbService()
-				.getNodeById(Long.valueOf(notation.getDomain())).getProperty(UUID.name());
+		String domainUuid = (String) batchInserter.getGraphDbService().getNodeById(Long.valueOf(notation.getDomain()))
+				.getProperty(UUID.name());
 		properties.put(PropertyConstant.DOMAIN.name(), domainUuid);
 		properties.put(PropertyConstant.CODE.name(), notation.getCode());
 		long notationNodeId = batchInserter.createNode(properties);
@@ -326,15 +326,19 @@ public class BulkImportServiceImpl implements BulkImportService {
 		conceptNodeIndex.add(conceptNodeId, properties);
 		properties.clear();
 		// indexing full text
-		properties.put(CONCEPT_FULL_TEXT_KEY.name(), fullText);
-		conceptFullTextIndex.add(conceptNodeId, properties);
-		properties.clear();
-		// creating rlsp to labels
-		for (ConceptLabel conceptLabel : conceptLabelIds) {
-			properties.put(LABEL_TYPE.name(), conceptLabel.getLabelType().getId());
-			batchInserter.createRelationship(conceptNodeId, Long.valueOf(conceptLabel.getText()),
-					RelationshipTypeConstant.HAS_LABEL, properties);
+		if (! StringUtils.isBlank(fullText)) {
+			properties.put(CONCEPT_FULL_TEXT_KEY.name(), fullText);
+			conceptFullTextIndex.add(conceptNodeId, properties);
 			properties.clear();
+		}
+		// creating rlsp to labels
+		if (! CollectionUtils.isEmpty(conceptLabelIds)) {
+			for (ConceptLabel conceptLabel : conceptLabelIds) {
+				properties.put(LABEL_TYPE.name(), conceptLabel.getLabelType().getId());
+				batchInserter.createRelationship(conceptNodeId, Long.valueOf(conceptLabel.getText()),
+						RelationshipTypeConstant.HAS_LABEL, properties);
+				properties.clear();
+			}
 		}
 		// create rlsp to notations
 		if (notations != null) {
@@ -350,4 +354,29 @@ public class BulkImportServiceImpl implements BulkImportService {
 		return (String) batchInserter.getNodeProperties(nodeId).get(UUID.name());
 	}
 
+	@Override
+	public void updateUmlsConcept(Long conceptNodeId, ConceptType conceptType, List<ConceptLabel> conceptLabelIds,
+			List<Long> notations, String fullText) {
+		Map<String, Object> properties = new HashMap<String, Object>();
+		// indexing full text
+		properties.put(CONCEPT_FULL_TEXT_KEY.name(), fullText);
+		conceptFullTextIndex.add(conceptNodeId, properties);
+		properties.clear();
+		// creating rlsp to labels
+		if (! CollectionUtils.isEmpty(conceptLabelIds)) {
+			for (ConceptLabel conceptLabel : conceptLabelIds) {
+				properties.put(LABEL_TYPE.name(), conceptLabel.getLabelType().getId());
+				batchInserter.createRelationship(conceptNodeId, Long.valueOf(conceptLabel.getText()),
+						RelationshipTypeConstant.HAS_LABEL, properties);
+				properties.clear();
+			}
+		}
+		// create rlsp to notations
+		if (notations != null) {
+			for (Long notationNodeId : notations) {
+				batchInserter.createRelationship(conceptNodeId, notationNodeId, RelationshipTypeConstant.HAS_NOTATION,
+						null);
+			}
+		}
+	}
 }
