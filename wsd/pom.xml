@@ -1,0 +1,25 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.biosemantics.wsd</groupId>
+	<artifactId>wsd</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>wsd</name>
+	<description>wsd</description>
+	<properties>
+		<spring.version>3.0.7.RELEASE</spring.version>
+	</properties>
+	<modules>
+		<module>conceptstore-graph-impl</module>
+		<module>umls-datasource-impl</module>
+		<module>graphstore-impl</module>
+	</modules>
+	<dependencies>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.16</version>
+		</dependency>
+	</dependencies>
+</project>
