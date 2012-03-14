@@ -1,0 +1,358 @@
+<?xml version="1.0"?>
+<!DOCTYPE PubmedArticleSet PUBLIC "-//NLM//DTD PubMedArticle, 1st January 2012//EN" "http://www.ncbi.nlm.nih.gov/corehtml/query/DTD/pubmed_120101.dtd">
+<PubmedArticleSet>
+<PubmedArticle>
+    <MedlineCitation Owner="NLM" Status="In-Data-Review">
+        <PMID Version="1">21628343</PMID>
+        <DateCreated>
+            <Year>2012</Year>
+            <Month>03</Month>
+            <Day>01</Day>
+        </DateCreated>
+        <Article PubModel="Print-Electronic">
+            <Journal>
+                <ISSN IssnType="Electronic">1461-7285</ISSN>
+                <JournalIssue CitedMedium="Internet">
+                    <Volume>26</Volume>
+                    <Issue>3</Issue>
+                    <PubDate>
+                        <Year>2012</Year>
+                        <Month>Mar</Month>
+                    </PubDate>
+                </JournalIssue>
+                <Title>Journal of psychopharmacology (Oxford, England)</Title>
+                <ISOAbbreviation>J. Psychopharmacol. (Oxford)</ISOAbbreviation>
+            </Journal>
+            <ArticleTitle>Norepinephrine transporter -3081(A/T) and alpha-2A-adrenergic receptor MspI polymorphisms are associated with cardiovascular side effects of OROS-methylphenidate treatment.</ArticleTitle>
+            <Pagination>
+                <MedlinePgn>380-9</MedlinePgn>
+            </Pagination>
+            <Abstract>
+                <AbstractText>The purpose of this study was to investigate a possible association between norepinephrine genes and cardiovascular side effects of the Osmotic Controlled-Release Oral Delivery System-methylphenidate (OROS-MPH) in Korean children with attention-deficit/hyperactivity disorder (ADHD). One hundred and one children with ADHD (8.7 ± 1.7 years) were recruited from child psychiatric centers at six university hospitals in South Korea. All participants were drug-naive ADHD children treated with OROS-MPH for 12 weeks. During the treatment period the investigators titrated the OROS-MPH dosage on the basis of symptom severity and side effects. Resting heart rate (HR), diastolic blood pressure (DBP), and systolic blood pressure (SBP) were examined before and after treatment. The percentage change score (post-treatment - pretreatment/pretreatment × 100) of each parameter was calculated. Genotyping of SLC6A2 -3081(A/T) and G1287A, and alpha-2A-adrenergic receptor (ADRA2A) MspI and DraI polymorphisms was performed. Clinically significant changes were not found in cardiovascular monitoring during the course of treatment. An increase of HR after OROS-MPH treatment was found to be statistically significant (t = 3.54, p = 0.001). Changes in SBP and DBP were not significant and no specific change was found in the ECGs. However, an additive regression analysis demonstrated a significant association between SLC6A2 -3081(A/T) and percentage change in HR post-treatment (p = 0.01) after controlling for age, gender, dosage of MPH and response and baseline pulse rate. Children with ADHD having the T/T genotype of SLC6A2 showed a 12.5% increase in HR compared to baseline, whereas children with the A/T or A/A genotype showed a 3.5% and 2.5% increase after OROS-MPH treatment, respectively. There was also a significant association between the ADRA2A MspI genotype and percentage change of DBP post-treatment after controlling for age, gender, dosage of MPH and response and baseline DBP (p = 0.009). Children with ADHD having the C/C genotype of ADRA2A MspI showed an 18.5% increase in DBP compared to baseline, but children with the G/G or G/C genotype showed a 0.2% decrease after OROS-MPH treatment. The overall cardiovascular effects of OROS-MPH were modest. However, our findings show a positive association between norepinephrine-related gene polymorphisms and cardiovascular response induced by MPH in Korean children with ADHD. Consideration must be given to such children oradults with specific norepinephrine-related genotypes, especially if they show significant changes in HR or DBP after OROS-MPH administration.</AbstractText>
+            </Abstract>
+            <Affiliation>1Division of Child and Adolescent Psychiatry, Department of Psychiatry, Seoul National University, College of Medicine, Seoul, South Korea.</Affiliation>
+            <AuthorList CompleteYN="Y">
+                <Author ValidYN="Y">
+                    <LastName>Cho</LastName>
+                    <ForeName>Soo-Churl</ForeName>
+                    <Initials>SC</Initials>
+                </Author>
+                <Author ValidYN="Y">
+                    <LastName>Kim</LastName>
+                    <ForeName>Bung-Nyun</ForeName>
+                    <Initials>BN</Initials>
+                </Author>
+                <Author ValidYN="Y">
+                    <LastName>Cummins</LastName>
+                    <ForeName>Tarrant Dr</ForeName>
+                    <Initials>TD</Initials>
+                </Author>
+                <Author ValidYN="Y">
+                    <LastName>Kim</LastName>
+                    <ForeName>Jae-Won</ForeName>
+                    <Initials>JW</Initials>
+                </Author>
+                <Author ValidYN="Y">
+                    <LastName>Bellgrove</LastName>
+                    <ForeName>Mark A</ForeName>
+                    <Initials>MA</Initials>
+                </Author>
+            </AuthorList>
+            <Language>eng</Language>
+            <PublicationTypeList>
+                <PublicationType>Journal Article</PublicationType>
+            </PublicationTypeList>
+            <ArticleDate DateType="Electronic">
+                <Year>2011</Year>
+                <Month>05</Month>
+                <Day>31</Day>
+            </ArticleDate>
+        </Article>
+        <MedlineJournalInfo>
+            <Country>United States</Country>
+            <MedlineTA>J Psychopharmacol</MedlineTA>
+            <NlmUniqueID>8907828</NlmUniqueID>
+            <ISSNLinking>0269-8811</ISSNLinking>
+        </MedlineJournalInfo>
+        <CitationSubset>IM</CitationSubset>
+    </MedlineCitation>
+    <PubmedData>
+        <History>
+            <PubMedPubDate PubStatus="aheadofprint">
+                <Year>2011</Year>
+                <Month>5</Month>
+                <Day>31</Day>
+            </PubMedPubDate>
+            <PubMedPubDate PubStatus="entrez">
+                <Year>2011</Year>
+                <Month>6</Month>
+                <Day>2</Day>
+                <Hour>6</Hour>
+                <Minute>0</Minute>
+            </PubMedPubDate>
+            <PubMedPubDate PubStatus="pubmed">
+                <Year>2011</Year>
+                <Month>6</Month>
+                <Day>2</Day>
+                <Hour>6</Hour>
+                <Minute>0</Minute>
+            </PubMedPubDate>
+            <PubMedPubDate PubStatus="medline">
+                <Year>2011</Year>
+                <Month>6</Month>
+                <Day>2</Day>
+                <Hour>6</Hour>
+                <Minute>0</Minute>
+            </PubMedPubDate>
+        </History>
+        <PublicationStatus>ppublish</PublicationStatus>
+        <ArticleIdList>
+            <ArticleId IdType="pii">0269881111405356</ArticleId>
+            <ArticleId IdType="doi">10.1177/0269881111405356</ArticleId>
+            <ArticleId IdType="pubmed">21628343</ArticleId>
+        </ArticleIdList>
+    </PubmedData>
+</PubmedArticle>
+
+
+<PubmedArticle>
+    <MedlineCitation Owner="NLM" Status="In-Data-Review">
+        <PMID Version="1">22330260</PMID>
+        <DateCreated>
+            <Year>2012</Year>
+            <Month>02</Month>
+            <Day>22</Day>
+        </DateCreated>
+        <Article PubModel="Print">
+            <Journal>
+                <ISSN IssnType="Electronic">1532-8651</ISSN>
+                <JournalIssue CitedMedium="Internet">
+                    <Volume>37</Volume>
+                    <Issue>2</Issue>
+                    <PubDate>
+                        <Year>2012</Year>
+                        <Month>Mar</Month>
+                    </PubDate>
+                </JournalIssue>
+                <Title>Regional anesthesia and pain medicine</Title>
+                <ISOAbbreviation>Reg Anesth Pain Med</ISOAbbreviation>
+            </Journal>
+            <ArticleTitle>Respiratory, neuromuscular, and cardiovascular effects of neosaxitoxin in isoflurane-anesthetized sheep.</ArticleTitle>
+            <Pagination>
+                <MedlinePgn>152-8</MedlinePgn>
+            </Pagination>
+            <Abstract>
+                <AbstractText Label="BACKGROUND" NlmCategory="BACKGROUND">Neosaxitoxin (NeoSTX) is a potent site-1 sodium-channel blocker being developed as a local anesthetic. Doses of 100 μg have been used by local infiltration in anesthetized adult humans without adverse effect. We hypothesized that similar doses could cause significant respiratory, neuromuscular, and cardiovascular impairment and sought to test this hypothesis in sheep.</AbstractText>
+                <AbstractText Label="METHODS" NlmCategory="METHODS">Procedures were approved by the Institutional Animal Care and Use Committee. In neuromuscular/respiratory experiments, 33 intubated, isoflurane-anesthetized sheep were randomized to 6 NeoSTX treatment groups: saline control, 1 μg/kg subcutaneous (SC), 1 μg/kg intravenous (IV), 2 μg/kg SC, 2 μg/kg SC with bupivacaine 0.25%, and 3 μg/kg SC. Primary outcome measures were doxapram-stimulated inspired volume (DSIV) and quantitative limb acceleration. In cardiovascular experiments, 8 sheep received escalating IV doses of NeoSTX (1, 2, and 3 μg), with hemodynamic and electrocardiographic measurements. Data were analyzed using repeated-measures analysis of variance with post hoc Bonferroni-corrected comparisons.</AbstractText>
+                <AbstractText Label="RESULTS" NlmCategory="RESULTS">NeoSTX 1 μg/kg IV and SC produced no significant reduction in DSIV or limb acceleration compared with baseline. NeoSTX 2 μg/kg SC produced clinically mild reduction in twitch and DSIV; animals recovered well postoperatively. Coadministration of bupivacaine did not worsen these effects. NeoSTX 3 μg/kg produced severe and prolonged impairment of DSIV and limb acceleration. Escalating IV doses of NeoSTX produced mild decrements in heart rate, systemic arterial pressure, and systemic vascular resistance; cardiac output was maintained. Transient interventricular conduction delay occurred without cardiac arrest or ventricular ectopy.</AbstractText>
+                <AbstractText Label="CONCLUSIONS" NlmCategory="CONCLUSIONS">In our sheep model, neuromuscular, respiratory, and cardiovascular effects of NeoSTX were dose dependent and mild using the dose range anticipated for clinical use.</AbstractText>
+            </Abstract>
+            <Affiliation>From the *Department of Anesthesiology, Perioperative and Pain Medicine, †Animal Resources and ‡Department of Cardiology, Children's Hospital Boston, Boston, MA; §Instituto de Ciencias Biomedicas, ICBM, Programa de Fisiología y Biofisica, Universidad de Chile; and ∥Proteus SA, Santiago, Chile.</Affiliation>
+            <AuthorList CompleteYN="Y">
+                <Author ValidYN="Y">
+                    <LastName>Wylie</LastName>
+                    <ForeName>Matthew C</ForeName>
+                    <Initials>MC</Initials>
+                </Author>
+                <Author ValidYN="Y">
+                    <LastName>Johnson</LastName>
+                    <ForeName>Victor M</ForeName>
+                    <Initials>VM</Initials>
+                </Author>
+                <Author ValidYN="Y">
+                    <LastName>Carpino</LastName>
+                    <ForeName>Elizabeth</ForeName>
+                    <Initials>E</Initials>
+                </Author>
+                <Author ValidYN="Y">
+                    <LastName>Mullen</LastName>
+                    <ForeName>Kathryn</ForeName>
+                    <Initials>K</Initials>
+                </Author>
+                <Author ValidYN="Y">
+                    <LastName>Hauser</LastName>
+                    <ForeName>Kimberlie</ForeName>
+                    <Initials>K</Initials>
+                </Author>
+                <Author ValidYN="Y">
+                    <LastName>Nedder</LastName>
+                    <ForeName>Arthur</ForeName>
+                    <Initials>A</Initials>
+                </Author>
+                <Author ValidYN="Y">
+                    <LastName>Kheir</LastName>
+                    <ForeName>John N</ForeName>
+                    <Initials>JN</Initials>
+                </Author>
+                <Author ValidYN="Y">
+                    <LastName>Rodriguez-Navarro</LastName>
+                    <ForeName>Alberto J</ForeName>
+                    <Initials>AJ</Initials>
+                </Author>
+                <Author ValidYN="Y">
+                    <LastName>Zurakowski</LastName>
+                    <ForeName>David</ForeName>
+                    <Initials>D</Initials>
+                </Author>
+                <Author ValidYN="Y">
+                    <LastName>Berde</LastName>
+                    <ForeName>Charles B</ForeName>
+                    <Initials>CB</Initials>
+                </Author>
+            </AuthorList>
+            <Language>eng</Language>
+            <PublicationTypeList>
+                <PublicationType>Journal Article</PublicationType>
+            </PublicationTypeList>
+        </Article>
+        <MedlineJournalInfo>
+            <Country>United States</Country>
+            <MedlineTA>Reg Anesth Pain Med</MedlineTA>
+            <NlmUniqueID>9804508</NlmUniqueID>
+            <ISSNLinking>1098-7339</ISSNLinking>
+        </MedlineJournalInfo>
+        <CitationSubset>IM</CitationSubset>
+    </MedlineCitation>
+    <PubmedData>
+        <History>
+            <PubMedPubDate PubStatus="entrez">
+                <Year>2012</Year>
+                <Month>2</Month>
+                <Day>15</Day>
+                <Hour>6</Hour>
+                <Minute>0</Minute>
+            </PubMedPubDate>
+            <PubMedPubDate PubStatus="pubmed">
+                <Year>2012</Year>
+                <Month>2</Month>
+                <Day>15</Day>
+                <Hour>6</Hour>
+                <Minute>0</Minute>
+            </PubMedPubDate>
+            <PubMedPubDate PubStatus="medline">
+                <Year>2012</Year>
+                <Month>2</Month>
+                <Day>15</Day>
+                <Hour>6</Hour>
+                <Minute>0</Minute>
+            </PubMedPubDate>
+        </History>
+        <PublicationStatus>ppublish</PublicationStatus>
+        <ArticleIdList>
+            <ArticleId IdType="doi">10.1097/AAP.0b013e3182424566</ArticleId>
+            <ArticleId IdType="pubmed">22330260</ArticleId>
+        </ArticleIdList>
+    </PubmedData>
+</PubmedArticle>
+
+
+<PubmedArticle>
+    <MedlineCitation Owner="NLM" Status="In-Process">
+        <PMID Version="1">22239876</PMID>
+        <DateCreated>
+            <Year>2012</Year>
+            <Month>01</Month>
+            <Day>13</Day>
+        </DateCreated>
+        <Article PubModel="Print-Electronic">
+            <Journal>
+                <ISSN IssnType="Electronic">1558-1381</ISSN>
+                <JournalIssue CitedMedium="Internet">
+                    <Volume>23</Volume>
+                    <Issue>1</Issue>
+                    <PubDate>
+                        <Year>2012</Year>
+                        <Month>Feb</Month>
+                    </PubDate>
+                </JournalIssue>
+                <Title>Physical medicine and rehabilitation clinics of North America</Title>
+                <ISOAbbreviation>Phys Med Rehabil Clin N Am</ISOAbbreviation>
+            </Journal>
+            <ArticleTitle>Establishing clinical end points of respiratory function in large animals for clinical translation.</ArticleTitle>
+            <Pagination>
+                <MedlinePgn>75-94, xi</MedlinePgn>
+            </Pagination>
+            <Abstract>
+                <AbstractText>Respiratory dysfunction due progressive weakness of the respiratory muscles, particularly the diaphragm, is a major cause of death in the neuromuscular disease (NMD) X-linked myotubular myopathy (XLMTM). Methods of respiratory assessment in patients are often difficult, especially in those who are mechanically ventilated. The naturally occuring XLMTM dog model exhibits a phenotype similar to that in patients and can be used to determine quantitative descriptions of dysfunction as clinical endpoints for treatment and the development of new therapies. In experiments using respiratory impedance plethysmography (RIP), XLMTM dogs challenged with the respiratory stimulant doxapram displayed significant changes indicative of diaphragmatic weakness.</AbstractText>
+                <CopyrightInformation>Copyright © 2012 Elsevier Inc. All rights reserved.</CopyrightInformation>
+            </Abstract>
+            <Affiliation>Wake Forest Institute for Regenerative Medicine, Wake Forest University, Winston-Salem, NC 27101, USA.</Affiliation>
+            <AuthorList CompleteYN="Y">
+                <Author ValidYN="Y">
+                    <LastName>Goddard</LastName>
+                    <ForeName>Melissa A</ForeName>
+                    <Initials>MA</Initials>
+                </Author>
+                <Author ValidYN="Y">
+                    <LastName>Mitchell</LastName>
+                    <ForeName>Erin L</ForeName>
+                    <Initials>EL</Initials>
+                </Author>
+                <Author ValidYN="Y">
+                    <LastName>Smith</LastName>
+                    <ForeName>Barbara K</ForeName>
+                    <Initials>BK</Initials>
+                </Author>
+                <Author ValidYN="Y">
+                    <LastName>Childers</LastName>
+                    <ForeName>Martin K</ForeName>
+                    <Initials>MK</Initials>
+                </Author>
+            </AuthorList>
+            <Language>eng</Language>
+            <PublicationTypeList>
+                <PublicationType>Journal Article</PublicationType>
+            </PublicationTypeList>
+            <ArticleDate DateType="Electronic">
+                <Year>2011</Year>
+                <Month>12</Month>
+                <Day>15</Day>
+            </ArticleDate>
+        </Article>
+        <MedlineJournalInfo>
+            <Country>United States</Country>
+            <MedlineTA>Phys Med Rehabil Clin N Am</MedlineTA>
+            <NlmUniqueID>9102787</NlmUniqueID>
+            <ISSNLinking>1047-9651</ISSNLinking>
+        </MedlineJournalInfo>
+        <CitationSubset>IM</CitationSubset>
+    </MedlineCitation>
+    <PubmedData>
+        <History>
+            <PubMedPubDate PubStatus="aheadofprint">
+                <Year>2011</Year>
+                <Month>12</Month>
+                <Day>15</Day>
+            </PubMedPubDate>
+            <PubMedPubDate PubStatus="entrez">
+                <Year>2012</Year>
+                <Month>1</Month>
+                <Day>14</Day>
+                <Hour>6</Hour>
+                <Minute>0</Minute>
+            </PubMedPubDate>
+            <PubMedPubDate PubStatus="pubmed">
+                <Year>2012</Year>
+                <Month>1</Month>
+                <Day>14</Day>
+                <Hour>6</Hour>
+                <Minute>0</Minute>
+            </PubMedPubDate>
+            <PubMedPubDate PubStatus="medline">
+                <Year>2012</Year>
+                <Month>1</Month>
+                <Day>14</Day>
+                <Hour>6</Hour>
+                <Minute>0</Minute>
+            </PubMedPubDate>
+        </History>
+        <PublicationStatus>ppublish</PublicationStatus>
+        <ArticleIdList>
+            <ArticleId IdType="pii">S1047-9651(11)00116-1</ArticleId>
+            <ArticleId IdType="doi">10.1016/j.pmr.2011.11.017</ArticleId>
+            <ArticleId IdType="pubmed">22239876</ArticleId>
+        </ArticleIdList>
+    </PubmedData>
+</PubmedArticle>
+
+</PubmedArticleSet>
