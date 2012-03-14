@@ -24,18 +24,6 @@ import javax.xml.namespace.QName;
 @XmlRegistry
 public class ObjectFactory {
 
-    private final static QName _ArticleTypeArticleTitle_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "ArticleTitle");
-    private final static QName _ArticleTypePublicationTypeList_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "PublicationTypeList");
-    private final static QName _ArticleTypeAuthorList_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "AuthorList");
-    private final static QName _ArticleTypeDataBankList_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "DataBankList");
-    private final static QName _ArticleTypeAbstract_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "Abstract");
-    private final static QName _ArticleTypeELocationID_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "ELocationID");
-    private final static QName _ArticleTypeGrantList_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "GrantList");
-    private final static QName _ArticleTypeAffiliation_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "Affiliation");
-    private final static QName _ArticleTypePagination_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "Pagination");
-    private final static QName _ArticleTypeVernacularTitle_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "VernacularTitle");
-    private final static QName _ArticleTypeArticleDate_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "ArticleDate");
-    private final static QName _ArticleTypeJournal_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "Journal");
     private final static QName _PublicationType_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "PublicationType");
     private final static QName _ISOAbbreviation_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "ISOAbbreviation");
     private final static QName _NumberOfReferences_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "NumberOfReferences");
@@ -81,84 +69,24 @@ public class ObjectFactory {
     private final static QName _Volume_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "Volume");
     private final static QName _CitationSubset_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "CitationSubset");
     private final static QName _PublicationStatus_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "PublicationStatus");
+    private final static QName _ArticleTypeArticleTitle_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "ArticleTitle");
+    private final static QName _ArticleTypeAuthorList_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "AuthorList");
+    private final static QName _ArticleTypePublicationTypeList_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "PublicationTypeList");
+    private final static QName _ArticleTypeAbstract_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "Abstract");
+    private final static QName _ArticleTypeDataBankList_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "DataBankList");
+    private final static QName _ArticleTypeELocationID_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "ELocationID");
+    private final static QName _ArticleTypeGrantList_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "GrantList");
+    private final static QName _ArticleTypeAffiliation_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "Affiliation");
+    private final static QName _ArticleTypePagination_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "Pagination");
+    private final static QName _ArticleTypeVernacularTitle_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "VernacularTitle");
+    private final static QName _ArticleTypeJournal_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "Journal");
+    private final static QName _ArticleTypeArticleDate_QNAME = new QName("http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", "ArticleDate");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: gov.nih.nlm.ncbi.entrez_utility.generated.pubmed
      * 
      */
     public ObjectFactory() {
-    }
-
-    /**
-     * Create an instance of {@link ArticleTitleType }
-     * 
-     */
-    public ArticleTitleType createArticleTitleType() {
-        return new ArticleTitleType();
-    }
-
-    /**
-     * Create an instance of {@link CommentsCorrectionsListType }
-     * 
-     */
-    public CommentsCorrectionsListType createCommentsCorrectionsListType() {
-        return new CommentsCorrectionsListType();
-    }
-
-    /**
-     * Create an instance of {@link PubmedArticleType }
-     * 
-     */
-    public PubmedArticleType createPubmedArticleType() {
-        return new PubmedArticleType();
-    }
-
-    /**
-     * Create an instance of {@link PubmedBookDataType }
-     * 
-     */
-    public PubmedBookDataType createPubmedBookDataType() {
-        return new PubmedBookDataType();
-    }
-
-    /**
-     * Create an instance of {@link ObjectListType }
-     * 
-     */
-    public ObjectListType createObjectListType() {
-        return new ObjectListType();
-    }
-
-    /**
-     * Create an instance of {@link AbstractTextType }
-     * 
-     */
-    public AbstractTextType createAbstractTextType() {
-        return new AbstractTextType();
-    }
-
-    /**
-     * Create an instance of {@link PubmedDataType }
-     * 
-     */
-    public PubmedDataType createPubmedDataType() {
-        return new PubmedDataType();
-    }
-
-    /**
-     * Create an instance of {@link PubMedPubDateType }
-     * 
-     */
-    public PubMedPubDateType createPubMedPubDateType() {
-        return new PubMedPubDateType();
-    }
-
-    /**
-     * Create an instance of {@link InvestigatorType }
-     * 
-     */
-    public InvestigatorType createInvestigatorType() {
-        return new InvestigatorType();
     }
 
     /**
@@ -170,443 +98,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link URL }
-     * 
-     */
-    public URL createURL() {
-        return new URL();
-    }
-
-    /**
-     * Create an instance of {@link DateCreatedType }
-     * 
-     */
-    public DateCreatedType createDateCreatedType() {
-        return new DateCreatedType();
-    }
-
-    /**
-     * Create an instance of {@link JournalType }
-     * 
-     */
-    public JournalType createJournalType() {
-        return new JournalType();
-    }
-
-    /**
-     * Create an instance of {@link PubmedArticleSet }
-     * 
-     */
-    public PubmedArticleSet createPubmedArticleSet() {
-        return new PubmedArticleSet();
-    }
-
-    /**
-     * Create an instance of {@link ISSNType }
-     * 
-     */
-    public ISSNType createISSNType() {
-        return new ISSNType();
-    }
-
-    /**
-     * Create an instance of {@link ObjectType }
-     * 
-     */
-    public ObjectType createObjectType() {
-        return new ObjectType();
-    }
-
-    /**
-     * Create an instance of {@link MedlineCitationSet }
-     * 
-     */
-    public MedlineCitationSet createMedlineCitationSet() {
-        return new MedlineCitationSet();
-    }
-
-    /**
-     * Create an instance of {@link GrantType }
-     * 
-     */
-    public GrantType createGrantType() {
-        return new GrantType();
-    }
-
-    /**
-     * Create an instance of {@link AbstractType }
-     * 
-     */
-    public AbstractType createAbstractType() {
-        return new AbstractType();
-    }
-
-    /**
-     * Create an instance of {@link PubmedBookArticleType }
-     * 
-     */
-    public PubmedBookArticleType createPubmedBookArticleType() {
-        return new PubmedBookArticleType();
-    }
-
-    /**
-     * Create an instance of {@link BookDocumentType }
-     * 
-     */
-    public BookDocumentType createBookDocumentType() {
-        return new BookDocumentType();
-    }
-
-    /**
-     * Create an instance of {@link QualifierNameType }
-     * 
-     */
-    public QualifierNameType createQualifierNameType() {
-        return new QualifierNameType();
-    }
-
-    /**
-     * Create an instance of {@link PaginationType }
-     * 
-     */
-    public PaginationType createPaginationType() {
-        return new PaginationType();
-    }
-
-    /**
-     * Create an instance of {@link AuthorType }
-     * 
-     */
-    public AuthorType createAuthorType() {
-        return new AuthorType();
-    }
-
-    /**
-     * Create an instance of {@link AuthorListType }
-     * 
-     */
-    public AuthorListType createAuthorListType() {
-        return new AuthorListType();
-    }
-
-    /**
-     * Create an instance of {@link PublisherType }
-     * 
-     */
-    public PublisherType createPublisherType() {
-        return new PublisherType();
-    }
-
-    /**
-     * Create an instance of {@link OtherIDType }
-     * 
-     */
-    public OtherIDType createOtherIDType() {
-        return new OtherIDType();
-    }
-
-    /**
-     * Create an instance of {@link ArticleIdType }
-     * 
-     */
-    public ArticleIdType createArticleIdType() {
-        return new ArticleIdType();
-    }
-
-    /**
-     * Create an instance of {@link ContributionDateType }
-     * 
-     */
-    public ContributionDateType createContributionDateType() {
-        return new ContributionDateType();
-    }
-
-    /**
-     * Create an instance of {@link ChemicalListType }
-     * 
-     */
-    public ChemicalListType createChemicalListType() {
-        return new ChemicalListType();
-    }
-
-    /**
-     * Create an instance of {@link PubDateType }
-     * 
-     */
-    public PubDateType createPubDateType() {
-        return new PubDateType();
-    }
-
-    /**
-     * Create an instance of {@link BookType }
-     * 
-     */
-    public BookType createBookType() {
-        return new BookType();
-    }
-
-    /**
-     * Create an instance of {@link DataBankListType }
-     * 
-     */
-    public DataBankListType createDataBankListType() {
-        return new DataBankListType();
-    }
-
-    /**
-     * Create an instance of {@link CollectionTitleType }
-     * 
-     */
-    public CollectionTitleType createCollectionTitleType() {
-        return new CollectionTitleType();
-    }
-
-    /**
-     * Create an instance of {@link NameIDType }
-     * 
-     */
-    public NameIDType createNameIDType() {
-        return new NameIDType();
-    }
-
-    /**
-     * Create an instance of {@link MeshHeadingListType }
-     * 
-     */
-    public MeshHeadingListType createMeshHeadingListType() {
-        return new MeshHeadingListType();
-    }
-
-    /**
-     * Create an instance of {@link JournalIssueType }
-     * 
-     */
-    public JournalIssueType createJournalIssueType() {
-        return new JournalIssueType();
-    }
-
-    /**
-     * Create an instance of {@link GroupList }
-     * 
-     */
-    public GroupList createGroupList() {
-        return new GroupList();
-    }
-
-    /**
-     * Create an instance of {@link SectionsType }
-     * 
-     */
-    public SectionsType createSectionsType() {
-        return new SectionsType();
-    }
-
-    /**
-     * Create an instance of {@link KeywordType }
-     * 
-     */
-    public KeywordType createKeywordType() {
-        return new KeywordType();
-    }
-
-    /**
-     * Create an instance of {@link ELocationIDType }
-     * 
-     */
-    public ELocationIDType createELocationIDType() {
-        return new ELocationIDType();
-    }
-
-    /**
-     * Create an instance of {@link BeginningDateType }
-     * 
-     */
-    public BeginningDateType createBeginningDateType() {
-        return new BeginningDateType();
-    }
-
-    /**
-     * Create an instance of {@link IdListType }
-     * 
-     */
-    public IdListType createIdListType() {
-        return new IdListType();
-    }
-
-    /**
-     * Create an instance of {@link DescriptorNameType }
-     * 
-     */
-    public DescriptorNameType createDescriptorNameType() {
-        return new DescriptorNameType();
-    }
-
-    /**
-     * Create an instance of {@link OtherAbstractType }
-     * 
-     */
-    public OtherAbstractType createOtherAbstractType() {
-        return new OtherAbstractType();
-    }
-
-    /**
-     * Create an instance of {@link GrantListType }
-     * 
-     */
-    public GrantListType createGrantListType() {
-        return new GrantListType();
-    }
-
-    /**
-     * Create an instance of {@link PersonalNameSubjectType }
-     * 
-     */
-    public PersonalNameSubjectType createPersonalNameSubjectType() {
-        return new PersonalNameSubjectType();
-    }
-
-    /**
-     * Create an instance of {@link GeneSymbolListType }
-     * 
-     */
-    public GeneSymbolListType createGeneSymbolListType() {
-        return new GeneSymbolListType();
-    }
-
-    /**
-     * Create an instance of {@link AccessionNumberListType }
-     * 
-     */
-    public AccessionNumberListType createAccessionNumberListType() {
-        return new AccessionNumberListType();
-    }
-
-    /**
-     * Create an instance of {@link DeleteDocumentType }
-     * 
-     */
-    public DeleteDocumentType createDeleteDocumentType() {
-        return new DeleteDocumentType();
-    }
-
-    /**
-     * Create an instance of {@link BookDocumentSet }
-     * 
-     */
-    public BookDocumentSet createBookDocumentSet() {
-        return new BookDocumentSet();
-    }
-
-    /**
-     * Create an instance of {@link PubmedBookArticleSet }
-     * 
-     */
-    public PubmedBookArticleSet createPubmedBookArticleSet() {
-        return new PubmedBookArticleSet();
-    }
-
-    /**
-     * Create an instance of {@link SectionType }
-     * 
-     */
-    public SectionType createSectionType() {
-        return new SectionType();
-    }
-
-    /**
-     * Create an instance of {@link DateCompletedType }
-     * 
-     */
-    public DateCompletedType createDateCompletedType() {
-        return new DateCompletedType();
-    }
-
-    /**
-     * Create an instance of {@link MeshHeadingType }
-     * 
-     */
-    public MeshHeadingType createMeshHeadingType() {
-        return new MeshHeadingType();
-    }
-
-    /**
-     * Create an instance of {@link KeywordListType }
-     * 
-     */
-    public KeywordListType createKeywordListType() {
-        return new KeywordListType();
-    }
-
-    /**
-     * Create an instance of {@link EndingDateType }
-     * 
-     */
-    public EndingDateType createEndingDateType() {
-        return new EndingDateType();
-    }
-
-    /**
-     * Create an instance of {@link GeneralNoteType }
-     * 
-     */
-    public GeneralNoteType createGeneralNoteType() {
-        return new GeneralNoteType();
-    }
-
-    /**
      * Create an instance of {@link SupplMeshNameType }
      * 
      */
     public SupplMeshNameType createSupplMeshNameType() {
         return new SupplMeshNameType();
-    }
-
-    /**
-     * Create an instance of {@link EFetchRequest }
-     * 
-     */
-    public EFetchRequest createEFetchRequest() {
-        return new EFetchRequest();
-    }
-
-    /**
-     * Create an instance of {@link EFetchResult }
-     * 
-     */
-    public EFetchResult createEFetchResult() {
-        return new EFetchResult();
-    }
-
-    /**
-     * Create an instance of {@link LocationLabelType }
-     * 
-     */
-    public LocationLabelType createLocationLabelType() {
-        return new LocationLabelType();
-    }
-
-    /**
-     * Create an instance of {@link DateRevisedType }
-     * 
-     */
-    public DateRevisedType createDateRevisedType() {
-        return new DateRevisedType();
-    }
-
-    /**
-     * Create an instance of {@link DeleteCitationType }
-     * 
-     */
-    public DeleteCitationType createDeleteCitationType() {
-        return new DeleteCitationType();
-    }
-
-    /**
-     * Create an instance of {@link ChemicalType }
-     * 
-     */
-    public ChemicalType createChemicalType() {
-        return new ChemicalType();
     }
 
     /**
@@ -618,27 +114,35 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link PersonalNameSubjectListType }
+     * Create an instance of {@link BookType }
      * 
      */
-    public PersonalNameSubjectListType createPersonalNameSubjectListType() {
-        return new PersonalNameSubjectListType();
+    public BookType createBookType() {
+        return new BookType();
     }
 
     /**
-     * Create an instance of {@link ArticleType }
+     * Create an instance of {@link PubDateType }
      * 
      */
-    public ArticleType createArticleType() {
-        return new ArticleType();
+    public PubDateType createPubDateType() {
+        return new PubDateType();
     }
 
     /**
-     * Create an instance of {@link BookTitleType }
+     * Create an instance of {@link MedlineCitationSet }
      * 
      */
-    public BookTitleType createBookTitleType() {
-        return new BookTitleType();
+    public MedlineCitationSet createMedlineCitationSet() {
+        return new MedlineCitationSet();
+    }
+
+    /**
+     * Create an instance of {@link LocationLabelType }
+     * 
+     */
+    public LocationLabelType createLocationLabelType() {
+        return new LocationLabelType();
     }
 
     /**
@@ -650,19 +154,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link PublicationTypeListType }
+     * Create an instance of {@link PubmedArticleSet }
      * 
      */
-    public PublicationTypeListType createPublicationTypeListType() {
-        return new PublicationTypeListType();
-    }
-
-    /**
-     * Create an instance of {@link MedlineCitationType }
-     * 
-     */
-    public MedlineCitationType createMedlineCitationType() {
-        return new MedlineCitationType();
+    public PubmedArticleSet createPubmedArticleSet() {
+        return new PubmedArticleSet();
     }
 
     /**
@@ -674,27 +170,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link SectionTitleType }
+     * Create an instance of {@link CommentsCorrectionsType }
      * 
      */
-    public SectionTitleType createSectionTitleType() {
-        return new SectionTitleType();
-    }
-
-    /**
-     * Create an instance of {@link ArticleDateType }
-     * 
-     */
-    public ArticleDateType createArticleDateType() {
-        return new ArticleDateType();
-    }
-
-    /**
-     * Create an instance of {@link DataBankType }
-     * 
-     */
-    public DataBankType createDataBankType() {
-        return new DataBankType();
+    public CommentsCorrectionsType createCommentsCorrectionsType() {
+        return new CommentsCorrectionsType();
     }
 
     /**
@@ -706,11 +186,131 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link CommentsCorrectionsType }
+     * Create an instance of {@link MeshHeadingListType }
      * 
      */
-    public CommentsCorrectionsType createCommentsCorrectionsType() {
-        return new CommentsCorrectionsType();
+    public MeshHeadingListType createMeshHeadingListType() {
+        return new MeshHeadingListType();
+    }
+
+    /**
+     * Create an instance of {@link DataBankListType }
+     * 
+     */
+    public DataBankListType createDataBankListType() {
+        return new DataBankListType();
+    }
+
+    /**
+     * Create an instance of {@link DeleteDocumentType }
+     * 
+     */
+    public DeleteDocumentType createDeleteDocumentType() {
+        return new DeleteDocumentType();
+    }
+
+    /**
+     * Create an instance of {@link GrantListType }
+     * 
+     */
+    public GrantListType createGrantListType() {
+        return new GrantListType();
+    }
+
+    /**
+     * Create an instance of {@link GeneralNoteType }
+     * 
+     */
+    public GeneralNoteType createGeneralNoteType() {
+        return new GeneralNoteType();
+    }
+
+    /**
+     * Create an instance of {@link PubmedBookDataType }
+     * 
+     */
+    public PubmedBookDataType createPubmedBookDataType() {
+        return new PubmedBookDataType();
+    }
+
+    /**
+     * Create an instance of {@link BookTitleType }
+     * 
+     */
+    public BookTitleType createBookTitleType() {
+        return new BookTitleType();
+    }
+
+    /**
+     * Create an instance of {@link ArticleTitleType }
+     * 
+     */
+    public ArticleTitleType createArticleTitleType() {
+        return new ArticleTitleType();
+    }
+
+    /**
+     * Create an instance of {@link ELocationIDType }
+     * 
+     */
+    public ELocationIDType createELocationIDType() {
+        return new ELocationIDType();
+    }
+
+    /**
+     * Create an instance of {@link AbstractTextType }
+     * 
+     */
+    public AbstractTextType createAbstractTextType() {
+        return new AbstractTextType();
+    }
+
+    /**
+     * Create an instance of {@link AbstractType }
+     * 
+     */
+    public AbstractType createAbstractType() {
+        return new AbstractType();
+    }
+
+    /**
+     * Create an instance of {@link BookDocumentType }
+     * 
+     */
+    public BookDocumentType createBookDocumentType() {
+        return new BookDocumentType();
+    }
+
+    /**
+     * Create an instance of {@link BookDocumentSet }
+     * 
+     */
+    public BookDocumentSet createBookDocumentSet() {
+        return new BookDocumentSet();
+    }
+
+    /**
+     * Create an instance of {@link URL }
+     * 
+     */
+    public URL createURL() {
+        return new URL();
+    }
+
+    /**
+     * Create an instance of {@link ObjectType }
+     * 
+     */
+    public ObjectType createObjectType() {
+        return new ObjectType();
+    }
+
+    /**
+     * Create an instance of {@link ChemicalListType }
+     * 
+     */
+    public ChemicalListType createChemicalListType() {
+        return new ChemicalListType();
     }
 
     /**
@@ -722,6 +322,326 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link MedlineCitationType }
+     * 
+     */
+    public MedlineCitationType createMedlineCitationType() {
+        return new MedlineCitationType();
+    }
+
+    /**
+     * Create an instance of {@link KeywordListType }
+     * 
+     */
+    public KeywordListType createKeywordListType() {
+        return new KeywordListType();
+    }
+
+    /**
+     * Create an instance of {@link EFetchResult }
+     * 
+     */
+    public EFetchResult createEFetchResult() {
+        return new EFetchResult();
+    }
+
+    /**
+     * Create an instance of {@link SectionTitleType }
+     * 
+     */
+    public SectionTitleType createSectionTitleType() {
+        return new SectionTitleType();
+    }
+
+    /**
+     * Create an instance of {@link ObjectListType }
+     * 
+     */
+    public ObjectListType createObjectListType() {
+        return new ObjectListType();
+    }
+
+    /**
+     * Create an instance of {@link BeginningDateType }
+     * 
+     */
+    public BeginningDateType createBeginningDateType() {
+        return new BeginningDateType();
+    }
+
+    /**
+     * Create an instance of {@link NameIDType }
+     * 
+     */
+    public NameIDType createNameIDType() {
+        return new NameIDType();
+    }
+
+    /**
+     * Create an instance of {@link DescriptorNameType }
+     * 
+     */
+    public DescriptorNameType createDescriptorNameType() {
+        return new DescriptorNameType();
+    }
+
+    /**
+     * Create an instance of {@link QualifierNameType }
+     * 
+     */
+    public QualifierNameType createQualifierNameType() {
+        return new QualifierNameType();
+    }
+
+    /**
+     * Create an instance of {@link IdListType }
+     * 
+     */
+    public IdListType createIdListType() {
+        return new IdListType();
+    }
+
+    /**
+     * Create an instance of {@link ChemicalType }
+     * 
+     */
+    public ChemicalType createChemicalType() {
+        return new ChemicalType();
+    }
+
+    /**
+     * Create an instance of {@link AccessionNumberListType }
+     * 
+     */
+    public AccessionNumberListType createAccessionNumberListType() {
+        return new AccessionNumberListType();
+    }
+
+    /**
+     * Create an instance of {@link DataBankType }
+     * 
+     */
+    public DataBankType createDataBankType() {
+        return new DataBankType();
+    }
+
+    /**
+     * Create an instance of {@link ArticleDateType }
+     * 
+     */
+    public ArticleDateType createArticleDateType() {
+        return new ArticleDateType();
+    }
+
+    /**
+     * Create an instance of {@link ArticleType }
+     * 
+     */
+    public ArticleType createArticleType() {
+        return new ArticleType();
+    }
+
+    /**
+     * Create an instance of {@link PublisherType }
+     * 
+     */
+    public PublisherType createPublisherType() {
+        return new PublisherType();
+    }
+
+    /**
+     * Create an instance of {@link ISSNType }
+     * 
+     */
+    public ISSNType createISSNType() {
+        return new ISSNType();
+    }
+
+    /**
+     * Create an instance of {@link DateCompletedType }
+     * 
+     */
+    public DateCompletedType createDateCompletedType() {
+        return new DateCompletedType();
+    }
+
+    /**
+     * Create an instance of {@link DateRevisedType }
+     * 
+     */
+    public DateRevisedType createDateRevisedType() {
+        return new DateRevisedType();
+    }
+
+    /**
+     * Create an instance of {@link EndingDateType }
+     * 
+     */
+    public EndingDateType createEndingDateType() {
+        return new EndingDateType();
+    }
+
+    /**
+     * Create an instance of {@link AuthorType }
+     * 
+     */
+    public AuthorType createAuthorType() {
+        return new AuthorType();
+    }
+
+    /**
+     * Create an instance of {@link PubMedPubDateType }
+     * 
+     */
+    public PubMedPubDateType createPubMedPubDateType() {
+        return new PubMedPubDateType();
+    }
+
+    /**
+     * Create an instance of {@link PublicationTypeListType }
+     * 
+     */
+    public PublicationTypeListType createPublicationTypeListType() {
+        return new PublicationTypeListType();
+    }
+
+    /**
+     * Create an instance of {@link OtherIDType }
+     * 
+     */
+    public OtherIDType createOtherIDType() {
+        return new OtherIDType();
+    }
+
+    /**
+     * Create an instance of {@link GrantType }
+     * 
+     */
+    public GrantType createGrantType() {
+        return new GrantType();
+    }
+
+    /**
+     * Create an instance of {@link PersonalNameSubjectListType }
+     * 
+     */
+    public PersonalNameSubjectListType createPersonalNameSubjectListType() {
+        return new PersonalNameSubjectListType();
+    }
+
+    /**
+     * Create an instance of {@link PubmedBookArticleSet }
+     * 
+     */
+    public PubmedBookArticleSet createPubmedBookArticleSet() {
+        return new PubmedBookArticleSet();
+    }
+
+    /**
+     * Create an instance of {@link GroupList }
+     * 
+     */
+    public GroupList createGroupList() {
+        return new GroupList();
+    }
+
+    /**
+     * Create an instance of {@link KeywordType }
+     * 
+     */
+    public KeywordType createKeywordType() {
+        return new KeywordType();
+    }
+
+    /**
+     * Create an instance of {@link InvestigatorType }
+     * 
+     */
+    public InvestigatorType createInvestigatorType() {
+        return new InvestigatorType();
+    }
+
+    /**
+     * Create an instance of {@link ArticleIdType }
+     * 
+     */
+    public ArticleIdType createArticleIdType() {
+        return new ArticleIdType();
+    }
+
+    /**
+     * Create an instance of {@link PersonalNameSubjectType }
+     * 
+     */
+    public PersonalNameSubjectType createPersonalNameSubjectType() {
+        return new PersonalNameSubjectType();
+    }
+
+    /**
+     * Create an instance of {@link PubmedArticleType }
+     * 
+     */
+    public PubmedArticleType createPubmedArticleType() {
+        return new PubmedArticleType();
+    }
+
+    /**
+     * Create an instance of {@link DeleteCitationType }
+     * 
+     */
+    public DeleteCitationType createDeleteCitationType() {
+        return new DeleteCitationType();
+    }
+
+    /**
+     * Create an instance of {@link ContributionDateType }
+     * 
+     */
+    public ContributionDateType createContributionDateType() {
+        return new ContributionDateType();
+    }
+
+    /**
+     * Create an instance of {@link EFetchRequest }
+     * 
+     */
+    public EFetchRequest createEFetchRequest() {
+        return new EFetchRequest();
+    }
+
+    /**
+     * Create an instance of {@link DateCreatedType }
+     * 
+     */
+    public DateCreatedType createDateCreatedType() {
+        return new DateCreatedType();
+    }
+
+    /**
+     * Create an instance of {@link SectionType }
+     * 
+     */
+    public SectionType createSectionType() {
+        return new SectionType();
+    }
+
+    /**
+     * Create an instance of {@link GeneSymbolListType }
+     * 
+     */
+    public GeneSymbolListType createGeneSymbolListType() {
+        return new GeneSymbolListType();
+    }
+
+    /**
+     * Create an instance of {@link JournalIssueType }
+     * 
+     */
+    public JournalIssueType createJournalIssueType() {
+        return new JournalIssueType();
+    }
+
+    /**
      * Create an instance of {@link HistoryType }
      * 
      */
@@ -730,111 +650,83 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link ArticleTitleType }{@code >}}
+     * Create an instance of {@link PubmedDataType }
      * 
      */
-    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "ArticleTitle", scope = ArticleType.class)
-    public JAXBElement<ArticleTitleType> createArticleTypeArticleTitle(ArticleTitleType value) {
-        return new JAXBElement<ArticleTitleType>(_ArticleTypeArticleTitle_QNAME, ArticleTitleType.class, ArticleType.class, value);
+    public PubmedDataType createPubmedDataType() {
+        return new PubmedDataType();
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link PublicationTypeListType }{@code >}}
+     * Create an instance of {@link MeshHeadingType }
      * 
      */
-    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "PublicationTypeList", scope = ArticleType.class)
-    public JAXBElement<PublicationTypeListType> createArticleTypePublicationTypeList(PublicationTypeListType value) {
-        return new JAXBElement<PublicationTypeListType>(_ArticleTypePublicationTypeList_QNAME, PublicationTypeListType.class, ArticleType.class, value);
+    public MeshHeadingType createMeshHeadingType() {
+        return new MeshHeadingType();
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link AuthorListType }{@code >}}
+     * Create an instance of {@link AuthorListType }
      * 
      */
-    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "AuthorList", scope = ArticleType.class)
-    public JAXBElement<AuthorListType> createArticleTypeAuthorList(AuthorListType value) {
-        return new JAXBElement<AuthorListType>(_ArticleTypeAuthorList_QNAME, AuthorListType.class, ArticleType.class, value);
+    public AuthorListType createAuthorListType() {
+        return new AuthorListType();
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link DataBankListType }{@code >}}
+     * Create an instance of {@link SectionsType }
      * 
      */
-    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "DataBankList", scope = ArticleType.class)
-    public JAXBElement<DataBankListType> createArticleTypeDataBankList(DataBankListType value) {
-        return new JAXBElement<DataBankListType>(_ArticleTypeDataBankList_QNAME, DataBankListType.class, ArticleType.class, value);
+    public SectionsType createSectionsType() {
+        return new SectionsType();
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link AbstractType }{@code >}}
+     * Create an instance of {@link PubmedBookArticleType }
      * 
      */
-    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "Abstract", scope = ArticleType.class)
-    public JAXBElement<AbstractType> createArticleTypeAbstract(AbstractType value) {
-        return new JAXBElement<AbstractType>(_ArticleTypeAbstract_QNAME, AbstractType.class, ArticleType.class, value);
+    public PubmedBookArticleType createPubmedBookArticleType() {
+        return new PubmedBookArticleType();
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link ELocationIDType }{@code >}}
+     * Create an instance of {@link CollectionTitleType }
      * 
      */
-    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "ELocationID", scope = ArticleType.class)
-    public JAXBElement<ELocationIDType> createArticleTypeELocationID(ELocationIDType value) {
-        return new JAXBElement<ELocationIDType>(_ArticleTypeELocationID_QNAME, ELocationIDType.class, ArticleType.class, value);
+    public CollectionTitleType createCollectionTitleType() {
+        return new CollectionTitleType();
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GrantListType }{@code >}}
+     * Create an instance of {@link JournalType }
      * 
      */
-    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "GrantList", scope = ArticleType.class)
-    public JAXBElement<GrantListType> createArticleTypeGrantList(GrantListType value) {
-        return new JAXBElement<GrantListType>(_ArticleTypeGrantList_QNAME, GrantListType.class, ArticleType.class, value);
+    public JournalType createJournalType() {
+        return new JournalType();
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * Create an instance of {@link OtherAbstractType }
      * 
      */
-    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "Affiliation", scope = ArticleType.class)
-    public JAXBElement<String> createArticleTypeAffiliation(String value) {
-        return new JAXBElement<String>(_ArticleTypeAffiliation_QNAME, String.class, ArticleType.class, value);
+    public OtherAbstractType createOtherAbstractType() {
+        return new OtherAbstractType();
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link PaginationType }{@code >}}
+     * Create an instance of {@link PaginationType }
      * 
      */
-    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "Pagination", scope = ArticleType.class)
-    public JAXBElement<PaginationType> createArticleTypePagination(PaginationType value) {
-        return new JAXBElement<PaginationType>(_ArticleTypePagination_QNAME, PaginationType.class, ArticleType.class, value);
+    public PaginationType createPaginationType() {
+        return new PaginationType();
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * Create an instance of {@link CommentsCorrectionsListType }
      * 
      */
-    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "VernacularTitle", scope = ArticleType.class)
-    public JAXBElement<String> createArticleTypeVernacularTitle(String value) {
-        return new JAXBElement<String>(_ArticleTypeVernacularTitle_QNAME, String.class, ArticleType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link ArticleDateType }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "ArticleDate", scope = ArticleType.class)
-    public JAXBElement<ArticleDateType> createArticleTypeArticleDate(ArticleDateType value) {
-        return new JAXBElement<ArticleDateType>(_ArticleTypeArticleDate_QNAME, ArticleDateType.class, ArticleType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link JournalType }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "Journal", scope = ArticleType.class)
-    public JAXBElement<JournalType> createArticleTypeJournal(JournalType value) {
-        return new JAXBElement<JournalType>(_ArticleTypeJournal_QNAME, JournalType.class, ArticleType.class, value);
+    public CommentsCorrectionsListType createCommentsCorrectionsListType() {
+        return new CommentsCorrectionsListType();
     }
 
     /**
@@ -1240,6 +1132,114 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "PublicationStatus")
     public JAXBElement<String> createPublicationStatus(String value) {
         return new JAXBElement<String>(_PublicationStatus_QNAME, String.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link ArticleTitleType }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "ArticleTitle", scope = ArticleType.class)
+    public JAXBElement<ArticleTitleType> createArticleTypeArticleTitle(ArticleTitleType value) {
+        return new JAXBElement<ArticleTitleType>(_ArticleTypeArticleTitle_QNAME, ArticleTitleType.class, ArticleType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link AuthorListType }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "AuthorList", scope = ArticleType.class)
+    public JAXBElement<AuthorListType> createArticleTypeAuthorList(AuthorListType value) {
+        return new JAXBElement<AuthorListType>(_ArticleTypeAuthorList_QNAME, AuthorListType.class, ArticleType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link PublicationTypeListType }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "PublicationTypeList", scope = ArticleType.class)
+    public JAXBElement<PublicationTypeListType> createArticleTypePublicationTypeList(PublicationTypeListType value) {
+        return new JAXBElement<PublicationTypeListType>(_ArticleTypePublicationTypeList_QNAME, PublicationTypeListType.class, ArticleType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link AbstractType }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "Abstract", scope = ArticleType.class)
+    public JAXBElement<AbstractType> createArticleTypeAbstract(AbstractType value) {
+        return new JAXBElement<AbstractType>(_ArticleTypeAbstract_QNAME, AbstractType.class, ArticleType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link DataBankListType }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "DataBankList", scope = ArticleType.class)
+    public JAXBElement<DataBankListType> createArticleTypeDataBankList(DataBankListType value) {
+        return new JAXBElement<DataBankListType>(_ArticleTypeDataBankList_QNAME, DataBankListType.class, ArticleType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link ELocationIDType }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "ELocationID", scope = ArticleType.class)
+    public JAXBElement<ELocationIDType> createArticleTypeELocationID(ELocationIDType value) {
+        return new JAXBElement<ELocationIDType>(_ArticleTypeELocationID_QNAME, ELocationIDType.class, ArticleType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GrantListType }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "GrantList", scope = ArticleType.class)
+    public JAXBElement<GrantListType> createArticleTypeGrantList(GrantListType value) {
+        return new JAXBElement<GrantListType>(_ArticleTypeGrantList_QNAME, GrantListType.class, ArticleType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "Affiliation", scope = ArticleType.class)
+    public JAXBElement<String> createArticleTypeAffiliation(String value) {
+        return new JAXBElement<String>(_ArticleTypeAffiliation_QNAME, String.class, ArticleType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link PaginationType }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "Pagination", scope = ArticleType.class)
+    public JAXBElement<PaginationType> createArticleTypePagination(PaginationType value) {
+        return new JAXBElement<PaginationType>(_ArticleTypePagination_QNAME, PaginationType.class, ArticleType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "VernacularTitle", scope = ArticleType.class)
+    public JAXBElement<String> createArticleTypeVernacularTitle(String value) {
+        return new JAXBElement<String>(_ArticleTypeVernacularTitle_QNAME, String.class, ArticleType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link JournalType }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "Journal", scope = ArticleType.class)
+    public JAXBElement<JournalType> createArticleTypeJournal(JournalType value) {
+        return new JAXBElement<JournalType>(_ArticleTypeJournal_QNAME, JournalType.class, ArticleType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link ArticleDateType }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", name = "ArticleDate", scope = ArticleType.class)
+    public JAXBElement<ArticleDateType> createArticleTypeArticleDate(ArticleDateType value) {
+        return new JAXBElement<ArticleDateType>(_ArticleTypeArticleDate_QNAME, ArticleDateType.class, ArticleType.class, value);
     }
 
 }

@@ -11,6 +11,7 @@ package gov.nih.nlm.ncbi.eutils.generated;
 import java.math.BigInteger;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
@@ -29,11 +30,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element ref="{}Term"/>
- *         &lt;element ref="{}Field"/>
- *         &lt;element ref="{}Count"/>
- *         &lt;element ref="{}Explode"/>
+ *         &lt;element ref="{}Volume"/>
+ *         &lt;element ref="{}Issue"/>
+ *         &lt;element ref="{}PubDate"/>
  *       &lt;/sequence>
+ *       &lt;attribute name="CitedMedium" use="required" type="{http://www.w3.org/2001/XMLSchema}NCName" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -43,119 +44,118 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "term",
-    "field",
-    "count",
-    "explode"
+    "volume",
+    "issue",
+    "pubDate"
 })
-@XmlRootElement(name = "TermSet")
-public class TermSet {
+@XmlRootElement(name = "JournalIssue")
+public class JournalIssue {
 
-    @XmlElement(name = "Term", required = true)
-    protected String term;
-    @XmlElement(name = "Field", required = true)
-    protected String field;
-    @XmlElement(name = "Count", required = true)
-    protected BigInteger count;
-    @XmlElement(name = "Explode", required = true)
+    @XmlElement(name = "Volume", required = true)
+    protected BigInteger volume;
+    @XmlElement(name = "Issue", required = true)
+    protected BigInteger issue;
+    @XmlElement(name = "PubDate", required = true)
+    protected PubDate pubDate;
+    @XmlAttribute(name = "CitedMedium", required = true)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlSchemaType(name = "NCName")
-    protected String explode;
+    protected String citedMedium;
 
     /**
-     * Gets the value of the term property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getTerm() {
-        return term;
-    }
-
-    /**
-     * Sets the value of the term property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setTerm(String value) {
-        this.term = value;
-    }
-
-    /**
-     * Gets the value of the field property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getField() {
-        return field;
-    }
-
-    /**
-     * Sets the value of the field property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setField(String value) {
-        this.field = value;
-    }
-
-    /**
-     * Gets the value of the count property.
+     * Gets the value of the volume property.
      * 
      * @return
      *     possible object is
      *     {@link BigInteger }
      *     
      */
-    public BigInteger getCount() {
-        return count;
+    public BigInteger getVolume() {
+        return volume;
     }
 
     /**
-     * Sets the value of the count property.
+     * Sets the value of the volume property.
      * 
      * @param value
      *     allowed object is
      *     {@link BigInteger }
      *     
      */
-    public void setCount(BigInteger value) {
-        this.count = value;
+    public void setVolume(BigInteger value) {
+        this.volume = value;
     }
 
     /**
-     * Gets the value of the explode property.
+     * Gets the value of the issue property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BigInteger }
+     *     
+     */
+    public BigInteger getIssue() {
+        return issue;
+    }
+
+    /**
+     * Sets the value of the issue property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BigInteger }
+     *     
+     */
+    public void setIssue(BigInteger value) {
+        this.issue = value;
+    }
+
+    /**
+     * Gets the value of the pubDate property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link PubDate }
+     *     
+     */
+    public PubDate getPubDate() {
+        return pubDate;
+    }
+
+    /**
+     * Sets the value of the pubDate property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link PubDate }
+     *     
+     */
+    public void setPubDate(PubDate value) {
+        this.pubDate = value;
+    }
+
+    /**
+     * Gets the value of the citedMedium property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getExplode() {
-        return explode;
+    public String getCitedMedium() {
+        return citedMedium;
     }
 
     /**
-     * Sets the value of the explode property.
+     * Sets the value of the citedMedium property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setExplode(String value) {
-        this.explode = value;
+    public void setCitedMedium(String value) {
+        this.citedMedium = value;
     }
 
 }

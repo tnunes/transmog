@@ -39,8 +39,8 @@ import javax.xml.bind.annotation.XmlType;
 public class PubmedArticleSet {
 
     @XmlElements({
-        @XmlElement(name = "PubmedBookArticle", type = PubmedBookArticleType.class),
-        @XmlElement(name = "PubmedArticle", type = PubmedArticleType.class)
+        @XmlElement(name = "PubmedArticle", type = PubmedArticleType.class),
+        @XmlElement(name = "PubmedBookArticle", type = PubmedBookArticleType.class)
     })
     protected List<Object> pubmedArticleOrPubmedBookArticle;
 
@@ -62,8 +62,8 @@ public class PubmedArticleSet {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link PubmedBookArticleType }
      * {@link PubmedArticleType }
+     * {@link PubmedBookArticleType }
      * 
      * 
      */

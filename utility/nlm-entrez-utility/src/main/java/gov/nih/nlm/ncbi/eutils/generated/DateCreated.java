@@ -8,6 +8,7 @@
 
 package gov.nih.nlm.ncbi.eutils.generated;
 
+import java.math.BigInteger;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -28,8 +29,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element ref="{}From"/>
- *         &lt;element ref="{}To"/>
+ *         &lt;element ref="{}Year"/>
+ *         &lt;element ref="{}Month"/>
+ *         &lt;element ref="{}Day"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -40,65 +42,92 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "from",
-    "to"
+    "year",
+    "month",
+    "day"
 })
-@XmlRootElement(name = "Translation")
-public class Translation {
+@XmlRootElement(name = "DateCreated")
+public class DateCreated {
 
-    @XmlElement(name = "From", required = true)
+    @XmlElement(name = "Year", required = true)
+    protected BigInteger year;
+    @XmlElement(name = "Month", required = true)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
-    @XmlSchemaType(name = "NCName")
-    protected String from;
-    @XmlElement(name = "To", required = true)
-    protected String to;
+    @XmlSchemaType(name = "NMTOKEN")
+    protected String month;
+    @XmlElement(name = "Day", required = true)
+    protected BigInteger day;
 
     /**
-     * Gets the value of the from property.
+     * Gets the value of the year property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BigInteger }
+     *     
+     */
+    public BigInteger getYear() {
+        return year;
+    }
+
+    /**
+     * Sets the value of the year property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BigInteger }
+     *     
+     */
+    public void setYear(BigInteger value) {
+        this.year = value;
+    }
+
+    /**
+     * Gets the value of the month property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getFrom() {
-        return from;
+    public String getMonth() {
+        return month;
     }
 
     /**
-     * Sets the value of the from property.
+     * Sets the value of the month property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setFrom(String value) {
-        this.from = value;
+    public void setMonth(String value) {
+        this.month = value;
     }
 
     /**
-     * Gets the value of the to property.
+     * Gets the value of the day property.
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link BigInteger }
      *     
      */
-    public String getTo() {
-        return to;
+    public BigInteger getDay() {
+        return day;
     }
 
     /**
-     * Sets the value of the to property.
+     * Sets the value of the day property.
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link BigInteger }
      *     
      */
-    public void setTo(String value) {
-        this.to = value;
+    public void setDay(BigInteger value) {
+        this.day = value;
     }
 
 }

@@ -28,8 +28,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element ref="{}From"/>
- *         &lt;element ref="{}To"/>
+ *         &lt;element ref="{}History"/>
+ *         &lt;element ref="{}PublicationStatus"/>
+ *         &lt;element ref="{}ArticleIdList"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -40,65 +41,92 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "from",
-    "to"
+    "history",
+    "publicationStatus",
+    "articleIdList"
 })
-@XmlRootElement(name = "Translation")
-public class Translation {
+@XmlRootElement(name = "PubmedData")
+public class PubmedData {
 
-    @XmlElement(name = "From", required = true)
+    @XmlElement(name = "History", required = true)
+    protected History history;
+    @XmlElement(name = "PublicationStatus", required = true)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlSchemaType(name = "NCName")
-    protected String from;
-    @XmlElement(name = "To", required = true)
-    protected String to;
+    protected String publicationStatus;
+    @XmlElement(name = "ArticleIdList", required = true)
+    protected ArticleIdList articleIdList;
 
     /**
-     * Gets the value of the from property.
+     * Gets the value of the history property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link History }
+     *     
+     */
+    public History getHistory() {
+        return history;
+    }
+
+    /**
+     * Sets the value of the history property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link History }
+     *     
+     */
+    public void setHistory(History value) {
+        this.history = value;
+    }
+
+    /**
+     * Gets the value of the publicationStatus property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getFrom() {
-        return from;
+    public String getPublicationStatus() {
+        return publicationStatus;
     }
 
     /**
-     * Sets the value of the from property.
+     * Sets the value of the publicationStatus property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setFrom(String value) {
-        this.from = value;
+    public void setPublicationStatus(String value) {
+        this.publicationStatus = value;
     }
 
     /**
-     * Gets the value of the to property.
+     * Gets the value of the articleIdList property.
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link ArticleIdList }
      *     
      */
-    public String getTo() {
-        return to;
+    public ArticleIdList getArticleIdList() {
+        return articleIdList;
     }
 
     /**
-     * Sets the value of the to property.
+     * Sets the value of the articleIdList property.
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link ArticleIdList }
      *     
      */
-    public void setTo(String value) {
-        this.to = value;
+    public void setArticleIdList(ArticleIdList value) {
+        this.articleIdList = value;
     }
 
 }

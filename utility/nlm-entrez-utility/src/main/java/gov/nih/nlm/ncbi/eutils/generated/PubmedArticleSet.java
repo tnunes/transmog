@@ -8,7 +8,6 @@
 
 package gov.nih.nlm.ncbi.eutils.generated;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -28,7 +27,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element ref="{}Id" maxOccurs="unbounded"/>
+ *         &lt;element ref="{}PubmedArticle" maxOccurs="unbounded"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -39,41 +38,41 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "id"
+    "pubmedArticle"
 })
-@XmlRootElement(name = "IdList")
-public class IdList {
+@XmlRootElement(name = "PubmedArticleSet")
+public class PubmedArticleSet {
 
-    @XmlElement(name = "Id", required = true)
-    protected List<BigInteger> id;
+    @XmlElement(name = "PubmedArticle", required = true)
+    protected List<PubmedArticle> pubmedArticle;
 
     /**
-     * Gets the value of the id property.
+     * Gets the value of the pubmedArticle property.
      * 
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the id property.
+     * This is why there is not a <CODE>set</CODE> method for the pubmedArticle property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getId().add(newItem);
+     *    getPubmedArticle().add(newItem);
      * </pre>
      * 
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link BigInteger }
+     * {@link PubmedArticle }
      * 
      * 
      */
-    public List<BigInteger> getId() {
-        if (id == null) {
-            id = new ArrayList<BigInteger>();
+    public List<PubmedArticle> getPubmedArticle() {
+        if (pubmedArticle == null) {
+            pubmedArticle = new ArrayList<PubmedArticle>();
         }
-        return this.id;
+        return this.pubmedArticle;
     }
 
 }

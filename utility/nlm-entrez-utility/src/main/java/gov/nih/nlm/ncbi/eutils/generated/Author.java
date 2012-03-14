@@ -8,9 +8,9 @@
 
 package gov.nih.nlm.ncbi.eutils.generated;
 
-import java.math.BigInteger;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
@@ -29,11 +29,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element ref="{}Term"/>
- *         &lt;element ref="{}Field"/>
- *         &lt;element ref="{}Count"/>
- *         &lt;element ref="{}Explode"/>
+ *         &lt;element ref="{}LastName"/>
+ *         &lt;element ref="{}ForeName"/>
+ *         &lt;element ref="{}Initials"/>
  *       &lt;/sequence>
+ *       &lt;attribute name="ValidYN" use="required" type="{http://www.w3.org/2001/XMLSchema}NCName" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -43,119 +43,122 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "term",
-    "field",
-    "count",
-    "explode"
+    "lastName",
+    "foreName",
+    "initials"
 })
-@XmlRootElement(name = "TermSet")
-public class TermSet {
+@XmlRootElement(name = "Author")
+public class Author {
 
-    @XmlElement(name = "Term", required = true)
-    protected String term;
-    @XmlElement(name = "Field", required = true)
-    protected String field;
-    @XmlElement(name = "Count", required = true)
-    protected BigInteger count;
-    @XmlElement(name = "Explode", required = true)
+    @XmlElement(name = "LastName", required = true)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlSchemaType(name = "NCName")
-    protected String explode;
+    protected String lastName;
+    @XmlElement(name = "ForeName", required = true)
+    protected String foreName;
+    @XmlElement(name = "Initials", required = true)
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    @XmlSchemaType(name = "NCName")
+    protected String initials;
+    @XmlAttribute(name = "ValidYN", required = true)
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    @XmlSchemaType(name = "NCName")
+    protected String validYN;
 
     /**
-     * Gets the value of the term property.
+     * Gets the value of the lastName property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getTerm() {
-        return term;
+    public String getLastName() {
+        return lastName;
     }
 
     /**
-     * Sets the value of the term property.
+     * Sets the value of the lastName property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setTerm(String value) {
-        this.term = value;
+    public void setLastName(String value) {
+        this.lastName = value;
     }
 
     /**
-     * Gets the value of the field property.
+     * Gets the value of the foreName property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getField() {
-        return field;
+    public String getForeName() {
+        return foreName;
     }
 
     /**
-     * Sets the value of the field property.
+     * Sets the value of the foreName property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setField(String value) {
-        this.field = value;
+    public void setForeName(String value) {
+        this.foreName = value;
     }
 
     /**
-     * Gets the value of the count property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigInteger }
-     *     
-     */
-    public BigInteger getCount() {
-        return count;
-    }
-
-    /**
-     * Sets the value of the count property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigInteger }
-     *     
-     */
-    public void setCount(BigInteger value) {
-        this.count = value;
-    }
-
-    /**
-     * Gets the value of the explode property.
+     * Gets the value of the initials property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getExplode() {
-        return explode;
+    public String getInitials() {
+        return initials;
     }
 
     /**
-     * Sets the value of the explode property.
+     * Sets the value of the initials property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setExplode(String value) {
-        this.explode = value;
+    public void setInitials(String value) {
+        this.initials = value;
+    }
+
+    /**
+     * Gets the value of the validYN property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getValidYN() {
+        return validYN;
+    }
+
+    /**
+     * Sets the value of the validYN property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setValidYN(String value) {
+        this.validYN = value;
     }
 
 }

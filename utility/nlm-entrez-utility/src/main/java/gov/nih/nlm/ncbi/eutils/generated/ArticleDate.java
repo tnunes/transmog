@@ -11,6 +11,7 @@ package gov.nih.nlm.ncbi.eutils.generated;
 import java.math.BigInteger;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
@@ -29,11 +30,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element ref="{}Term"/>
- *         &lt;element ref="{}Field"/>
- *         &lt;element ref="{}Count"/>
- *         &lt;element ref="{}Explode"/>
+ *         &lt;element ref="{}Year"/>
+ *         &lt;element ref="{}Month"/>
+ *         &lt;element ref="{}Day"/>
  *       &lt;/sequence>
+ *       &lt;attribute name="DateType" use="required" type="{http://www.w3.org/2001/XMLSchema}NCName" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -43,119 +44,120 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "term",
-    "field",
-    "count",
-    "explode"
+    "year",
+    "month",
+    "day"
 })
-@XmlRootElement(name = "TermSet")
-public class TermSet {
+@XmlRootElement(name = "ArticleDate")
+public class ArticleDate {
 
-    @XmlElement(name = "Term", required = true)
-    protected String term;
-    @XmlElement(name = "Field", required = true)
-    protected String field;
-    @XmlElement(name = "Count", required = true)
-    protected BigInteger count;
-    @XmlElement(name = "Explode", required = true)
+    @XmlElement(name = "Year", required = true)
+    protected BigInteger year;
+    @XmlElement(name = "Month", required = true)
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    @XmlSchemaType(name = "NMTOKEN")
+    protected String month;
+    @XmlElement(name = "Day", required = true)
+    protected BigInteger day;
+    @XmlAttribute(name = "DateType", required = true)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlSchemaType(name = "NCName")
-    protected String explode;
+    protected String dateType;
 
     /**
-     * Gets the value of the term property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getTerm() {
-        return term;
-    }
-
-    /**
-     * Sets the value of the term property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setTerm(String value) {
-        this.term = value;
-    }
-
-    /**
-     * Gets the value of the field property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getField() {
-        return field;
-    }
-
-    /**
-     * Sets the value of the field property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setField(String value) {
-        this.field = value;
-    }
-
-    /**
-     * Gets the value of the count property.
+     * Gets the value of the year property.
      * 
      * @return
      *     possible object is
      *     {@link BigInteger }
      *     
      */
-    public BigInteger getCount() {
-        return count;
+    public BigInteger getYear() {
+        return year;
     }
 
     /**
-     * Sets the value of the count property.
+     * Sets the value of the year property.
      * 
      * @param value
      *     allowed object is
      *     {@link BigInteger }
      *     
      */
-    public void setCount(BigInteger value) {
-        this.count = value;
+    public void setYear(BigInteger value) {
+        this.year = value;
     }
 
     /**
-     * Gets the value of the explode property.
+     * Gets the value of the month property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getExplode() {
-        return explode;
+    public String getMonth() {
+        return month;
     }
 
     /**
-     * Sets the value of the explode property.
+     * Sets the value of the month property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setExplode(String value) {
-        this.explode = value;
+    public void setMonth(String value) {
+        this.month = value;
+    }
+
+    /**
+     * Gets the value of the day property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BigInteger }
+     *     
+     */
+    public BigInteger getDay() {
+        return day;
+    }
+
+    /**
+     * Sets the value of the day property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BigInteger }
+     *     
+     */
+    public void setDay(BigInteger value) {
+        this.day = value;
+    }
+
+    /**
+     * Gets the value of the dateType property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getDateType() {
+        return dateType;
+    }
+
+    /**
+     * Sets the value of the dateType property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setDateType(String value) {
+        this.dateType = value;
     }
 
 }

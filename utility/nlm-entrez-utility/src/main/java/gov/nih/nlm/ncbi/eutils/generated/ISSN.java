@@ -10,10 +10,11 @@ package gov.nih.nlm.ncbi.eutils.generated;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -25,14 +26,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * 
  * <pre>
  * &lt;complexType>
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element ref="{}From"/>
- *         &lt;element ref="{}To"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
+ *   &lt;simpleContent>
+ *     &lt;extension base="&lt;http://www.w3.org/2001/XMLSchema>NMTOKEN">
+ *       &lt;attribute name="IssnType" use="required" type="{http://www.w3.org/2001/XMLSchema}NCName" />
+ *     &lt;/extension>
+ *   &lt;/simpleContent>
  * &lt;/complexType>
  * </pre>
  * 
@@ -40,65 +38,66 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "from",
-    "to"
+    "value"
 })
-@XmlRootElement(name = "Translation")
-public class Translation {
+@XmlRootElement(name = "ISSN")
+public class ISSN {
 
-    @XmlElement(name = "From", required = true)
+    @XmlValue
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    @XmlSchemaType(name = "NMTOKEN")
+    protected String value;
+    @XmlAttribute(name = "IssnType", required = true)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlSchemaType(name = "NCName")
-    protected String from;
-    @XmlElement(name = "To", required = true)
-    protected String to;
+    protected String issnType;
 
     /**
-     * Gets the value of the from property.
+     * Gets the value of the value property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getFrom() {
-        return from;
+    public String getValue() {
+        return value;
     }
 
     /**
-     * Sets the value of the from property.
+     * Sets the value of the value property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setFrom(String value) {
-        this.from = value;
+    public void setValue(String value) {
+        this.value = value;
     }
 
     /**
-     * Gets the value of the to property.
+     * Gets the value of the issnType property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getTo() {
-        return to;
+    public String getIssnType() {
+        return issnType;
     }
 
     /**
-     * Sets the value of the to property.
+     * Sets the value of the issnType property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setTo(String value) {
-        this.to = value;
+    public void setIssnType(String value) {
+        this.issnType = value;
     }
 
 }

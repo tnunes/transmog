@@ -25,7 +25,8 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element ref="{}Translation"/>
+ *         &lt;element ref="{}MedlineCitation"/>
+ *         &lt;element ref="{}PubmedData"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -36,36 +37,63 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "translation"
+    "medlineCitation",
+    "pubmedData"
 })
-@XmlRootElement(name = "TranslationSet")
-public class TranslationSet {
+@XmlRootElement(name = "PubmedArticle")
+public class PubmedArticle {
 
-    @XmlElement(name = "Translation", required = true)
-    protected Translation translation;
+    @XmlElement(name = "MedlineCitation", required = true)
+    protected MedlineCitation medlineCitation;
+    @XmlElement(name = "PubmedData", required = true)
+    protected PubmedData pubmedData;
 
     /**
-     * Gets the value of the translation property.
+     * Gets the value of the medlineCitation property.
      * 
      * @return
      *     possible object is
-     *     {@link Translation }
+     *     {@link MedlineCitation }
      *     
      */
-    public Translation getTranslation() {
-        return translation;
+    public MedlineCitation getMedlineCitation() {
+        return medlineCitation;
     }
 
     /**
-     * Sets the value of the translation property.
+     * Sets the value of the medlineCitation property.
      * 
      * @param value
      *     allowed object is
-     *     {@link Translation }
+     *     {@link MedlineCitation }
      *     
      */
-    public void setTranslation(Translation value) {
-        this.translation = value;
+    public void setMedlineCitation(MedlineCitation value) {
+        this.medlineCitation = value;
+    }
+
+    /**
+     * Gets the value of the pubmedData property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link PubmedData }
+     *     
+     */
+    public PubmedData getPubmedData() {
+        return pubmedData;
+    }
+
+    /**
+     * Sets the value of the pubmedData property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link PubmedData }
+     *     
+     */
+    public void setPubmedData(PubmedData value) {
+        this.pubmedData = value;
     }
 
 }

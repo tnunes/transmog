@@ -67,18 +67,18 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class ArticleType {
 
     @XmlElementRefs({
+        @XmlElementRef(name = "AuthorList", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class),
         @XmlElementRef(name = "VernacularTitle", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class),
         @XmlElementRef(name = "ArticleDate", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class),
-        @XmlElementRef(name = "AuthorList", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class),
-        @XmlElementRef(name = "ArticleTitle", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class),
-        @XmlElementRef(name = "Journal", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class),
-        @XmlElementRef(name = "PublicationTypeList", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class),
-        @XmlElementRef(name = "Pagination", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class),
-        @XmlElementRef(name = "GrantList", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class),
         @XmlElementRef(name = "Abstract", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class),
+        @XmlElementRef(name = "Pagination", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class),
+        @XmlElementRef(name = "Affiliation", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class),
+        @XmlElementRef(name = "ArticleTitle", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class),
         @XmlElementRef(name = "ELocationID", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class),
         @XmlElementRef(name = "Language", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class),
-        @XmlElementRef(name = "Affiliation", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class),
+        @XmlElementRef(name = "PublicationTypeList", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class),
+        @XmlElementRef(name = "Journal", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class),
+        @XmlElementRef(name = "GrantList", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class),
         @XmlElementRef(name = "DataBankList", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class)
     })
     protected List<JAXBElement<?>> content;
@@ -114,18 +114,18 @@ public class ArticleType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
+     * {@link JAXBElement }{@code <}{@link AuthorListType }{@code >}
      * {@link JAXBElement }{@code <}{@link String }{@code >}
      * {@link JAXBElement }{@code <}{@link ArticleDateType }{@code >}
-     * {@link JAXBElement }{@code <}{@link AuthorListType }{@code >}
-     * {@link JAXBElement }{@code <}{@link ArticleTitleType }{@code >}
-     * {@link JAXBElement }{@code <}{@link JournalType }{@code >}
-     * {@link JAXBElement }{@code <}{@link PublicationTypeListType }{@code >}
-     * {@link JAXBElement }{@code <}{@link PaginationType }{@code >}
-     * {@link JAXBElement }{@code <}{@link GrantListType }{@code >}
      * {@link JAXBElement }{@code <}{@link AbstractType }{@code >}
+     * {@link JAXBElement }{@code <}{@link PaginationType }{@code >}
+     * {@link JAXBElement }{@code <}{@link String }{@code >}
+     * {@link JAXBElement }{@code <}{@link ArticleTitleType }{@code >}
      * {@link JAXBElement }{@code <}{@link ELocationIDType }{@code >}
      * {@link JAXBElement }{@code <}{@link String }{@code >}
-     * {@link JAXBElement }{@code <}{@link String }{@code >}
+     * {@link JAXBElement }{@code <}{@link PublicationTypeListType }{@code >}
+     * {@link JAXBElement }{@code <}{@link JournalType }{@code >}
+     * {@link JAXBElement }{@code <}{@link GrantListType }{@code >}
      * {@link JAXBElement }{@code <}{@link DataBankListType }{@code >}
      * 
      * 

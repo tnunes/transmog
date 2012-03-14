@@ -1,8 +1,10 @@
 package gov.nih.nlm.ncbi.eutils;
 
 import gov.nih.nlm.ncbi.eutils.generated.ESearchResult;
+import gov.nih.nlm.ncbi.eutils.generated.PubmedArticleSet;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.util.List;
 
@@ -11,61 +13,69 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
+
 /*
  * http://www.ncbi.nlm.nih.gov/books/NBK25500/
  */
 public class PubmedRestClient {
-
-	private static final String EUTILS_URL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi";
 	private Client client;
-	private WebResource webResource;
+	private WebResource eSearchResource;
+	private WebResource eFetchResource;
 	private JAXBContext jc;
 	private Unmarshaller unmarshaller;
+	private String baseUrl;
+	private static final Logger logger = LoggerFactory.getLogger(PubmedRestClient.class);
+	private static final String ESEARCH = "esearch.fcgi";
+	private static final String EFETCH = "efetch.fcgi";
 
-	public PubmedRestClient() throws JAXBException {
+	public void setBaseUrl(String baseUrl) throws JAXBException {
+		this.baseUrl = baseUrl;
 		client = Client.create();
-		webResource = client.resource(EUTILS_URL);
-		jc = JAXBContext.newInstance( "gov.nih.nlm.ncbi.eutils.generated" );
+		eSearchResource = client.resource(this.baseUrl + ESEARCH);
+		eFetchResource = client.resource(this.baseUrl + EFETCH);
+		jc = JAXBContext.newInstance("gov.nih.nlm.ncbi.eutils.generated");
 		unmarshaller = jc.createUnmarshaller();
 	}
 
-	/**
-	 * 
-	 * @param queryParams ?db=pubmed&term=malaria&RetMax=100
-	 * @return
-	 */
-	public String getPmidsAsXmlString(MultivaluedMap<String, String> queryParams) {
-		String s = webResource.queryParams(queryParams).get(String.class);
-		return s;
-	}
-	
-	
-	public ESearchResult getSearchResult(MultivaluedMap<String, String> queryParams) throws JAXBException {
-		String s = webResource.queryParams(queryParams).get(String.class);
-		ESearchResult searchResult = (ESearchResult)unmarshaller.unmarshal(new ByteArrayInputStream(s.getBytes()));
+	public ESearchResult search(MultivaluedMap<String, String> queryParams) throws JAXBException, IOException {
+		logger.debug("making getSearchResult query with params {}", queryParams.toString());
+		InputStream is = eSearchResource.queryParams(queryParams).get(InputStream.class);
+		ESearchResult searchResult = (ESearchResult) unmarshaller.unmarshal(is);
+		is.close();
+		logger.debug("results count {}", searchResult.getCount().intValue());
 		return searchResult;
 	}
-	    
-	        
+
+	public PubmedArticleSet fetch(MultivaluedMap<String, String> queryParams) throws JAXBException, IOException {
+		logger.debug("making getArticleDetails query with params {}", queryParams.toString());
+		InputStream is = eFetchResource.queryParams(queryParams).post(InputStream.class);
+		PubmedArticleSet pubmedArticleSet = (PubmedArticleSet) unmarshaller.unmarshal(is);
+		is.close();
+		logger.debug("results count {}", pubmedArticleSet.getPubmedArticle().size());
+		return pubmedArticleSet;
+	}
 
 	public void destroy() {
-		
+
 	}
-	
-	
-	public static void main(String[] args) throws JAXBException {
+
+	public static void main(String[] args) throws JAXBException, IOException {
 		PubmedRestClient pubmedRestClient = new PubmedRestClient();
-		MultivaluedMap<String, String> params=  new MultivaluedMapImpl();
+		pubmedRestClient.setBaseUrl("http://eutils.ncbi.nlm.nih.gov/entrez/eutils/");
+		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
 		params.add("db", "pubmed");
 		params.add("term", "malaria");
-		params.add("retmax", "1000");
-		ESearchResult eSearchResult = pubmedRestClient.getSearchResult(params);
+		params.add("retmax", "10");
+		ESearchResult eSearchResult = pubmedRestClient.search(params);
 		List<BigInteger> ids = eSearchResult.getIdList().getId();
 		for (BigInteger bigInteger : ids) {
-			System.err.println(bigInteger.intValue());
+			System.out.println(bigInteger.intValue());
 		}
 	}
 

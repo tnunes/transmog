@@ -10,10 +10,11 @@ package gov.nih.nlm.ncbi.eutils.generated;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -27,10 +28,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * &lt;complexType>
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element ref="{}From"/>
- *         &lt;element ref="{}To"/>
- *       &lt;/sequence>
+ *       &lt;attribute name="IdType" use="required" type="{http://www.w3.org/2001/XMLSchema}NCName" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -40,65 +38,64 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "from",
-    "to"
+    "content"
 })
-@XmlRootElement(name = "Translation")
-public class Translation {
+@XmlRootElement(name = "ArticleId")
+public class ArticleId {
 
-    @XmlElement(name = "From", required = true)
+    @XmlValue
+    protected String content;
+    @XmlAttribute(name = "IdType", required = true)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlSchemaType(name = "NCName")
-    protected String from;
-    @XmlElement(name = "To", required = true)
-    protected String to;
+    protected String idType;
 
     /**
-     * Gets the value of the from property.
+     * Gets the value of the content property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getFrom() {
-        return from;
+    public String getContent() {
+        return content;
     }
 
     /**
-     * Sets the value of the from property.
+     * Sets the value of the content property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setFrom(String value) {
-        this.from = value;
+    public void setContent(String value) {
+        this.content = value;
     }
 
     /**
-     * Gets the value of the to property.
+     * Gets the value of the idType property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getTo() {
-        return to;
+    public String getIdType() {
+        return idType;
     }
 
     /**
-     * Sets the value of the to property.
+     * Sets the value of the idType property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setTo(String value) {
-        this.to = value;
+    public void setIdType(String value) {
+        this.idType = value;
     }
 
 }

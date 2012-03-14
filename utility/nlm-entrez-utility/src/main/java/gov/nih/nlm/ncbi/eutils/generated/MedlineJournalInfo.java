@@ -29,10 +29,10 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element ref="{}Term"/>
- *         &lt;element ref="{}Field"/>
- *         &lt;element ref="{}Count"/>
- *         &lt;element ref="{}Explode"/>
+ *         &lt;element ref="{}Country"/>
+ *         &lt;element ref="{}MedlineTA"/>
+ *         &lt;element ref="{}NlmUniqueID"/>
+ *         &lt;element ref="{}ISSNLinking"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -43,119 +43,119 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "term",
-    "field",
-    "count",
-    "explode"
+    "country",
+    "medlineTA",
+    "nlmUniqueID",
+    "issnLinking"
 })
-@XmlRootElement(name = "TermSet")
-public class TermSet {
+@XmlRootElement(name = "MedlineJournalInfo")
+public class MedlineJournalInfo {
 
-    @XmlElement(name = "Term", required = true)
-    protected String term;
-    @XmlElement(name = "Field", required = true)
-    protected String field;
-    @XmlElement(name = "Count", required = true)
-    protected BigInteger count;
-    @XmlElement(name = "Explode", required = true)
+    @XmlElement(name = "Country", required = true)
+    protected String country;
+    @XmlElement(name = "MedlineTA", required = true)
+    protected String medlineTA;
+    @XmlElement(name = "NlmUniqueID", required = true)
+    protected BigInteger nlmUniqueID;
+    @XmlElement(name = "ISSNLinking", required = true)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
-    @XmlSchemaType(name = "NCName")
-    protected String explode;
+    @XmlSchemaType(name = "NMTOKEN")
+    protected String issnLinking;
 
     /**
-     * Gets the value of the term property.
+     * Gets the value of the country property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getTerm() {
-        return term;
+    public String getCountry() {
+        return country;
     }
 
     /**
-     * Sets the value of the term property.
+     * Sets the value of the country property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setTerm(String value) {
-        this.term = value;
+    public void setCountry(String value) {
+        this.country = value;
     }
 
     /**
-     * Gets the value of the field property.
+     * Gets the value of the medlineTA property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getField() {
-        return field;
+    public String getMedlineTA() {
+        return medlineTA;
     }
 
     /**
-     * Sets the value of the field property.
+     * Sets the value of the medlineTA property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setField(String value) {
-        this.field = value;
+    public void setMedlineTA(String value) {
+        this.medlineTA = value;
     }
 
     /**
-     * Gets the value of the count property.
+     * Gets the value of the nlmUniqueID property.
      * 
      * @return
      *     possible object is
      *     {@link BigInteger }
      *     
      */
-    public BigInteger getCount() {
-        return count;
+    public BigInteger getNlmUniqueID() {
+        return nlmUniqueID;
     }
 
     /**
-     * Sets the value of the count property.
+     * Sets the value of the nlmUniqueID property.
      * 
      * @param value
      *     allowed object is
      *     {@link BigInteger }
      *     
      */
-    public void setCount(BigInteger value) {
-        this.count = value;
+    public void setNlmUniqueID(BigInteger value) {
+        this.nlmUniqueID = value;
     }
 
     /**
-     * Gets the value of the explode property.
+     * Gets the value of the issnLinking property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getExplode() {
-        return explode;
+    public String getISSNLinking() {
+        return issnLinking;
     }
 
     /**
-     * Sets the value of the explode property.
+     * Sets the value of the issnLinking property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setExplode(String value) {
-        this.explode = value;
+    public void setISSNLinking(String value) {
+        this.issnLinking = value;
     }
 
 }

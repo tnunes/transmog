@@ -42,8 +42,8 @@ import javax.xml.bind.annotation.XmlType;
 public class PaginationType {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "StartPage", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class),
         @XmlElementRef(name = "EndPage", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class),
+        @XmlElementRef(name = "StartPage", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class),
         @XmlElementRef(name = "MedlinePgn", namespace = "http://www.ncbi.nlm.nih.gov/soap/eutils/efetch_pubmed", type = JAXBElement.class)
     })
     protected List<JAXBElement<String>> content;
