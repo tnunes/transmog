@@ -52,5 +52,10 @@
 			<artifactId>misc_utility</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>gov.nih.nlm.ncbi</groupId>
+			<artifactId>nlm-entrez-utility</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 </project>
