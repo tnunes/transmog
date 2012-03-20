@@ -48,13 +48,13 @@
 			<version>1.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
-			<groupId>org.biosemantics.research</groupId>
-			<artifactId>misc_utility</artifactId>
+			<groupId>gov.nih.nlm.ncbi</groupId>
+			<artifactId>nlm-entrez-utility</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
-			<groupId>gov.nih.nlm.ncbi</groupId>
-			<artifactId>nlm-entrez-utility</artifactId>
+			<groupId>org.biosemantics.common</groupId>
+			<artifactId>misc-utility</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>

@@ -1,15 +1,16 @@
 package org.biosemantics.eviped.utils;
 
 import gov.nih.nlm.ncbi.eutils.PubmedRestClient;
-import gov.nih.nlm.ncbi.eutils.generated.ESearchResult;
-import gov.nih.nlm.ncbi.eutils.generated.Journal;
-import gov.nih.nlm.ncbi.eutils.generated.PubmedArticle;
-import gov.nih.nlm.ncbi.eutils.generated.PubmedArticleSet;
+import gov.nih.nlm.ncbi.eutils.generated.esearch.ESearchResult;
+import gov.nih.nlm.ncbi.eutils.generated.esummary.DocSum;
+import gov.nih.nlm.ncbi.eutils.generated.esummary.ESummaryResult;
+import gov.nih.nlm.ncbi.eutils.generated.esummary.Item;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -28,6 +29,7 @@ public class PubmedQueryUtility {
 
 	protected static final String GET_JOURNAL_SQL = "select pmid, journal_title from medline_citation where pmid = ?";
 	private static final Joiner joiner = Joiner.on(",").skipNulls();
+
 	public void setPubmedRestClient(PubmedRestClient pubmedRestClient) {
 		this.pubmedRestClient = pubmedRestClient;
 	}
@@ -51,28 +53,40 @@ public class PubmedQueryUtility {
 		classPathXmlApplicationContext.registerShutdownHook();
 		PubmedQueryUtility pubmedQueryUtility = classPathXmlApplicationContext.getBean(PubmedQueryUtility.class);
 		PubmedRestClient pubmedRestClient = classPathXmlApplicationContext.getBean(PubmedRestClient.class);
-
 		CSVWriter csvWriter = new CSVWriter(new FileWriter(new File(OUT_FILE)));
 		List<BigInteger> pmids = pubmedQueryUtility.queryForDosage();
-		String pmidList = joiner.join(pmids);
-//		for (BigInteger bigInteger : pmids) {
-//			int pmid = bigInteger.intValue();
-			MultivaluedMap<String, String> params = new MultivaluedMapImpl();
-			params.add("db", "pubmed");
-			params.add("id", "" + pmidList);
-			params.add("retmode", "xml");
-//			try{
-			PubmedArticleSet pubmedArticleSet = pubmedRestClient.fetch(params);
-			for (PubmedArticle pubmedArticle : pubmedArticleSet.getPubmedArticle()) {
-				Journal journal = pubmedArticle.getMedlineCitation().getArticle().getJournal();
-				csvWriter.writeNext(new String[] { "" + pubmedArticle.getMedlineCitation().getPMID().getValue().intValue(), journal.getISOAbbreviation(), journal.getTitle() });
-			}
-//			}catch (Exception e) {
-//				logger.error("ERROR PARSING {}", pmid);
-//			}
-//		}
+		int totalPmids = pmids.size();
+		int batchSize = 1000;
+		int iterations = totalPmids / batchSize;
+		int remainder = totalPmids % batchSize;
+		for (int i = 0; i < iterations; i++) {
+			int start = i * batchSize;
+			int end = start + batchSize;
+			List<BigInteger> subList = pmids.subList(start, end);
+			String ids = joiner.join(subList);
+			List<String> journalNames = pubmedQueryUtility.getJournals(ids);
+			
+		}
+
 		csvWriter.flush();
 		csvWriter.close();
+	}
+
+	public List<String> getJournals(String ids) throws JAXBException, IOException {
+		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
+		params.add("db", "pubmed");
+		params.add("id", ids);
+		ESummaryResult summaryResult = pubmedRestClient.summary(params);
+		List<String> journalNames = new ArrayList<String>();
+		for (DocSum docSum : summaryResult.getDocSum()) {
+			for (Item item : docSum.getItem()) {
+				if (item.getName().equals("FullJournalName")) {
+					journalNames.add(((String) item.getContent().get(0)));
+					break;
+				}
+			}
+		}
+		return journalNames;
 	}
 
 }

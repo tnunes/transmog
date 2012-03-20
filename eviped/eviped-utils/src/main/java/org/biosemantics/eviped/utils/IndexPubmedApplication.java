@@ -9,13 +9,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-import org.biosemantics.datastore.umls.BaseDatabaseConnector;
+import org.biosemantics.common.utility.DatabaseUtility;
 import org.erasmusmc.data_mining.ontology.api.Language;
 import org.erasmusmc.data_mining.peregrine.api.IndexingResult;
 import org.erasmusmc.data_mining.peregrine.api.Peregrine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.spi.LoggerFactoryBinder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.util.CollectionUtils;
@@ -40,7 +39,7 @@ public class IndexPubmedApplication {
 
 	public static void main(String[] args) throws SQLException, ClassNotFoundException, IOException {
 		IndexPubmedApplication obj = new IndexPubmedApplication();
-		BaseDatabaseConnector baseDatabaseConnector = new BaseDatabaseConnector();
+		DatabaseUtility baseDatabaseConnector = new DatabaseUtility();
 		Connection connection = baseDatabaseConnector.getConnection();
 		Statement statement = connection.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
 				java.sql.ResultSet.CONCUR_READ_ONLY);
