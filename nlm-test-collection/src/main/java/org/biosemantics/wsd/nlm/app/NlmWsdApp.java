@@ -1,10 +1,26 @@
 package org.biosemantics.wsd.nlm.app;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.biosemantics.wsd.nlm.AmbiguousWord;
+import org.biosemantics.wsd.nlm.AmbiguousWordReader;
+import org.biosemantics.wsd.nlm.NlmWsdRecord;
+import org.biosemantics.wsd.nlm.NlmWsdRecordReader;
+import org.biosemantics.wsd.ssi.Score;
 import org.biosemantics.wsd.ssi.SsiImpl;
+import org.biosemantics.wsd.ssi.SsiScore;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import au.com.bytecode.opencsv.CSVReader;
+import au.com.bytecode.opencsv.CSVWriter;
 
 public class NlmWsdApp {
 
@@ -14,12 +30,56 @@ public class NlmWsdApp {
 		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext(
 				"nlm-test-collection-context.xml");
 		applicationContext.registerShutdownHook();
+
+		CSVReader csvReader = new CSVReader(new FileReader(new File("/ssd/bhsingh/data/metamap-annotations.txt")));
+		List<String[]> metamapAnnotationLines = csvReader.readAll();
+		csvReader.close();
+		AmbiguousWordReader ambiguousWordReader = applicationContext.getBean(AmbiguousWordReader.class);
+		NlmWsdRecordReader nlmWsdRecordReader = applicationContext.getBean(NlmWsdRecordReader.class);
 		SsiImpl ssiImpl = applicationContext.getBean(SsiImpl.class);
-		// MetamapClient metamapClient = applicationContext.getBean(MetamapClient.class);
-		// MetamapIndexingResult metamapIndexingResult = metamapClient.getCuis(TEXT);
+		Collection<AmbiguousWord> ambiguousWords = ambiguousWordReader.getAmbiguousWords();
+
+		for (AmbiguousWord ambiguousWord : ambiguousWords) {
+
+			String ambiguousText = ambiguousWord.getText();
+			CSVWriter detailedWriter = new CSVWriter(new FileWriter(new File("/ssd/bhsingh/data/hierarchy-new-score", ambiguousText)));
+			CSVWriter scoreWriter = new CSVWriter(new FileWriter(new File("/ssd/bhsingh/data/hierarchy-new-score", ambiguousText
+					+ "_score")));
+			List<NlmWsdRecord> nlmRecords = nlmWsdRecordReader.readRecordsForAmbiguousWord(ambiguousText);
+			for (NlmWsdRecord nlmWsdRecord : nlmRecords) {
+				int pmid = nlmWsdRecord.getPmid();
+				Set<String> cuis = new HashSet<String>();
+				for (String[] columns : metamapAnnotationLines) {
+					if (columns[0].equalsIgnoreCase(ambiguousText) && Integer.parseInt(columns[2]) == pmid) {
+						String[] cuiStrings = Arrays.copyOfRange(columns, 4, columns.length);
+						for (String cui : cuiStrings) {
+							cuis.add(cui);
+						}
+						break;
+					}
+				}
+				for (String wordSense : ambiguousWord.getCuis()) {
+					SsiScore ssiScore = ssiImpl.getSsiScore(cuis, wordSense);
+					for (Score score : ssiScore.getScores()) {
+						detailedWriter.writeNext(new String[] { "" + nlmWsdRecord.getRecordNumber(), "" + pmid,
+								ssiScore.getWordSense(), score.getUnambiguousCui(),
+								"" + score.getMinHierarchicalHops(), "" + score.getMinRelatedHops() });
+					}
+					scoreWriter.writeNext(new String[] { "" + nlmWsdRecord.getRecordNumber(), "" + pmid,
+							ssiScore.getWordSense(), nlmWsdRecord.getAnnotatedSense(), "" + ssiScore.getFinalScore() });
+
+				}
+
+			}
+
+			detailedWriter.flush();
+			detailedWriter.close();
+			scoreWriter.flush();
+			scoreWriter.close();
+		}
+
 		List<String> cuis = new ArrayList<String>();
 		cuis.add("C0012147");
 		ssiImpl.getSsiScore(cuis, "C0024530");
 	}
-
 }

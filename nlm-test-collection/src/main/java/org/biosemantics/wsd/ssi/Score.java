@@ -4,26 +4,26 @@ import java.io.Serializable;
 
 public class Score implements Serializable {
 	private String unambiguousCui;
-	private float hierarchicalScore;
-	private float relatedScore;
+	private int minHierarchicalHops;
+	private int minRelatedHops;
 
 	public String getUnambiguousCui() {
 		return unambiguousCui;
 	}
 
-	public float getHierarchicalScore() {
-		return hierarchicalScore;
+	public int getMinHierarchicalHops() {
+		return minHierarchicalHops;
 	}
 
-	public float getRelatedScore() {
-		return relatedScore;
+	public int getMinRelatedHops() {
+		return minRelatedHops;
 	}
 
-	public Score(String unambiguousCui, float hierarchicalScore, float relatedScore) {
+	public Score(String unambiguousCui, int minHierarchicalHops, int minRelatedHops) {
 		super();
 		this.unambiguousCui = unambiguousCui;
-		this.hierarchicalScore = hierarchicalScore;
-		this.relatedScore = relatedScore;
+		this.minHierarchicalHops = minHierarchicalHops;
+		this.minRelatedHops = minRelatedHops;
 	}
 
 }

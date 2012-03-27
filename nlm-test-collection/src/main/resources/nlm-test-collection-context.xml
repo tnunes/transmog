@@ -6,7 +6,6 @@
 
 
 	<context:property-placeholder location="classpath:nlm-wsd-collection.properties" />
-	
 	<import resource="classpath:org/biosemantics/wsd/conceptstore-context.xml" />
 	<import resource="classpath:org/biosemantics/wsd/metamap/metamap-client-context.xml" />
 
@@ -16,6 +15,10 @@
 	<bean id="ambiguousWordReader" class="org.biosemantics.wsd.nlm.AmbiguousWordReader">
 		<property name="filePath" value="${ambiguous.file}"></property>
 	</bean>
+	<bean id="ignoredCuiReader" class="org.biosemantics.wsd.nlm.IgnoredCuiReader">
+		<property name="ignoredCuisFile" value="${ignoredCuis.file}"></property>
+	</bean>
+	
 	<bean id="ssiImpl" class="org.biosemantics.wsd.ssi.SsiImpl"></bean>
 
 	<context:annotation-config />

@@ -23,4 +23,18 @@ public class SsiScore implements Serializable {
 		this.scores = scores;
 	}
 
+	public float getFinalScore() {
+		float finalScore = 0F;
+		for (Score score : scores) {
+			if (score.getMinRelatedHops() > 0) {
+				finalScore += 1 / score.getMinRelatedHops();
+			}
+			if (score.getMinHierarchicalHops() > 0) {
+				finalScore +=  1 / score.getMinHierarchicalHops();
+			}
+			
+		}
+		return finalScore;
+	}
+
 }

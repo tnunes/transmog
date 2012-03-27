@@ -28,38 +28,39 @@ public class SsiImpl {
 				logger.debug("same concept wordsense:{} unambiguousId:{} ignoring.", new Object[] { wordSense,
 						unambiguousId });
 			} else {
-				float hierarchicalScore = 1F;
-				Node unAmbiguousNode = getNode(unambiguousId);
+				int hierarchicalPathLength = 0;
+				Node unAmbiguousNode = null;
+				try {
+					unAmbiguousNode = getNode(unambiguousId);
+				} catch (Throwable e) {
+					logger.error("error in getNode() for cui = " + unambiguousId, e);
+					continue;
+				}
 				Path hierarchicalPath = getHierarchicalPaths(wordSenseNode, unAmbiguousNode);
+				
 				if (hierarchicalPath == null) {
-					logger.debug("wordsense:{} unambiguousId:{} hierarchical path = null", new Object[] { wordSense,
+					logger.debug("hierarchical path NULL wordsense:{} unambiguousId:{}", new Object[] { wordSense,
 							unambiguousId });
-					hierarchicalScore = 0F;
 				} else {
-					int length = hierarchicalPath.length();
-					logger.debug("wordsense:{} unambiguousId:{} path:{}", new Object[] { wordSense, unambiguousId,
-							length });
-					for (int i = 0; i < length; i++) {
-						hierarchicalScore = hierarchicalScore * CONSTANT_WEIGHT;
-					}
-
+					hierarchicalPathLength = hierarchicalPath.length();
+					logger.debug("Hierarchical wordsense:{} unambiguousId:{} path:{}", new Object[] { wordSense,
+							unambiguousId, hierarchicalPathLength });
 				}
 
-				float relatedScore = 1F;
-				Path relatedPath = getRelatedPaths(wordSenseNode, unAmbiguousNode);
-				if (relatedPath == null) {
-					logger.debug("wordsense:{} unambiguousId:{} related path = null", new Object[] { wordSense,
-							unambiguousId });
-					relatedScore = 0F;
-				} else {
-					int length = relatedPath.length();
-					logger.debug("wordsense:{} unambiguousId:{} path:{}", new Object[] { wordSense, unambiguousId,
-							length });
-					for (int i = 0; i < length; i++) {
-						relatedScore = relatedScore * CONSTANT_WEIGHT;
-					}
-				}
-				scores.add(new Score(unambiguousId, hierarchicalScore, relatedScore));
+				int relatedPathLength = 0;
+				Path relatedPath = null;
+//				Path relatedPath = getRelatedPaths(wordSenseNode, unAmbiguousNode);
+//				
+//				if (relatedPath == null) {
+//					logger.debug("Related Path NULL wordsense:{} unambiguousId:{}", new Object[] { wordSense,
+//							unambiguousId });
+//				} else {
+//					relatedPathLength = relatedPath.length();
+//					logger.debug("Related path wordsense:{} unambiguousId:{} path:{}", new Object[] { wordSense, unambiguousId,
+//							relatedPathLength });
+//
+//				}
+				scores.add(new Score(unambiguousId, hierarchicalPathLength, relatedPathLength));
 			}
 		}
 		return new SsiScore(wordSense, scores);
@@ -95,7 +96,7 @@ public class SsiImpl {
 	@Autowired
 	private ConceptRepository conceptRepository;
 
-	private static final int MAX_TREE_WALK = 10;
+	private static final int MAX_TREE_WALK = 6;
 	private static final float CONSTANT_WEIGHT = 0.9F;
 	private static final Logger logger = LoggerFactory.getLogger(SsiImpl.class);
 }
