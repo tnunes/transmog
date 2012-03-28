@@ -2,7 +2,10 @@ package org.biosemantics.wsd.ssi;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.biosemantics.wsd.domain.Concept;
 import org.biosemantics.wsd.repository.ConceptRepository;
@@ -37,7 +40,7 @@ public class SsiImpl {
 					continue;
 				}
 				Path hierarchicalPath = getHierarchicalPaths(wordSenseNode, unAmbiguousNode);
-				
+
 				if (hierarchicalPath == null) {
 					logger.debug("hierarchical path NULL wordsense:{} unambiguousId:{}", new Object[] { wordSense,
 							unambiguousId });
@@ -49,21 +52,60 @@ public class SsiImpl {
 
 				int relatedPathLength = 0;
 				Path relatedPath = null;
-//				Path relatedPath = getRelatedPaths(wordSenseNode, unAmbiguousNode);
-//				
-//				if (relatedPath == null) {
-//					logger.debug("Related Path NULL wordsense:{} unambiguousId:{}", new Object[] { wordSense,
-//							unambiguousId });
-//				} else {
-//					relatedPathLength = relatedPath.length();
-//					logger.debug("Related path wordsense:{} unambiguousId:{} path:{}", new Object[] { wordSense, unambiguousId,
-//							relatedPathLength });
-//
-//				}
+				// Path relatedPath = getRelatedPaths(wordSenseNode, unAmbiguousNode);
+				//
+				// if (relatedPath == null) {
+				// logger.debug("Related Path NULL wordsense:{} unambiguousId:{}", new Object[] { wordSense,
+				// unambiguousId });
+				// } else {
+				// relatedPathLength = relatedPath.length();
+				// logger.debug("Related path wordsense:{} unambiguousId:{} path:{}", new Object[] { wordSense,
+				// unambiguousId,
+				// relatedPathLength });
+				//
+				// }
 				scores.add(new Score(unambiguousId, hierarchicalPathLength, relatedPathLength));
 			}
 		}
 		return new SsiScore(wordSense, scores);
+	}
+
+	public List<SsiScore> getScore(Collection<String> unambiguousIds, Collection<String> ambiguousSet) {
+		long start = System.currentTimeMillis();
+		List<SsiScore> ssiScores = new ArrayList<SsiScore>();
+		Map<String, Node> ambiguosCuiMap = new HashMap<String, Node>();
+		for (String ambiguousCui : ambiguousSet) {
+			ambiguosCuiMap.put(ambiguousCui, getNode(ambiguousCui));
+		}
+		for (String unambiguousCui : unambiguousIds) {
+			Node unambiguousNode = null;
+			try {
+				unambiguousNode = getNode(unambiguousCui);
+			} catch (Throwable e) {
+				logger.error("", e);
+			}
+			if (unambiguousNode != null) {
+				List<Score> scores = new ArrayList<Score>();
+				for (Entry<String, Node> entry : ambiguosCuiMap.entrySet()) {
+					Path hierarchicalPath = getHierarchicalPaths(entry.getValue(), unambiguousNode);
+					int hierarchicalHops = 0;
+					if (hierarchicalPath != null) {
+						hierarchicalHops = hierarchicalPath.length();
+					}
+					Path relatedPath = getRelatedPaths(entry.getValue(), unambiguousNode);
+					int relatedHops = 0;
+					if (relatedPath != null) {
+						relatedHops = relatedPath.length();
+					}
+					Score score = new Score(entry.getKey(), hierarchicalHops, relatedHops);
+					scores.add(score);
+				}
+				SsiScore ssiScore = new SsiScore(unambiguousCui, scores);
+				ssiScores.add(ssiScore);
+			}
+		}
+		logger.info("completed in {} ms ", System.currentTimeMillis() - start);
+		return ssiScores;
 	}
 
 	private Node getNode(String id) {

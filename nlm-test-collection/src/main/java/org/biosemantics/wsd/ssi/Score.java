@@ -3,13 +3,9 @@ package org.biosemantics.wsd.ssi;
 import java.io.Serializable;
 
 public class Score implements Serializable {
-	private String unambiguousCui;
+	private String ambiguousCui;
 	private int minHierarchicalHops;
 	private int minRelatedHops;
-
-	public String getUnambiguousCui() {
-		return unambiguousCui;
-	}
 
 	public int getMinHierarchicalHops() {
 		return minHierarchicalHops;
@@ -19,9 +15,13 @@ public class Score implements Serializable {
 		return minRelatedHops;
 	}
 
-	public Score(String unambiguousCui, int minHierarchicalHops, int minRelatedHops) {
+	public String getAmbiguousCui() {
+		return ambiguousCui;
+	}
+
+	public Score(String ambiguousCui, int minHierarchicalHops, int minRelatedHops) {
 		super();
-		this.unambiguousCui = unambiguousCui;
+		this.ambiguousCui = ambiguousCui;
 		this.minHierarchicalHops = minHierarchicalHops;
 		this.minRelatedHops = minRelatedHops;
 	}
