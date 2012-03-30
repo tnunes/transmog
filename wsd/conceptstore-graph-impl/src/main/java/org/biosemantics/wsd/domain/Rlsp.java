@@ -58,8 +58,8 @@ public abstract class Rlsp {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof Related) {
-			final Related other = (Related) obj;
+		if (obj instanceof Rlsp) {
+			final Rlsp other = (Rlsp) obj;
 			return Objects.equal(source, other.getSource())
 					&& (Objects.equal(fromConcept, other.getFromConcept()) && Objects.equal(toConcept,
 							other.getToConcept()));
