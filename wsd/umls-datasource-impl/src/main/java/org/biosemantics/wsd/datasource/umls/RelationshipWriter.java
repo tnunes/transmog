@@ -19,7 +19,7 @@ import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 public class RelationshipWriter {
-	private static final String UMLS_2011_AA = "UMLS 2011 AA";
+	private static final String UMLS_2011_AA = "UMLS_2011_AA | MRREL";
 	@Autowired
 	private DataSource dataSource;
 	@Autowired
@@ -28,7 +28,7 @@ public class RelationshipWriter {
 	private Neo4jTemplate neo4jTemplate;
 	private static final String GET_ALL_FACTUAL_RLSP_SQL = "select CUI1, CUI2, REL, RELA from MRREL where CUI1 != CUI2 AND REL IN ('CHD', 'RB', 'RO', 'SIB', 'SY')";// 14953305
 	private static final Logger logger = LoggerFactory.getLogger(RelationshipWriter.class);
-	private Map<String, String> cache = new HashMap<String, String>();
+	private Map<String, String> duplicateCache = new HashMap<String, String>();
 
 	public void writeAll() throws SQLException {
 		Connection connection = dataSource.getConnection();
@@ -45,7 +45,7 @@ public class RelationshipWriter {
 				String cui2 = rs.getString("CUI2");
 				String rel = rs.getString("REL");
 				String rela = rs.getString("RELA");
-				if (cache.containsKey(cui1 + cui2) || cache.containsKey(cui2 + cui1)) {
+				if (duplicateCache.containsKey(cui1 + cui2) || duplicateCache.containsKey(cui2 + cui1)) {
 					// rlsp exists do nothing
 				} else {
 					String relUpper = rel.toUpperCase().trim();
@@ -76,7 +76,7 @@ public class RelationshipWriter {
 						throw new IllegalArgumentException("Illegal value for relationships." + rel);
 					}
 					// add to cache for future recognition
-					cache.put(cui1 + cui2, null);
+					duplicateCache.put(cui1 + cui2, null);
 				}
 				// 1 million
 				if (++ctr % 1000000 == 0) {
