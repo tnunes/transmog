@@ -27,7 +27,14 @@ public class Concept {
 		neo4jOperations.save(related);
 		return related;
 	}
-	
+
+	public InScheme inScheme(Neo4jOperations neo4jOperations, Concept scheme, int strength, String predicate,
+			String source) {
+		InScheme inScheme = new InScheme(this, scheme, strength, predicate, source);
+		neo4jOperations.save(inScheme);
+		return inScheme;
+	}
+
 	public Child hasChild(Neo4jOperations neo4jOperations, Concept otherConcept, int strength, String predicate,
 			String source) {
 		Child child = new Child(this, otherConcept, strength, predicate, source);
@@ -46,7 +53,6 @@ public class Concept {
 	public ConceptType getType() {
 		return type;
 	}
-	
 
 	@Override
 	public boolean equals(Object obj) {
