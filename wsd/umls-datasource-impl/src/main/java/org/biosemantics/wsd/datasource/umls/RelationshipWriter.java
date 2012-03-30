@@ -35,10 +35,11 @@ public class RelationshipWriter {
 		Statement stmt = connection.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
 				java.sql.ResultSet.CONCUR_READ_ONLY);
 		stmt.setFetchSize(Integer.MIN_VALUE);
+		Transaction tx = neo4jTemplate.beginTx();
 		try {
 			ResultSet rs = stmt.executeQuery(GET_ALL_FACTUAL_RLSP_SQL);
 			int ctr = 0;
-			Transaction tx = neo4jTemplate.beginTx();
+
 			while (rs.next()) {
 				String cui1 = rs.getString("CUI1");
 				String cui2 = rs.getString("CUI2");
@@ -89,6 +90,8 @@ public class RelationshipWriter {
 		} finally {
 			stmt.close();
 			connection.close();
+			tx.success();
+			tx.finish();
 		}
 
 	}
