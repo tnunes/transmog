@@ -18,5 +18,7 @@
 	<bean id="conceptNodeWriter" class="org.biosemantics.wsd.datasource.umls.ConceptNodeWriter" />
 	<bean id="relationshipWriter" class="org.biosemantics.wsd.datasource.umls.RelationshipWriter" />
 
-
+	<bean id="schemeNodeWriter" class="org.biosemantics.wsd.datasource.umls.SchemeNodeWriter" />
+	<bean id="schemeRelationshipWriter" class="org.biosemantics.wsd.datasource.umls.SchemeRelationshipWriter" />
+	<bean id="schemeToConceptRelationshipWriter" class="org.biosemantics.wsd.datasource.umls.SchemeToConceptRelationshipWriter" />
 </beans>
