@@ -2,7 +2,7 @@ package org.biosemantics.wsd.domain;
 
 import org.springframework.data.neo4j.annotation.RelationshipEntity;
 
-@RelationshipEntity(type = "IN_SCHEME")
+@RelationshipEntity(type = "IN_SCHEME" , useShortNames=true)
 public class InScheme extends Rlsp {
 
 	public InScheme(Concept concept, Concept scheme, int strength, String predicate, String source) {

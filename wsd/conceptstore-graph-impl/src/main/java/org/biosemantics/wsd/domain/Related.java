@@ -2,7 +2,7 @@ package org.biosemantics.wsd.domain;
 
 import org.springframework.data.neo4j.annotation.RelationshipEntity;
 
-@RelationshipEntity(type = "RELATED")
+@RelationshipEntity(type = "RELATED", useShortNames=true)
 public class Related extends Rlsp {
 
 	public Related(Concept concept, Concept otherConcept, int strength, String predicate, String source) {

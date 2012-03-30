@@ -2,7 +2,7 @@ package org.biosemantics.wsd.domain;
 
 import org.springframework.data.neo4j.annotation.RelationshipEntity;
 
-@RelationshipEntity(type = "CHILD")
+@RelationshipEntity(type = "CHILD", useShortNames=true)
 public class Child extends Rlsp{
 	
 	public Child(Concept concept, Concept otherConcept, int strength, String predicate, String source) {
