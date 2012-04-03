@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
-import org.springframework.transaction.annotation.Transactional;
 
 public class RelationshipWriter {
 	private static final String UMLS_2011_AA = "UMLS_2011_AA | MRREL";
@@ -28,7 +27,8 @@ public class RelationshipWriter {
 	private Neo4jTemplate neo4jTemplate;
 	private static final String GET_ALL_FACTUAL_RLSP_SQL = "select CUI1, CUI2, REL, RELA from MRREL where CUI1 != CUI2 AND REL IN ('CHD', 'RB', 'RO', 'SIB', 'SY')";// 14953305
 	private static final Logger logger = LoggerFactory.getLogger(RelationshipWriter.class);
-	private Map<String, String> duplicateCache = new HashMap<String, String>();
+	private Map<String, String> duplicateHierarchicalCache = new HashMap<String, String>();
+	private Map<String, String> duplicateRelatedCache = new HashMap<String, String>();
 
 	public void writeAll() throws SQLException {
 		Connection connection = dataSource.getConnection();
@@ -45,38 +45,40 @@ public class RelationshipWriter {
 				String cui2 = rs.getString("CUI2");
 				String rel = rs.getString("REL");
 				String rela = rs.getString("RELA");
-				if (duplicateCache.containsKey(cui1 + cui2) || duplicateCache.containsKey(cui2 + cui1)) {
-					// rlsp exists do nothing
-				} else {
-					String relUpper = rel.toUpperCase().trim();
-					if (relUpper.equals("CHD") || relUpper.equals("RB") || relUpper.equals("RO")
-							|| relUpper.equals("SIB") || relUpper.equals("SY")) {
-						// Find all relationships for a UMLS concept. Note: In
-						// MRREL, the REL/RELA always expresses the
-						// nature of the relationship from CUI2 to the
-						// "current concept", CUI1. Because we're querying
-						// CUI1 below, this represents the "natural" direction
-						// of the relationship.
-						if (relUpper.equals("CHD")) {
+				String relUpper = rel.toUpperCase().trim();
+				if (relUpper.equals("CHD") || relUpper.equals("RB") || relUpper.equals("RO") || relUpper.equals("SIB")
+						|| relUpper.equals("SY")) {
+					// Find all relationships for a UMLS concept. Note: In
+					// MRREL, the REL/RELA always expresses the
+					// nature of the relationship from CUI2 to the
+					// "current concept", CUI1. Because we're querying
+					// CUI1 below, this represents the "natural" direction
+					// of the relationship.
+					if (relUpper.equals("CHD") || relUpper.equals("RB")) {
+						if (duplicateHierarchicalCache.containsKey(cui1 + cui2)
+								|| duplicateHierarchicalCache.containsKey(cui2 + cui1)) {
+							// rlsp exists do nothing
+						} else {
 							Concept concept = conceptRepository.getConceptById(cui2);
 							Concept otherConcept = conceptRepository.getConceptById(cui1);
 							concept.hasChild(neo4jTemplate, otherConcept, 100, rela, UMLS_2011_AA);
-						} else if (relUpper.equals("RB")) {
-							Concept concept = conceptRepository.getConceptById(cui2);
-							Concept otherConcept = conceptRepository.getConceptById(cui1);
-							concept.hasChild(neo4jTemplate, otherConcept, 100, rela, UMLS_2011_AA);
+							duplicateHierarchicalCache.put(cui1 + cui2, null);
+						}
+					} else {
+						if (duplicateRelatedCache.containsKey(cui1 + cui2)
+								|| duplicateRelatedCache.containsKey(cui2 + cui1)) {
+							// rlsp exists do nothing
 						} else {
 							Concept concept = conceptRepository.getConceptById(cui2);
 							Concept otherConcept = conceptRepository.getConceptById(cui1);
 							concept.relatedTo(neo4jTemplate, otherConcept, 100, rela, UMLS_2011_AA);
+							duplicateRelatedCache.put(cui1 + cui2, null);
 						}
-					} else {
-						// logger.error("REL  = {} received. Illegal value for relationships.",
-						// rel);
-						throw new IllegalArgumentException("Illegal value for relationships." + rel);
 					}
-					// add to cache for future recognition
-					duplicateCache.put(cui1 + cui2, null);
+				} else {
+					// logger.error("REL  = {} received. Illegal value for relationships.",
+					// rel);
+					throw new IllegalArgumentException("Illegal value for relationships." + rel);
 				}
 				// 1 million
 				if (++ctr % 1000000 == 0) {
@@ -92,6 +94,8 @@ public class RelationshipWriter {
 			connection.close();
 			tx.success();
 			tx.finish();
+			duplicateHierarchicalCache.clear();
+			duplicateRelatedCache.clear();
 		}
 
 	}

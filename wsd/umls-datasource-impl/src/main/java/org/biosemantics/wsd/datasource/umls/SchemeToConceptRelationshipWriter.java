@@ -4,8 +4,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -40,14 +38,14 @@ public class SchemeToConceptRelationshipWriter {
 			int ctr = 0;
 
 			while (rs.next()) {
-				String cui = rs.getString("CUI1");
-				String tui = rs.getString("CUI2");
+				String cui = rs.getString("CUI");
+				String tui = rs.getString("TUI");
 				Concept concept = conceptRepository.getConceptById(cui);
 				Concept scheme = conceptRepository.getConceptById(tui);
 				concept.inScheme(neo4jTemplate, scheme, 100, null, UMLS_MRSTY);
 			}
 			// 1 million
-			if (++ctr % 1000000 == 0) {
+			if (++ctr % 100000 == 0) {
 				tx.success();
 				tx.finish();
 				tx = neo4jTemplate.beginTx();

@@ -18,7 +18,7 @@ import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 public class SchemeRelationshipWriter {
-	private static final String UMLS_2011_AA = "UMLS_2011_AA | SRSTRE1";
+	private static final String IS_A = "T186";
 	@Autowired
 	private DataSource dataSource;
 	@Autowired
@@ -28,8 +28,9 @@ public class SchemeRelationshipWriter {
 	private static final String GET_ALL_PREDICATES = "SELECT UI, STY_RL FROM SRDEF WHERE RT=\"RL\"";// 54
 	private static final String GET_ALL_SCHEME_RLSP = "SELECT * FROM SRSTRE1 WHERE UI1 != UI3";// 6483
 	private static final Logger logger = LoggerFactory.getLogger(SchemeRelationshipWriter.class);
-	private static final String UMLS_SRSTRE1 = "UMLS_2011_AA | SRSTRE";
-	private Map<String, String> duplicateCache = new HashMap<String, String>();
+	private static final String UMLS_SRSTRE1 = "UMLS_2011_AA | SRSTRE1";
+	private Map<String, String> duplicateHierarchicalCache = new HashMap<String, String>();
+	private Map<String, String> duplicateRelatedCache = new HashMap<String, String>();
 	private Map<String, String> predicateCache = new HashMap<String, String>();
 
 	@Transactional
@@ -38,36 +39,62 @@ public class SchemeRelationshipWriter {
 		writeConceptSchemeRlsp();
 	}
 
-	private void savePredicatesToCache() throws SQLException {
+	private void writeConceptSchemeRlsp() throws SQLException {
 		Connection connection = dataSource.getConnection();
 		Statement stmt = connection.createStatement();
 		try {
 			ResultSet rs = stmt.executeQuery(GET_ALL_SCHEME_RLSP);
+			int ctr = 0;
 			while (rs.next()) {
 				String ui1 = rs.getString("UI1");
 				String ui2 = rs.getString("UI2");
 				String ui3 = rs.getString("UI3");
-				if (duplicateCache.containsKey(ui1 + ui3) || duplicateCache.containsKey(ui3 + ui1)) {
-					// ignore
+
+				if (ui2.equalsIgnoreCase(IS_A)) {
+					if (duplicateHierarchicalCache.containsKey(ui1 + ui3)
+							|| duplicateHierarchicalCache.containsKey(ui3 + ui1)) {
+						// ignore
+					} else {
+						Concept concept = conceptRepository.getConceptById(ui1);
+						Concept otherConcept = conceptRepository.getConceptById(ui3);
+						if (concept != null && otherConcept != null) {
+							String predicate = predicateCache.get(ui2);
+							concept.hasChild(neo4jTemplate, otherConcept, 100, predicate, UMLS_SRSTRE1);
+							// add to cache to avoid duplicates
+							ctr++;
+							duplicateHierarchicalCache.put(ui1 + ui3, null);
+						}
+					}
 				} else {
-					Concept concept = conceptRepository.getConceptById(ui1);
-					Concept otherConcept = conceptRepository.getConceptById(ui3);
-					String predicate = predicateCache.get(ui2);
-					concept.relatedTo(neo4jTemplate, otherConcept, 100, predicate, UMLS_SRSTRE1);
-					// add to cache to avoid duplicates
-					duplicateCache.put(ui1 + ui3, null);
+					if (duplicateRelatedCache.containsKey(ui1 + ui3) || duplicateRelatedCache.containsKey(ui3 + ui1)) {
+						// ignore
+					} else {
+						Concept concept = conceptRepository.getConceptById(ui1);
+						Concept otherConcept = conceptRepository.getConceptById(ui3);
+						if (concept != null && otherConcept != null) {
+							String predicate = predicateCache.get(ui2);
+							concept.relatedTo(neo4jTemplate, otherConcept, 100, predicate, UMLS_SRSTRE1);
+							ctr++;
+							// add to cache to avoid duplicates
+							duplicateRelatedCache.put(ui1 + ui3, null);
+						}
+					}
+
 				}
 			}
-			logger.info("{} concept sceme rlsp's created", duplicateCache.size());
+			logger.info("{} concept sceme rlsp's created", ctr);
 			rs.close();
 		} finally {
 			stmt.close();
 			connection.close();
+			duplicateHierarchicalCache.clear();
+			duplicateRelatedCache.clear();
+			predicateCache.clear();
 		}
 
 	}
 
-	private void writeConceptSchemeRlsp() throws SQLException {
+	private void savePredicatesToCache() throws SQLException {
 		Connection connection = dataSource.getConnection();
 		Statement stmt = connection.createStatement();
 		try {
