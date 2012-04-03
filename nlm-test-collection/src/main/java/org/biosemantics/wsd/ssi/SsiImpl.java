@@ -88,12 +88,12 @@ public class SsiImpl {
 				List<Score> scores = new ArrayList<Score>();
 				for (Entry<String, Node> entry : ambiguosCuiMap.entrySet()) {
 					Path hierarchicalPath = getHierarchicalPaths(entry.getValue(), unambiguousNode);
-					int hierarchicalHops = 0;
+					int hierarchicalHops = -1;
 					if (hierarchicalPath != null) {
 						hierarchicalHops = hierarchicalPath.length();
 					}
 					Path relatedPath = getRelatedPaths(entry.getValue(), unambiguousNode);
-					int relatedHops = 0;
+					int relatedHops = -1;
 					if (relatedPath != null) {
 						relatedHops = relatedPath.length();
 					}
@@ -139,6 +139,5 @@ public class SsiImpl {
 	private ConceptRepository conceptRepository;
 
 	private static final int MAX_TREE_WALK = 6;
-	private static final float CONSTANT_WEIGHT = 0.9F;
 	private static final Logger logger = LoggerFactory.getLogger(SsiImpl.class);
 }

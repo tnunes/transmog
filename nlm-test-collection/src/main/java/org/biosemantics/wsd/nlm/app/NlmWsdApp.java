@@ -27,15 +27,15 @@ import au.com.bytecode.opencsv.CSVWriter;
 
 public class NlmWsdApp {
 
-	private static final String TEXT = "Cold storage induces an endothelium-independent relaxation to hypoxia/reoxygenation in porcine coronary arteries. Tissues are often cold stored for physiological studies and for clinical transplantation. We report that cold storage induces a relaxation to reoxygenation after hypoxia (H/R) in de-endothelialized porcine coronary arteries. In fresh denuded arteries stimulated with U46619, H/R did not elicit relaxation. However, after overnight cold storage (4 degrees C), H/R elicited a transient relaxation with peak relaxation of 56 +/- 8% (n = 8), which was reproducible after 2 days of cold storage. The H/R relaxation was inhibited by methylene blue (10 microM) and LY83583 (10 microM), O2-hemoglobin (1 microM), or N(G)-methyl-L-arginine (0.2 mM), but neither N(G)-nitro-L-arginine (0.2 mM) nor cyclo-oxygenase inhibition was effective. Importantly, the H/R relaxation was attenuated by KCl (40 mM) or tetrabutylammonium chloride (5 mM), a non-selective inhibitor of K+ channels. Interestingly, authentic nitric oxide (NO)- or S-nitroso-N-acetylpenicillamine (SNAP)-induced relaxations were enhanced by cold storage in U46619 (0.1 microM) contractures. When tissues were contracted with KCl (40 mM), the enhancement in NO- or SNAP-induced relaxation by cold storage was markedly smaller than with U46619. Neither catalase (1,200 U/ml) nor 3-amino-triazole (50 mM), an inhibitor of catalase, affected the H/R relaxation. The duration of H/R relaxation also increased with the period of incubation at 37 degrees C in the organ bath. This was blocked by inhibition of NO synthesis or guanylate cyclase. Moreover, inhibition of protein synthesis with actinomycin D (0.1 microM) and cycloheximide (10 microM), or dexamethasone (1 microM), an inhibitor of NO synthase induction, blocked this increase in the duration of the H/R relaxation. The results suggest that in smooth muscle induction of NO pathway relaxation, which is in part mediated by K+ channels and inducible NO synthase, may be of importance to the understanding of ischemia/reperfusion responses in cold-stored arteries.";
-	private static final double CONSTANT = 0.9D;
+	private static final String INDEXED_INPUT = "/ssd/bhsingh/data/metamap-annotations.txt";
+	private static final String OUT_FOLDER = "/ssd/bhsingh/data/6-1/";
 
 	public static void main(String[] args) throws Exception {
 		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext(
 				"nlm-test-collection-context.xml");
 		applicationContext.registerShutdownHook();
 
-		CSVReader csvReader = new CSVReader(new FileReader(new File("/ssd/bhsingh/data/metamap-annotations.txt")));
+		CSVReader csvReader = new CSVReader(new FileReader(new File(INDEXED_INPUT)));
 		List<String[]> metamapAnnotationLines = csvReader.readAll();
 		csvReader.close();
 		AmbiguousWordReader ambiguousWordReader = applicationContext.getBean(AmbiguousWordReader.class);
@@ -46,66 +46,39 @@ public class NlmWsdApp {
 		for (AmbiguousWord ambiguousWord : ambiguousWords) {
 
 			String ambiguousText = ambiguousWord.getText();
-			CSVWriter countWriter = new CSVWriter(new FileWriter(new File("/ssd/bhsingh/data/pseudocode-score-clean",
-					ambiguousText)));
+			// CSVWriter countWriter = new CSVWriter(new FileWriter(new File(OUT_FOLDER, ambiguousText +
+			// "_count.txt")));
+			CSVWriter detailWriter = new CSVWriter(new FileWriter(new File(OUT_FOLDER, ambiguousText + "_detail.txt")));
 			List<NlmWsdRecord> nlmRecords = nlmWsdRecordReader.readRecordsForAmbiguousWord(ambiguousText);
 			for (NlmWsdRecord nlmWsdRecord : nlmRecords) {
-				if (nlmWsdRecord.getAnnotatedSense().trim().equalsIgnoreCase("none")) {
-					// do nothing
-				} else {
-					int pmid = nlmWsdRecord.getPmid();
-					Set<String> cuis = new HashSet<String>();
-					for (String[] columns : metamapAnnotationLines) {
-						if (columns[0].equalsIgnoreCase(ambiguousText) && Integer.parseInt(columns[2]) == pmid) {
-							String[] cuiStrings = Arrays.copyOfRange(columns, 4, columns.length);
-							for (String cui : cuiStrings) {
-								cuis.add(cui.trim());
-							}
-							break;
+				int pmid = nlmWsdRecord.getPmid();
+				Set<String> cuis = new HashSet<String>();
+				for (String[] columns : metamapAnnotationLines) {
+					if (columns[0].equalsIgnoreCase(ambiguousText) && Integer.parseInt(columns[2]) == pmid) {
+						String[] cuiStrings = Arrays.copyOfRange(columns, 4, columns.length);
+						for (String cui : cuiStrings) {
+							cuis.add(cui.trim());
 						}
+						break;
 					}
-					List<String> ambiguousCuis = Arrays.asList(ambiguousWord.getCuis());
-					for (String ambiguousCui : ambiguousCuis) {
-						cuis.remove(ambiguousCui.trim());
-					}
-					List<SsiScore> ssiScores = ssiImpl.getScore(cuis, ambiguousCuis);
-					Map<String, Double> scoreMap = new HashMap<String, Double>();
-					for (SsiScore ssiScore : ssiScores) {
-						for (Score score : ssiScore.getScores()) {
-							int minHops = score.getMinHierarchicalHops() > 0
-									&& score.getMinHierarchicalHops() < score.getMinRelatedHops() ? score
-									.getMinHierarchicalHops() : score.getMinRelatedHops();
-							double minHopScore = Math.pow(CONSTANT, minHops);
-							if (scoreMap.containsKey(score.getAmbiguousCui())) {
-								minHopScore += scoreMap.get(score.getAmbiguousCui());
-							}
-							scoreMap.put(score.getAmbiguousCui(), minHopScore);
-						}
-					}
-					List<String> output = new ArrayList<String>();
-					output.add("" + nlmWsdRecord.getRecordNumber());
-					output.add(nlmWsdRecord.getAnnotatedSense());
-					String senseCui =  ambiguousWord.getCuis()[Integer.parseInt(nlmWsdRecord.getAnnotatedSense()) - 1];
-					output.add(senseCui);
-					double max = 0D;
-					String maxCui = null;
-					for (Entry<String, Double> entry : scoreMap.entrySet()) {
-						output.add(entry.getKey());
-						output.add(String.valueOf(entry.getValue()));
-						if (entry.getValue() > max) {
-							maxCui = entry.getKey();
-							max = entry.getValue();
-						}
-					}
-					output.add(maxCui);
-					output.add(""+(senseCui.trim().equalsIgnoreCase(maxCui.trim())));
-					countWriter.writeNext(output.toArray(new String[output.size()]));
-					countWriter.flush();
 				}
-			}
+				List<String> ambiguousCuis = Arrays.asList(ambiguousWord.getCuis());
+				for (String ambiguousCui : ambiguousCuis) {
+					cuis.remove(ambiguousCui.trim());
+				}
+				List<SsiScore> ssiScores = ssiImpl.getScore(cuis, ambiguousCuis);
+				for (SsiScore ssiScore : ssiScores) {
+					String unambigCui = ssiScore.getUnambiguousCui();
+					for (Score score : ssiScore.getScores()) {
+						detailWriter.writeNext(new String[] { "" + nlmWsdRecord.getRecordNumber(), unambigCui,
+								score.getAmbiguousCui(), "" + score.getMinHierarchicalHops(),
+								"" + score.getMinRelatedHops() });
+					}
+				}
 
-			countWriter.flush();
-			countWriter.close();
+			}
+			detailWriter.flush();
+			detailWriter.close();
 
 		}
 

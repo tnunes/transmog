@@ -11,12 +11,12 @@ import au.com.bytecode.opencsv.CSVWriter;
 
 public class ScoreApp {
 
-	public static final String RESULT_FOLDER = "/ssd/bhsingh/data/pseudocode-score";
+	public static final String RESULT_FOLDER = "/ssd/bhsingh/data/6-1-sum";
 	public static final String OUT_FOLDER = "/ssd/bhsingh/data/";
 
 	public static void main(String[] args) throws IOException {
 		File folder = new File(RESULT_FOLDER);
-		CSVWriter csvWriter = new CSVWriter(new FileWriter(new File(OUT_FOLDER, "01_summary.txt")));
+		CSVWriter csvWriter = new CSVWriter(new FileWriter(new File(OUT_FOLDER, "03_summary.txt")));
 		File[] files = folder.listFiles();
 		for (File file : files) {
 			CSVReader csvReader = new CSVReader(new FileReader(file));
