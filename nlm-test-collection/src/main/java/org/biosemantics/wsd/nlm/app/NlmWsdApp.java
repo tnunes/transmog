@@ -6,17 +6,16 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import org.biosemantics.wsd.nlm.AmbiguousWord;
 import org.biosemantics.wsd.nlm.AmbiguousWordReader;
 import org.biosemantics.wsd.nlm.NlmWsdRecord;
 import org.biosemantics.wsd.nlm.NlmWsdRecordReader;
+import org.biosemantics.wsd.similarity.PathScore;
+import org.biosemantics.wsd.similarity.SimilarityImpl;
 import org.biosemantics.wsd.ssi.Score;
 import org.biosemantics.wsd.ssi.SsiImpl;
 import org.biosemantics.wsd.ssi.SsiScore;
@@ -27,8 +26,8 @@ import au.com.bytecode.opencsv.CSVWriter;
 
 public class NlmWsdApp {
 
-	private static final String INDEXED_INPUT = "/ssd/bhsingh/data/metamap-annotations.txt";
-	private static final String OUT_FOLDER = "/ssd/bhsingh/data/6-1/";
+	private static final String INDEXED_INPUT = "/Users/bhsingh/code/data/paper1/metamap-annotations.txt";
+	private static final String OUT_FOLDER = "/Users/bhsingh/code/data/paper1/6-1/";
 
 	public static void main(String[] args) throws Exception {
 		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext(
@@ -40,7 +39,7 @@ public class NlmWsdApp {
 		csvReader.close();
 		AmbiguousWordReader ambiguousWordReader = applicationContext.getBean(AmbiguousWordReader.class);
 		NlmWsdRecordReader nlmWsdRecordReader = applicationContext.getBean(NlmWsdRecordReader.class);
-		SsiImpl ssiImpl = applicationContext.getBean(SsiImpl.class);
+		SimilarityImpl ssiImpl = applicationContext.getBean(SimilarityImpl.class);
 		Collection<AmbiguousWord> ambiguousWords = ambiguousWordReader.getAmbiguousWords();
 
 		for (AmbiguousWord ambiguousWord : ambiguousWords) {
@@ -66,24 +65,14 @@ public class NlmWsdApp {
 				for (String ambiguousCui : ambiguousCuis) {
 					cuis.remove(ambiguousCui.trim());
 				}
-				List<SsiScore> ssiScores = ssiImpl.getScore(cuis, ambiguousCuis);
-				for (SsiScore ssiScore : ssiScores) {
-					String unambigCui = ssiScore.getUnambiguousCui();
-					for (Score score : ssiScore.getScores()) {
-						detailWriter.writeNext(new String[] { "" + nlmWsdRecord.getRecordNumber(), unambigCui,
-								score.getAmbiguousCui(), "" + score.getMinHierarchicalHops(),
-								"" + score.getMinRelatedHops() });
-					}
+				Collection<PathScore> ssiScores = ssiImpl.pathSimilarity(cuis, ambiguousCuis);
+				for (PathScore ssiScore : ssiScores) {
+					detailWriter.writeNext(ssiScore.asStringArray());
 				}
-
 			}
 			detailWriter.flush();
 			detailWriter.close();
 
 		}
-
-		List<String> cuis = new ArrayList<String>();
-		cuis.add("C0012147");
-		ssiImpl.getSsiScore(cuis, "C0024530");
 	}
 }
