@@ -1,8 +1,12 @@
 package org.biosemantics.wsd.domain;
 
+import java.util.Set;
+
+import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.GraphId;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
+import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.data.neo4j.template.Neo4jOperations;
 
 import com.google.common.base.Objects;
@@ -40,6 +44,12 @@ public class Concept {
 		Child child = new Child(this, otherConcept, strength, predicate, source);
 		neo4jOperations.save(child);
 		return child;
+	}
+
+	public HasLabel hasLabel(Neo4jOperations neo4jOperations, Label label, LabelType labelType, String source) {
+		HasLabel hasLabel = new HasLabel(this, label, labelType, source);
+		neo4jOperations.save(hasLabel);
+		return hasLabel;
 	}
 
 	public Long getNodeId() {
@@ -80,5 +90,7 @@ public class Concept {
 	private String id;
 	@Indexed
 	private ConceptType type;
+	@RelatedTo(type = "HAS_LABEL", direction = Direction.OUTGOING)
+	Set<Label> labels;
 
 }
