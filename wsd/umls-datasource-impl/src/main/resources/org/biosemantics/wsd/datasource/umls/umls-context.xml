@@ -21,4 +21,5 @@
 	<bean id="schemeNodeWriter" class="org.biosemantics.wsd.datasource.umls.SchemeNodeWriter" />
 	<bean id="schemeRelationshipWriter" class="org.biosemantics.wsd.datasource.umls.SchemeRelationshipWriter" />
 	<bean id="schemeToConceptRelationshipWriter" class="org.biosemantics.wsd.datasource.umls.SchemeToConceptRelationshipWriter" />
+	<bean id="labelWriter" class="org.biosemantics.wsd.datasource.umls.LabelWriter"></bean>
 </beans>

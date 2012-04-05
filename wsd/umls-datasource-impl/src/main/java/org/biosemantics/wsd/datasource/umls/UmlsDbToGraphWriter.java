@@ -13,6 +13,8 @@ public class UmlsDbToGraphWriter {
 		applicationContext.registerShutdownHook();
 		ConceptNodeWriter conceptNodeWriter = applicationContext.getBean(ConceptNodeWriter.class);
 		conceptNodeWriter.writeAll();
+		LabelWriter labelWriter = applicationContext.getBean(LabelWriter.class);
+		labelWriter.writeAll();
 		RelationshipWriter relationshipWriter = applicationContext.getBean(RelationshipWriter.class);
 		relationshipWriter.writeAll();
 		SchemeNodeWriter schemeNodeWriter = applicationContext.getBean(SchemeNodeWriter.class);
