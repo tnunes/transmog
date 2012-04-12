@@ -1,7 +1,6 @@
 package org.biosemantics.eviped.utils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -14,9 +13,9 @@ import au.com.bytecode.opencsv.CSVWriter;
 
 public class OverlapCalculator {
 
-	private static final String FILE2 = "/Users/bhsingh/Code/data/EVIPED/doxapram/mesh-text-all.txt";
-	private static final String FILE1 = "/Users/bhsingh/Code/data/EVIPED/doxapram/all-peregrine.txt";
-	private static final String OUTPUT = "/Users/bhsingh/Code/data/EVIPED/doxapram/overlap-peregrine-mesh-text-all-2.csv";
+	private static final String FILE2 = "/Users/bhsingh/code/data/EVIPED/doxapram/mesh+text-query-output-570.txt";
+	private static final String FILE1 = "/Users/bhsingh/code/data/EVIPED/doxapram/peregrine-output-456.txt";
+	private static final String OUTPUT = "/Users/bhsingh/Code/data/EVIPED/doxapram/mest+text-peregrine-coverage.csv";
 
 	public static void calculateOverlap(String file1, String file2, String outFile) throws IOException {
 		CSVReader csvReader = new CSVReader(new FileReader(new File(file1)));
