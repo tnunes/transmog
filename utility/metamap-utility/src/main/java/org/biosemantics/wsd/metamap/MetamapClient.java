@@ -10,9 +10,7 @@ import gov.nih.nlm.nls.metamap.Utterance;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -72,5 +70,10 @@ public class MetamapClient {
 		}
 		MetamapIndexingResult metamapIndexingResult = new MetamapIndexingResult(cuis);
 		return metamapIndexingResult;
+	}
+	
+	public List<Result> getResults(String text) throws Exception {
+		List<Result> resultList = api.processCitationsFromString(text);
+		return resultList;
 	}
 }
