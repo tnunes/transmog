@@ -9,8 +9,10 @@ public class ScriptApp {
 	public static void main(String[] args) {
 		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext(CONTEXT);
 		applicationContext.registerShutdownHook();
-		AmbiguousTermFrequencyGenerator ambiguousTermFrequencyGenerator = applicationContext.getBean(AmbiguousTermFrequencyGenerator.class);
-		ambiguousTermFrequencyGenerator.writeAll();
+//		AmbiguousTermFrequencyGenerator ambiguousTermFrequencyGenerator = applicationContext.getBean(AmbiguousTermFrequencyGenerator.class);
+//		ambiguousTermFrequencyGenerator.writeAll();
+		ConnectedConceptFrequencyGenerator conceptFrequencyGenerator = applicationContext.getBean(ConnectedConceptFrequencyGenerator.class);
+		conceptFrequencyGenerator.writeAll();
 	}
 
 }

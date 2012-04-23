@@ -9,7 +9,11 @@
 
 	<import resource="classpath:/org/biosemantics/wsd/conceptstore-context.xml" />
 
-	<bean id="ambiguousTremFrequencyGenerator" class="org.biosemantics.wsd.script.AmbiguousTermFrequencyGenerator">
+	<bean id="ambiguousTermFrequencyGenerator" class="org.biosemantics.wsd.script.AmbiguousTermFrequencyGenerator">
+		<property name="outputFile" value="${output.file}"></property>
+	</bean>
+	
+	<bean id="connectedConceptFrequencyGenerator" class="org.biosemantics.wsd.script.ConnectedConceptFrequencyGenerator">
 		<property name="outputFile" value="${output.file}"></property>
 	</bean>
 
