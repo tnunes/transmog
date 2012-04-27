@@ -15,7 +15,6 @@
 	<modules>
 		<module>conceptstore-graph-impl</module>
 		<module>umls-datasource-impl</module>
-		<module>graphstore-impl</module>
 		<module>wsd-script-impl</module>
 	</modules>
 </project>
