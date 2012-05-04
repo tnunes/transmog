@@ -8,12 +8,12 @@
 
 
 	<bean id="peregrine" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
-		<property name="serviceUrl" value="rmi://10.218.27.190:9999/PeregrineService" />
+		<property name="serviceUrl" value="rmi://localhost:9999/PeregrineService" />
 		<property name="serviceInterface" value="org.erasmusmc.data_mining.peregrine.api.Peregrine" />
 	</bean>
 
 	<bean id="ontology" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
-		<property name="serviceUrl" value="rmi://10.218.27.190:9999/OntologyService" />
+		<property name="serviceUrl" value="rmi://localhost:9999/OntologyService" />
 		<property name="serviceInterface" value="org.erasmusmc.data_mining.ontology.api.Ontology" />
 	</bean>
 </beans>

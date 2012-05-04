@@ -1,7 +1,10 @@
 package org.biosemantics.utility.peregrine;
 
+import java.util.List;
+
 import org.erasmusmc.data_mining.ontology.api.Language;
 import org.erasmusmc.data_mining.ontology.api.Ontology;
+import org.erasmusmc.data_mining.peregrine.api.IndexingResult;
 import org.erasmusmc.data_mining.peregrine.api.Peregrine;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -30,7 +33,8 @@ public class PeregrineRmiClient {
 		ClassPathXmlApplicationContext appContext = new ClassPathXmlApplicationContext(
 				new String[] { "/org/biosemantics/utility/peregrine/peregrine-utility-context.xml" });
 		PeregrineRmiClient peregrineRmiClient = (PeregrineRmiClient) appContext.getBean("peregrineRmiClient");
-		peregrineRmiClient.getPeregrine().index("Malaria", Language.DEFAULT);
+		List<IndexingResult> indexingResults =  peregrineRmiClient.getPeregrine().index("doxapram:", Language.DEFAULT);
+		System.err.println(indexingResults);
 		
 	}
 
