@@ -13,4 +13,5 @@
 	<tx:annotation-driven mode="proxy" />
 	<neo4j:config storeDirectory="${graph.db}" />
 	<neo4j:repositories base-package="org.biosemantics.wsd.repository" />
+	<bean id="pathService" class="org.biosemantics.wsd.path.PathServiceImpl"></bean>
 </beans>

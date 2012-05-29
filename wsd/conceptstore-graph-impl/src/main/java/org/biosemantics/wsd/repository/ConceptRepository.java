@@ -12,7 +12,16 @@ public interface ConceptRepository extends GraphRepository<Concept> {
 	@Query("start concept=node({0}) match concept-[:RELATED]-otherConcept return otherConcept")
 	Iterable<Concept> getRelatedConcepts(Concept concept);
 	
-	@Query("start concept=node({0}) match concept-[r:HAS_LABEL]-label where r.type = \"PREFERRED\" and label.language = {1} return label ")
+	@Query("start concept=node({0}) match concept-[:CHILD]-otherConcept return otherConcept")
+	Iterable<Concept> getHierarchicalConcepts(Concept concept);
+	
+	@Query("start concept=node({0}) match concept<-[:CHILD]-otherConcept return otherConcept")
+	Iterable<Concept> getChildConcepts(Concept concept);
+	
+	@Query("start concept=node({0}) match concept-[:CHILD]->otherConcept return otherConcept")
+	Iterable<Concept> getParentConcepts(Concept concept);
+	
+	@Query("start concept=node({0}) match concept-[r:HAS_LABEL]-label where r.type = \"PREFERRED\" and label.language = {1} return label")
 	Label getPreferredLabel(Concept concept, String language);
 	
 	@Query("start concept=node({0}) match concept-[:IN_SCHEME]-otherConcept return otherConcept")

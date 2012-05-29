@@ -1,7 +1,5 @@
 package org.biosemantics.wsd.repository;
 
-import java.util.List;
-
 import org.biosemantics.wsd.domain.Concept;
 import org.biosemantics.wsd.domain.Label;
 import org.springframework.data.neo4j.annotation.Query;
