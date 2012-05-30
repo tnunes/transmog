@@ -9,20 +9,6 @@
 
 	<import resource="classpath:/org/biosemantics/wsd/conceptstore-context.xml" />
 
-	<bean id="ambiguousTermFrequencyGenerator" class="org.biosemantics.wsd.script.AmbiguousTermFrequencyGenerator">
-		<property name="outputFile" value="${output.file}"></property>
-	</bean>
-	
-	<bean id="connectedConceptFrequencyGenerator" class="org.biosemantics.wsd.script.ConnectedConceptFrequencyGenerator">
-		<property name="outputFile" value="${output.file}"></property>
-	</bean>
-	<bean id="maxRelatedConceptGenerator" class="org.biosemantics.wsd.script.MaxRelatedConceptGenerator">
-	</bean>
-	<bean id="shortestPathImpl" class="org.biosemantics.wsd.script.path.ShortestPathImpl">
-		<!-- <property name="maxBreadth" value="${max.breadth}"></property> -->
-		<property name="maxBreadth" value="${max.breadth}"></property>
-	</bean>
-	<bean id="relatedConceptWriter" class="org.biosemantics.wsd.script.RelatedConceptWriter">
-		<property name="outputFile" value="${output.file}"></property>
-	</bean>
+	<bean id="cuiNameUtility" class="org.biosemantics.wsd.script.eviped.CuiNameUtility"></bean>
+
 </beans>

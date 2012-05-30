@@ -10,6 +10,7 @@
 	<import resource="classpath:/org/biosemantics/wsd/conceptstore-context.xml" />
 
 	<bean id="shortestPathImpl" class="org.biosemantics.wsd.script.path.ShortestPathImpl">
+<!-- 		<property name="maxBreadth" value="${max.breadth}"></property> -->
 		<property name="maxBreadth" value="${max.breadth}"></property>
 	</bean>
 
