@@ -12,10 +12,7 @@ import org.neo4j.kernel.Traversal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
-
-import com.google.common.annotations.Beta;
 
 public class PathServiceImpl implements PathService {
 

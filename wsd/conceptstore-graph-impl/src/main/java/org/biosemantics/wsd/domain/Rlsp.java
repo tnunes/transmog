@@ -2,7 +2,9 @@ package org.biosemantics.wsd.domain;
 
 import org.springframework.data.neo4j.annotation.EndNode;
 import org.springframework.data.neo4j.annotation.GraphId;
+import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.StartNode;
+import org.springframework.data.neo4j.support.index.IndexType;
 
 import com.google.common.base.Objects;
 
@@ -52,6 +54,7 @@ public abstract class Rlsp {
 	private Concept toConcept;
 	private int strength;
 	private String predicate;
+	@Indexed(indexName = "rlspSource", indexType = IndexType.FULLTEXT)
 	private String source;
 	@GraphId
 	private Long relationshipId;

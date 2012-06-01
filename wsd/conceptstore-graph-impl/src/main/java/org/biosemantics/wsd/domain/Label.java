@@ -7,7 +7,6 @@ import org.springframework.data.neo4j.annotation.GraphId;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
-import org.springframework.data.neo4j.support.index.IndexType;
 
 import com.google.common.base.Objects;
 
@@ -54,7 +53,7 @@ public class Label {
 
 	@GraphId
 	private Long nodeId;
-	@Indexed(indexName = "labelTxt", indexType=IndexType.FULLTEXT)
+	@Indexed(indexName = "labelTxt")
 	private String text;
 	private String language;
 	@RelatedTo(type = "HAS_LABEL", direction = Direction.INCOMING)

@@ -45,7 +45,7 @@ public class HasLabel {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof Rlsp) {
+		if (obj instanceof HasLabel) {
 			final HasLabel other = (HasLabel) obj;
 			return Objects.equal(type, other.getType())
 					&& (Objects.equal(concept, other.getConcept()) && Objects.equal(label, other.getLabel()));

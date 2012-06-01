@@ -88,7 +88,7 @@ public class Concept {
 	private Long nodeId;
 	@Indexed
 	private String id;
-	@Indexed
+	@Indexed(indexName = "conceptType")
 	private ConceptType type;
 	@RelatedTo(type = "HAS_LABEL", direction = Direction.OUTGOING)
 	Set<Label> labels;

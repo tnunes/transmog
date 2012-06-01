@@ -6,7 +6,7 @@ import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.GraphRepository;
 
 public interface LabelRepository extends GraphRepository<Label>{
-	@Query("start label=node({0}) match label-[:HAS_LABEL]-otherConcept return otherConcept")
+	@Query("start notation=node({0}) match label-[:HAS_LABEL]-otherConcept return otherConcept")
 	Iterable<Concept> getRelatedConcepts(Label label);
 
 }
