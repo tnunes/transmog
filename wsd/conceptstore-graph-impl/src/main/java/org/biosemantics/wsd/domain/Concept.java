@@ -52,6 +52,12 @@ public class Concept {
 		return hasLabel;
 	}
 
+	public HasNotation hasNotation(Neo4jOperations neo4jOperations, Notation notation, String source) {
+		HasNotation hasNotation = new HasNotation(this, notation, source);
+		neo4jOperations.save(hasNotation);
+		return hasNotation;
+	}
+
 	public Long getNodeId() {
 		return nodeId;
 	}

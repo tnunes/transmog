@@ -9,6 +9,11 @@ import com.google.common.base.Objects;
 @NodeEntity
 public class Notation {
 
+	public Notation() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
 	public Notation(String source, String code) {
 		super();
 		this.source = source;

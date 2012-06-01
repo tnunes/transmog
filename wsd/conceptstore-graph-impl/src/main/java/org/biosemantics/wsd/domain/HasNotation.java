@@ -10,6 +10,18 @@ import com.google.common.base.Objects;
 @RelationshipEntity(type = "HAS_NOTATION", useShortNames = true)
 public class HasNotation {
 
+	public HasNotation(Concept concept, Notation notation, String source) {
+		super();
+		this.concept = concept;
+		this.notation = notation;
+		this.source = source;
+	}
+
+	public HasNotation() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
 	public Concept getConcept() {
 		return concept;
 	}
