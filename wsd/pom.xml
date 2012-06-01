@@ -10,7 +10,8 @@
 	<description>wsd</description>
 	<properties>
 		<spring.version>3.0.7.RELEASE</spring.version>
-		<org.neo4j.version>1.5</org.neo4j.version>
+		<neo4j.version>1.7.1</neo4j.version>
+		<junit.version>4.8.2</junit.version>
 	</properties>
 	<modules>
 		<module>conceptstore-graph-impl</module>
