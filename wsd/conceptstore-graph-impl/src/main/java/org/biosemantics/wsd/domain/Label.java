@@ -53,7 +53,7 @@ public class Label {
 
 	@GraphId
 	private Long nodeId;
-	@Indexed(indexName = "labelTxt")
+	@Indexed
 	private String text;
 	private String language;
 	@RelatedTo(type = "HAS_LABEL", direction = Direction.INCOMING)

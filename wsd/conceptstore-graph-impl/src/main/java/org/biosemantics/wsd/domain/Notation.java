@@ -49,9 +49,8 @@ public class Notation {
 
 	@GraphId
 	private Long nodeId;
-	@Indexed(indexName = "notationSource")
 	private String source;
-	@Indexed(indexName = "notationCode")
+	@Indexed
 	private String code;
 
 }
