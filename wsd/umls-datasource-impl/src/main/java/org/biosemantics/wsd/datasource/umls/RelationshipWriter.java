@@ -10,7 +10,8 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.biosemantics.wsd.domain.Concept;
-import org.biosemantics.wsd.repository.ConceptRepository;
+import org.biosemantics.wsd.domain.Notation;
+import org.biosemantics.wsd.repository.NotationRepository;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,17 +19,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 
 public class RelationshipWriter {
-	private static final String UMLS_2011_AA = "UMLS_2011_AA | MRREL";
-	@Autowired
-	private DataSource dataSource;
-	@Autowired
-	private ConceptRepository conceptRepository;
-	@Autowired
-	private Neo4jTemplate neo4jTemplate;
-	private static final String GET_ALL_FACTUAL_RLSP_SQL = "select CUI1, CUI2, REL, RELA from MRREL where CUI1 != CUI2 AND REL IN ('CHD', 'RB', 'RO', 'SIB', 'SY')";// 14953305
-	private static final Logger logger = LoggerFactory.getLogger(RelationshipWriter.class);
-	private Map<String, String> duplicateHierarchicalCache = new HashMap<String, String>();
-	private Map<String, String> duplicateRelatedCache = new HashMap<String, String>();
+
+	public void setIgnoredCuiReader(IgnoredCuiReader ignoredCuiReader) {
+		this.ignoredCuiReader = ignoredCuiReader;
+	}
 
 	public void writeAll() throws SQLException {
 		Connection connection = dataSource.getConnection();
@@ -41,8 +35,12 @@ public class RelationshipWriter {
 			int ctr = 0;
 
 			while (rs.next()) {
+				ctr++;
 				String cui1 = rs.getString("CUI1");
 				String cui2 = rs.getString("CUI2");
+				if (ignoredCuiReader.isIgnored(cui1) || ignoredCuiReader.isIgnored(cui2)) {
+					continue;
+				}
 				String rel = rs.getString("REL");
 				String rela = rs.getString("RELA");
 				String relUpper = rel.toUpperCase().trim();
@@ -59,9 +57,11 @@ public class RelationshipWriter {
 								|| duplicateHierarchicalCache.containsKey(cui2 + cui1)) {
 							// rlsp exists do nothing
 						} else {
-							Concept concept = conceptRepository.getConceptById(cui2);
-							Concept otherConcept = conceptRepository.getConceptById(cui1);
-							concept.hasChild(neo4jTemplate, otherConcept, 100, rela, UMLS_2011_AA);
+							Notation notation = notationRepository.findByPropertyValue("code", cui2);
+							Concept concept = notationRepository.getRelatedConcept(notation);
+							Notation otherNotation = notationRepository.findByPropertyValue("code", cui1);
+							Concept otherConcept = notationRepository.getRelatedConcept(otherNotation);
+							concept.hasChild(neo4jTemplate, otherConcept, 100, rela, RELATIONSHIP_SOURCE);
 							duplicateHierarchicalCache.put(cui1 + cui2, null);
 						}
 					} else {
@@ -69,9 +69,11 @@ public class RelationshipWriter {
 								|| duplicateRelatedCache.containsKey(cui2 + cui1)) {
 							// rlsp exists do nothing
 						} else {
-							Concept concept = conceptRepository.getConceptById(cui2);
-							Concept otherConcept = conceptRepository.getConceptById(cui1);
-							concept.relatedTo(neo4jTemplate, otherConcept, 100, rela, UMLS_2011_AA);
+							Notation notation = notationRepository.findByPropertyValue("code", cui2);
+							Concept concept = notationRepository.getRelatedConcept(notation);
+							Notation otherNotation = notationRepository.findByPropertyValue("code", cui1);
+							Concept otherConcept = notationRepository.getRelatedConcept(otherNotation);
+							concept.relatedTo(neo4jTemplate, otherConcept, 100, rela, RELATIONSHIP_SOURCE);
 							duplicateRelatedCache.put(cui1 + cui2, null);
 						}
 					}
@@ -81,7 +83,7 @@ public class RelationshipWriter {
 					throw new IllegalArgumentException("Illegal value for relationships." + rel);
 				}
 				// 1 million
-				if (++ctr % 1000000 == 0) {
+				if (ctr % 1000000 == 0) {
 					tx.success();
 					tx.finish();
 					tx = neo4jTemplate.beginTx();
@@ -99,4 +101,17 @@ public class RelationshipWriter {
 		}
 
 	}
+
+	private static final String RELATIONSHIP_SOURCE = "UMLS_2011AA_MRREL";
+	@Autowired
+	private DataSource dataSource;
+	@Autowired
+	private Neo4jTemplate neo4jTemplate;
+	@Autowired
+	private NotationRepository notationRepository;
+	private IgnoredCuiReader ignoredCuiReader;
+	private static final String GET_ALL_FACTUAL_RLSP_SQL = "select CUI1, CUI2, REL, RELA from MRREL where CUI1 != CUI2 AND REL IN ('CHD', 'RB', 'RO', 'SIB', 'SY')";// 14953305
+	private static final Logger logger = LoggerFactory.getLogger(RelationshipWriter.class);
+	private Map<String, String> duplicateHierarchicalCache = new HashMap<String, String>();
+	private Map<String, String> duplicateRelatedCache = new HashMap<String, String>();
 }

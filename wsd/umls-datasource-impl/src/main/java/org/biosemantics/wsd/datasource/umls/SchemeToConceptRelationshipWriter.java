@@ -8,7 +8,8 @@ import java.sql.Statement;
 import javax.sql.DataSource;
 
 import org.biosemantics.wsd.domain.Concept;
-import org.biosemantics.wsd.repository.ConceptRepository;
+import org.biosemantics.wsd.domain.Notation;
+import org.biosemantics.wsd.repository.NotationRepository;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,15 +18,9 @@ import org.springframework.data.neo4j.support.Neo4jTemplate;
 
 public class SchemeToConceptRelationshipWriter {
 
-	private static final String UMLS_MRSTY = "UMLS_2011_AA | MRSTY";
-	@Autowired
-	private DataSource dataSource;
-	@Autowired
-	private ConceptRepository conceptRepository;
-	@Autowired
-	private Neo4jTemplate neo4jTemplate;
-	private static final String GET_ALL_RLSP_SQL = "select CUI, TUI from MRSTY";// 2,151,295
-	private static final Logger logger = LoggerFactory.getLogger(SchemeToConceptRelationshipWriter.class);
+	public void setIgnoredCuiReader(IgnoredCuiReader ignoredCuiReader) {
+		this.ignoredCuiReader = ignoredCuiReader;
+	}
 
 	public void writeAll() throws SQLException {
 		Connection connection = dataSource.getConnection();
@@ -38,14 +33,20 @@ public class SchemeToConceptRelationshipWriter {
 			int ctr = 0;
 
 			while (rs.next()) {
+				ctr++;
 				String cui = rs.getString("CUI");
+				if (ignoredCuiReader.isIgnored(cui)) {
+					continue;
+				}
 				String tui = rs.getString("TUI");
-				Concept concept = conceptRepository.getConceptById(cui);
-				Concept scheme = conceptRepository.getConceptById(tui);
+				Notation notation = notationRepository.findByPropertyValue("code", cui);
+				Concept concept = notationRepository.getRelatedConcept(notation);
+				Notation otherNotation = notationRepository.findByPropertyValue("code",tui);
+				Concept scheme = notationRepository.getRelatedConcept(otherNotation);
 				concept.inScheme(neo4jTemplate, scheme, 100, null, UMLS_MRSTY);
 			}
 			// 1 million
-			if (++ctr % 100000 == 0) {
+			if (ctr % 100000 == 0) {
 				tx.success();
 				tx.finish();
 				tx = neo4jTemplate.beginTx();
@@ -60,5 +61,17 @@ public class SchemeToConceptRelationshipWriter {
 		}
 
 	}
+
+	private static final String UMLS_MRSTY = "UMLS_201AA_MRSTY";
+	@Autowired
+	private DataSource dataSource;
+	@Autowired
+	private NotationRepository notationRepository;
+	@Autowired
+	private Neo4jTemplate neo4jTemplate;
+	private IgnoredCuiReader ignoredCuiReader;
+
+	private static final String GET_ALL_RLSP_SQL = "select CUI, TUI from MRSTY";// 2,151,295
+	private static final Logger logger = LoggerFactory.getLogger(SchemeToConceptRelationshipWriter.class);
 
 }

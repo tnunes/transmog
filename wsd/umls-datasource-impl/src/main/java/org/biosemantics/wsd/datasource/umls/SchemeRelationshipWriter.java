@@ -10,7 +10,8 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.biosemantics.wsd.domain.Concept;
-import org.biosemantics.wsd.repository.ConceptRepository;
+import org.biosemantics.wsd.domain.Notation;
+import org.biosemantics.wsd.repository.NotationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +23,9 @@ public class SchemeRelationshipWriter {
 	@Autowired
 	private DataSource dataSource;
 	@Autowired
-	private ConceptRepository conceptRepository;
-	@Autowired
 	private Neo4jTemplate neo4jTemplate;
+	@Autowired
+	private NotationRepository notationRepository;
 	private static final String GET_ALL_PREDICATES = "SELECT UI, STY_RL FROM SRDEF WHERE RT=\"RL\"";// 54
 	private static final String GET_ALL_SCHEME_RLSP = "SELECT * FROM SRSTRE1 WHERE UI1 != UI3";// 6483
 	private static final Logger logger = LoggerFactory.getLogger(SchemeRelationshipWriter.class);
@@ -55,8 +56,16 @@ public class SchemeRelationshipWriter {
 							|| duplicateHierarchicalCache.containsKey(ui3 + ui1)) {
 						// ignore
 					} else {
-						Concept concept = conceptRepository.getConceptById(ui1);
-						Concept otherConcept = conceptRepository.getConceptById(ui3);
+						Notation notation = notationRepository.findByPropertyValue("code", ui1);
+						if(notation == null){
+							continue;
+						}
+						Concept concept = notationRepository.getRelatedConcept(notation);
+						Notation otherNotation = notationRepository.findByPropertyValue("code", ui3);
+						if(otherNotation == null){
+							continue;
+						}
+						Concept otherConcept = notationRepository.getRelatedConcept(otherNotation);
 						if (concept != null && otherConcept != null) {
 							String predicate = predicateCache.get(ui2);
 							concept.hasChild(neo4jTemplate, otherConcept, 100, predicate, UMLS_SRSTRE1);
@@ -69,8 +78,10 @@ public class SchemeRelationshipWriter {
 					if (duplicateRelatedCache.containsKey(ui1 + ui3) || duplicateRelatedCache.containsKey(ui3 + ui1)) {
 						// ignore
 					} else {
-						Concept concept = conceptRepository.getConceptById(ui1);
-						Concept otherConcept = conceptRepository.getConceptById(ui3);
+						Notation notation = notationRepository.findByPropertyValue("code", ui1);
+						Concept concept = notationRepository.getRelatedConcept(notation);
+						Notation otherNotation = notationRepository.findByPropertyValue("code", ui3);
+						Concept otherConcept = notationRepository.getRelatedConcept(otherNotation);
 						if (concept != null && otherConcept != null) {
 							String predicate = predicateCache.get(ui2);
 							concept.relatedTo(neo4jTemplate, otherConcept, 100, predicate, UMLS_SRSTRE1);
