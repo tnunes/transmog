@@ -8,7 +8,6 @@ package org.biosemantics.wsd.datasource.umls;
  *
  * @author bhsingh
  */
-package org.biosemantics.wsd.datasource.umls;
 
 import java.io.IOException;
 import java.io.InputStream;
