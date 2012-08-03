@@ -1,7 +1,7 @@
 package gov.nih.nlm.ncbi.eutils;
 
-import gov.nih.nlm.ncbi.eutils.generated.ESearchResult;
-import gov.nih.nlm.ncbi.eutils.generated.PubmedArticleSet;
+import gov.nih.nlm.ncbi.eutils.generated.efetch.PubmedArticleSet;
+import gov.nih.nlm.ncbi.eutils.generated.esearch.ESearchResult;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,8 +27,10 @@ public class PubmedRestClient {
 	private Client client;
 	private WebResource eSearchResource;
 	private WebResource eFetchResource;
-	private JAXBContext jc;
-	private Unmarshaller unmarshaller;
+	private JAXBContext jcSearch;
+	private JAXBContext jcFetch;
+	private Unmarshaller searchUnmarshaller;
+	private Unmarshaller fetchUnmarshaller;
 	private String baseUrl;
 	private static final Logger logger = LoggerFactory.getLogger(PubmedRestClient.class);
 	private static final String ESEARCH = "esearch.fcgi";
@@ -39,25 +41,27 @@ public class PubmedRestClient {
 		client = Client.create();
 		eSearchResource = client.resource(this.baseUrl + ESEARCH);
 		eFetchResource = client.resource(this.baseUrl + EFETCH);
-		jc = JAXBContext.newInstance("gov.nih.nlm.ncbi.eutils.generated");
-		unmarshaller = jc.createUnmarshaller();
+		jcSearch = JAXBContext.newInstance("gov.nih.nlm.ncbi.eutils.generated.esearch");
+		searchUnmarshaller = jcSearch.createUnmarshaller();
+		jcFetch = JAXBContext.newInstance("gov.nih.nlm.ncbi.eutils.generated.efetch");
+		fetchUnmarshaller = jcFetch.createUnmarshaller();
 	}
 
 	public ESearchResult search(MultivaluedMap<String, String> queryParams) throws JAXBException, IOException {
 		logger.debug("making getSearchResult query with params {}", queryParams.toString());
 		InputStream is = eSearchResource.queryParams(queryParams).get(InputStream.class);
-		ESearchResult searchResult = (ESearchResult) unmarshaller.unmarshal(is);
+		ESearchResult searchResult = (ESearchResult) searchUnmarshaller.unmarshal(is);
 		is.close();
 		logger.debug("results count {}", searchResult.getCount().intValue());
 		return searchResult;
 	}
-
+	//http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=11850928,11482001&format=xml
 	public PubmedArticleSet fetch(MultivaluedMap<String, String> queryParams) throws JAXBException, IOException {
-		logger.debug("making getArticleDetails query with params {}", queryParams.toString());
+		//logger.debug("making getArticleDetails query with params {}", queryParams.toString());
 		InputStream is = eFetchResource.queryParams(queryParams).post(InputStream.class);
-		PubmedArticleSet pubmedArticleSet = (PubmedArticleSet) unmarshaller.unmarshal(is);
+		PubmedArticleSet pubmedArticleSet = (PubmedArticleSet) fetchUnmarshaller.unmarshal(is);
 		is.close();
-		logger.debug("results count {}", pubmedArticleSet.getPubmedArticle().size());
+		//logger.debug("results count {}", pubmedArticleSet.getPubmedArticle().size());
 		return pubmedArticleSet;
 	}
 
