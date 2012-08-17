@@ -47,21 +47,28 @@ public class PubmedRestClient {
 		fetchUnmarshaller = jcFetch.createUnmarshaller();
 	}
 
-	public ESearchResult search(MultivaluedMap<String, String> queryParams) throws JAXBException, IOException {
+	public ESearchResult search(MultivaluedMap<String, String> queryParams) throws JAXBException {
 		logger.debug("making getSearchResult query with params {}", queryParams.toString());
 		InputStream is = eSearchResource.queryParams(queryParams).get(InputStream.class);
 		ESearchResult searchResult = (ESearchResult) searchUnmarshaller.unmarshal(is);
-		is.close();
+		try {
+			is.close();
+		} catch (IOException e) {
+			logger.error("could not close ioStream", e);
+		}
 		logger.debug("results count {}", searchResult.getCount().intValue());
 		return searchResult;
 	}
-	//http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=11850928,11482001&format=xml
+
+	// http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=11850928,11482001&format=xml
 	public PubmedArticleSet fetch(MultivaluedMap<String, String> queryParams) throws JAXBException, IOException {
-		//logger.debug("making getArticleDetails query with params {}", queryParams.toString());
+		// logger.debug("making getArticleDetails query with params {}",
+		// queryParams.toString());
 		InputStream is = eFetchResource.queryParams(queryParams).post(InputStream.class);
 		PubmedArticleSet pubmedArticleSet = (PubmedArticleSet) fetchUnmarshaller.unmarshal(is);
 		is.close();
-		//logger.debug("results count {}", pubmedArticleSet.getPubmedArticle().size());
+		// logger.debug("results count {}",
+		// pubmedArticleSet.getPubmedArticle().size());
 		return pubmedArticleSet;
 	}
 

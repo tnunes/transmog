@@ -2,3 +2,7 @@
 .project
 .settings/
 target/
+
+utility/nlm-entrez-utility/.project
+
+eviped/eviped-tools/.springBeans

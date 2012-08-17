@@ -15,6 +15,11 @@
  */
 package org.biosemantics.eviped;
 
+import org.biosemantics.eviped.tools.service.QueryBuilder;
+import org.biosemantics.eviped.web.service.SearchController;
+import org.biosemantics.eviped.web.ui.BodyPanel;
+import org.biosemantics.eviped.web.ui.NorthPanel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.vaadin.Application;
@@ -28,23 +33,33 @@ import com.vaadin.ui.Window;
  */
 @SuppressWarnings("serial")
 @Configurable(preConstruction = true)
-public class MyVaadinApplication extends Application
-{
-    private Window window;
+public class MyVaadinApplication extends Application {
+	private Window window;
 
-    @Override
-    public void init()
-    {
-        window = new Window("My Vaadin Application");
-        setMainWindow(window);
-        Button button = new Button("Click Me");
-        button.addListener(new Button.ClickListener() {
-            public void buttonClick(ClickEvent event) {
-                window.addComponent(new Label("Thank you for clicking"));
-            }
-        });
-        window.addComponent(button);
-        
-    }
-    
+	@Autowired
+	private QueryBuilder queryBuilder;
+
+	private SearchController searchController;
+
+	@Override
+	public void init() {
+		window = new Window("Eviped Web Application");
+		setMainWindow(window);
+		NorthPanel northPanel = NorthPanel.getInstance();
+		BodyPanel bodyPanel = BodyPanel.getInstance();
+		// Button button = new Button("Click Me");
+		// button.addListener(new Button.ClickListener() {
+		// public void buttonClick(ClickEvent event) {
+		// window.addComponent(new Label("Thank you for clicking"));
+		// }
+		// });
+		searchController = new SearchController(northPanel, bodyPanel, queryBuilder);
+		window.addComponent(northPanel);
+		window.addComponent(bodyPanel);
+	}
+
+	public SearchController getSearchController() {
+		return searchController;
+	}
+
 }
