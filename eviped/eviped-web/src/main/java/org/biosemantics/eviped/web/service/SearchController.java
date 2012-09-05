@@ -1,11 +1,10 @@
 package org.biosemantics.eviped.web.service;
-
 import java.util.Collection;
 
 import javax.xml.bind.JAXBException;
+import org.biosemantics.eviped.tools.service.Article;
 
 import org.biosemantics.eviped.tools.service.QueryBuilder;
-import org.biosemantics.eviped.tools.service.QueryResult;
 import org.biosemantics.eviped.web.ui.BodyPanel;
 import org.biosemantics.eviped.web.ui.NorthPanel;
 import org.biosemantics.eviped.web.ui.SearchResultPanel;
@@ -25,9 +24,10 @@ public class SearchController {
 	public void search() {
 		String searchText = northPanel.getSearchText();
 		try {
-			Collection<QueryResult> queryResults = queryBuilder.searchMedline(searchText);
+			Collection<Article> articles = queryBuilder.getArticles(searchText);
+			
 			SearchResultPanel searchResultPanel = SearchResultPanel.getInstance();
-			searchResultPanel.showResults(queryResults);
+			searchResultPanel.showResults(articles);
 			bodyPanel.removeAllComponents();
 			bodyPanel.addComponent(searchResultPanel);
 		} catch (JAXBException e) {

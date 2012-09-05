@@ -8,37 +8,46 @@ import org.biosemantics.eviped.tools.service.QueryResult;
 
 import com.vaadin.ui.Table;
 import com.vaadin.ui.VerticalLayout;
+import org.biosemantics.eviped.tools.service.Article;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SearchResultPanel extends VerticalLayout {
 
-	private Table searchResultsTable = new Table("Search Results");
-	private static final Logger logger = LoggerFactory.getLogger(SearchResultPanel.class);
+    private Table searchResultsTable = new Table();
+    private static final Logger logger = LoggerFactory.getLogger(SearchResultPanel.class);
 
-	private SearchResultPanel() {
-		searchResultsTable.addContainerProperty("pubmedId", Integer.class, null);
-		searchResultsTable.addContainerProperty("weight", Integer.class, null);
-		searchResultsTable.addContainerProperty("pubmedLink", Link.class, null);
-		searchResultsTable.setPageLength(0);
-		searchResultsTable.setColumnHeader("pubmedId", "Pubmed Id");
-		searchResultsTable.setColumnHeader("weight", "Confidence");
-		searchResultsTable.setColumnHeader("pubmedLink", "Abstract");
-		this.addComponent(searchResultsTable);
-	}
+    private SearchResultPanel() {
+        searchResultsTable.addContainerProperty("pubmedLink", Link.class, null);
+        searchResultsTable.addContainerProperty("country", String.class, null);
+        searchResultsTable.addContainerProperty("publishedYear", Integer.class, null);
+        searchResultsTable.addContainerProperty("journalName", String.class, null);
+        searchResultsTable.addContainerProperty("weight", Integer.class, null);
 
-	public static SearchResultPanel getInstance() {
-		return new SearchResultPanel();
-	}
+        searchResultsTable.setPageLength(0);
+        searchResultsTable.setColumnHeader("pubmedLink", "Pubmed Id");
+        searchResultsTable.setColumnHeader("country", "Country");
+        searchResultsTable.setColumnHeader("publishedYear", "Year");
+        searchResultsTable.setColumnHeader("journalName", "Journal");
+        searchResultsTable.setColumnHeader("weight", "Confidence");
 
-	public void showResults(Collection<QueryResult> searchQueryResults) {
-		int ctr = 0;
-		for (QueryResult searchQueryResult : searchQueryResults) {
-			//logger.info("{}", searchQueryResult);
-			Link link = new Link("Goto Abstract", new ExternalResource("http://www.ncbi.nlm.nih.gov/pubmed?term=" + searchQueryResult.getPmid()));
-			link.setTargetName("_blank");
-			searchResultsTable.addItem(new Object[]{searchQueryResult.getPmid(), searchQueryResult.getWeight(), link}, ++ctr);
-		}
+        this.addComponent(searchResultsTable);
+    }
 
-	}
+    public static SearchResultPanel getInstance() {
+        return new SearchResultPanel();
+    }
+
+    public void showResults(Collection<Article> articles) {
+        searchResultsTable.setCaption(+articles.size() + " articles found");
+        int ctr = 0;
+        for (Article article : articles) {
+            //logger.info("{}", searchQueryResult);
+            Link pubmedLink = new Link("" + article.getPmid(), new ExternalResource("http://www.ncbi.nlm.nih.gov/pubmed?term=" + article.getPmid()));
+            pubmedLink.setTargetName("_blank");
+            pubmedLink.setDescription(article.getTitle());
+            searchResultsTable.addItem(new Object[]{pubmedLink, article.getCountry(), article.getPublishedYear(), article.getJournalName(), article.getWeight()}, ++ctr);
+        }
+
+    }
 }

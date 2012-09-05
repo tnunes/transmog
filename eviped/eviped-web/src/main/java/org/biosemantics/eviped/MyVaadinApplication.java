@@ -34,32 +34,30 @@ import com.vaadin.ui.Window;
 @SuppressWarnings("serial")
 @Configurable(preConstruction = true)
 public class MyVaadinApplication extends Application {
-	private Window window;
 
-	@Autowired
-	private QueryBuilder queryBuilder;
-
-	private SearchController searchController;
-
-	@Override
-	public void init() {
-		window = new Window("Eviped Web Application");
-		setMainWindow(window);
-		NorthPanel northPanel = NorthPanel.getInstance();
-		BodyPanel bodyPanel = BodyPanel.getInstance();
-		// Button button = new Button("Click Me");
-		// button.addListener(new Button.ClickListener() {
-		// public void buttonClick(ClickEvent event) {
-		// window.addComponent(new Label("Thank you for clicking"));
-		// }
-		// });
-		searchController = new SearchController(northPanel, bodyPanel, queryBuilder);
-		window.addComponent(northPanel);
-		window.addComponent(bodyPanel);
-	}
-
-	public SearchController getSearchController() {
-		return searchController;
-	}
-
+    private Window window;
+    @Autowired
+    private QueryBuilder queryBuilder;
+    private SearchController searchController;
+    
+    @Override
+    public void init() {
+        window = new Window("Eviped Web Application");
+        setMainWindow(window);
+        NorthPanel northPanel = NorthPanel.getInstance();
+        BodyPanel bodyPanel = BodyPanel.getInstance();
+        // Button button = new Button("Click Me");
+        // button.addListener(new Button.ClickListener() {
+        // public void buttonClick(ClickEvent event) {
+        // window.addComponent(new Label("Thank you for clicking"));
+        // }
+        // });
+        searchController = new SearchController(northPanel, bodyPanel, queryBuilder);
+        window.addComponent(northPanel);
+        window.addComponent(bodyPanel);
+    }
+    
+    public SearchController getSearchController() {
+        return searchController;
+    }
 }

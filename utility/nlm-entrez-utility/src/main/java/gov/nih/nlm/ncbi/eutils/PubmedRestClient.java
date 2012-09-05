@@ -24,6 +24,7 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
  * http://www.ncbi.nlm.nih.gov/books/NBK25500/
  */
 public class PubmedRestClient {
+
 	private Client client;
 	private WebResource eSearchResource;
 	private WebResource eFetchResource;
@@ -48,7 +49,7 @@ public class PubmedRestClient {
 	}
 
 	public ESearchResult search(MultivaluedMap<String, String> queryParams) throws JAXBException {
-		logger.debug("making getSearchResult query with params {}", queryParams.toString());
+		logger.debug("making esearch query with params {}", queryParams.toString());
 		InputStream is = eSearchResource.queryParams(queryParams).get(InputStream.class);
 		ESearchResult searchResult = (ESearchResult) searchUnmarshaller.unmarshal(is);
 		try {
@@ -61,19 +62,20 @@ public class PubmedRestClient {
 	}
 
 	// http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=11850928,11482001&format=xml
-	public PubmedArticleSet fetch(MultivaluedMap<String, String> queryParams) throws JAXBException, IOException {
-		// logger.debug("making getArticleDetails query with params {}",
-		// queryParams.toString());
+	public PubmedArticleSet fetch(MultivaluedMap<String, String> queryParams) throws JAXBException {
+		logger.debug("making efetch query with params {}", queryParams.toString());
 		InputStream is = eFetchResource.queryParams(queryParams).post(InputStream.class);
 		PubmedArticleSet pubmedArticleSet = (PubmedArticleSet) fetchUnmarshaller.unmarshal(is);
-		is.close();
-		// logger.debug("results count {}",
-		// pubmedArticleSet.getPubmedArticle().size());
+		try {
+			is.close();
+		} catch (IOException e) {
+			logger.error("could not close ioStream", e);
+		}
+		logger.debug("results count {}", pubmedArticleSet.getPubmedArticle().size());
 		return pubmedArticleSet;
 	}
 
 	public void destroy() {
-
 	}
 
 	public static void main(String[] args) throws JAXBException, IOException {
@@ -89,5 +91,4 @@ public class PubmedRestClient {
 			System.out.println(bigInteger.intValue());
 		}
 	}
-
 }
