@@ -2,16 +2,14 @@ package org.biosemantics.eviped.tools.service;
 
 import java.io.Serializable;
 
-import org.springframework.core.type.filter.AnnotationTypeFilter;
-
 public class Annotation implements Serializable {
-	private AnnotationType annotationType;
+	private String annotationType;
 	private int startPos;
 	private int endPos;
 	private int sentenceNo;
 	private String text;
 
-	public Annotation(AnnotationType annotationType, int startPos, int endPos, int sentenceNo, String text) {
+	public Annotation(String annotationType, int startPos, int endPos, int sentenceNo, String text) {
 		super();
 		this.annotationType = annotationType;
 		this.startPos = startPos;
@@ -20,7 +18,7 @@ public class Annotation implements Serializable {
 		this.text = text;
 	}
 
-	public AnnotationType getAnnotationType() {
+	public String getAnnotationType() {
 		return annotationType;
 	}
 

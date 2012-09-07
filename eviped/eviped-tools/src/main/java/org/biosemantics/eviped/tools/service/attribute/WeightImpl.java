@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 import org.biosemantics.eviped.tools.service.Annotation;
 import org.biosemantics.eviped.tools.service.AnnotationReaderImpl;
-import org.biosemantics.eviped.tools.service.AnnotationType;
+import org.biosemantics.eviped.tools.service.AnnotationTypeConstant;
 
 public class WeightImpl implements AttributeExtractorService {
 
@@ -25,20 +25,22 @@ public class WeightImpl implements AttributeExtractorService {
 		for (Pattern pattern : patterns) {
 			Matcher matcher = pattern.matcher(text);
 			while (matcher.find()) {
-				Annotation annotation = new Annotation(AnnotationType.STUDY_SIZE, matcher.start(), matcher.end(), 0,
-						matcher.group());
+				Annotation annotation = new Annotation(AnnotationTypeConstant.SUBJECT_WEIGHT, matcher.start(),
+						matcher.end(), 0, matcher.group());
 				annotations.add(annotation);
 			}
 		}
 		return annotations;
 	}
-	
+
 	public static void main(String[] args) throws FileNotFoundException, IOException {
-		AnnotationReaderImpl annotationReaderImpl = new AnnotationReaderImpl("/Users/bhsingh/Desktop/annotation-all.txt");
-		WeightImpl sizeImpl = new WeightImpl("/Users/bhsingh/code/git/eviped/eviped-tools/src/main/resources/weight.properties");
+		AnnotationReaderImpl annotationReaderImpl = new AnnotationReaderImpl(
+				"/Users/bhsingh/Desktop/annotation-all.txt");
+		WeightImpl sizeImpl = new WeightImpl(
+				"/Users/bhsingh/code/git/eviped/eviped-tools/src/main/resources/weight.properties");
 		List<String> strings = annotationReaderImpl.getAnnotationTextByType("Subject_Weight");
 		for (String string : strings) {
-			//System.err.println(string);
+			// System.err.println(string);
 			List<Annotation> annotations = sizeImpl.getAnnotations(string, 0);
 			if (annotations != null && !annotations.isEmpty()) {
 				for (Annotation annotation : annotations) {
@@ -48,6 +50,6 @@ public class WeightImpl implements AttributeExtractorService {
 				System.err.println(string);
 			}
 		}
-		
+
 	}
 }

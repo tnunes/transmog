@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.io.FilenameUtils;
+
 import au.com.bytecode.opencsv.CSVReader;
 
 /**
@@ -35,8 +37,9 @@ public class AnnotationReader {
 					if (columns.length == 3) {
 						text = columns[2];
 					}
+					String fileNameNoExten = FilenameUtils.removeExtension(annotationFile.getName());
 					bratAnnotations.add(new BratEntityAnnotation(columns[0], splits[0], Integer.parseInt(splits[1]),
-							Integer.parseInt(splits[2]), text));
+							Integer.parseInt(splits[2]), text, fileNameNoExten));
 				}
 			}
 		} finally {

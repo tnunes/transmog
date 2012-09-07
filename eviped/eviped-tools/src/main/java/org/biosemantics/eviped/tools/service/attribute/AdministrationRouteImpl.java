@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 import org.biosemantics.eviped.tools.service.Annotation;
 import org.biosemantics.eviped.tools.service.AnnotationReaderImpl;
-import org.biosemantics.eviped.tools.service.AnnotationType;
+import org.biosemantics.eviped.tools.service.AnnotationTypeConstant;
 
 public class AdministrationRouteImpl implements AttributeExtractorService {
 
@@ -25,8 +25,8 @@ public class AdministrationRouteImpl implements AttributeExtractorService {
 		for (Pattern pattern : patterns) {
 			Matcher matcher = pattern.matcher(text);
 			while (matcher.find()) {
-				Annotation annotation = new Annotation(AnnotationType.STUDY_SIZE, matcher.start(), matcher.end(), 0,
-						matcher.group());
+				Annotation annotation = new Annotation(AnnotationTypeConstant.ADMINISTRATION_ROUTE, matcher.start(),
+						matcher.end(), 0, matcher.group());
 				annotations.add(annotation);
 			}
 		}

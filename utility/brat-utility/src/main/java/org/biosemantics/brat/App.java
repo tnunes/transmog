@@ -8,10 +8,6 @@ import java.util.Collection;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
-/**
- * Hello world!
- * 
- */
 public class App {
 	public static void main(String[] args) throws IOException {
 		File folder = new File("/Users/bhsingh/Annotation-Gina");
@@ -21,7 +17,7 @@ public class App {
 			}
 		});
 		AnnotationReader annotationReader = new AnnotationReader();
-		CSVWriter csvWriter = new CSVWriter(new FileWriter(new File("/Users/bhsingh/Desktop/annotation-all.txt")));
+		CSVWriter csvWriter = new CSVWriter(new FileWriter(new File("/Users/bhsingh/Desktop/annotation-2.txt")));
 		for (File annotationFile : annotationFiles) {
 			Collection<BratAnnotation> bratAnnotations = annotationReader.readAll(annotationFile);
 			for (BratAnnotation bratAnnotation : bratAnnotations) {

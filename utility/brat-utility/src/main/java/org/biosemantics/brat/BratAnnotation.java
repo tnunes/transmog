@@ -17,5 +17,7 @@ public interface BratAnnotation extends Serializable {
 
 	String getId();
 	
+	String getFileName();
+	
 	String[] toStringArray();
 }

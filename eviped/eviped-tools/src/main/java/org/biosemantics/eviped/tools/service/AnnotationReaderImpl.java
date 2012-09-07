@@ -14,7 +14,7 @@ import com.google.common.base.Joiner;
 
 public class AnnotationReaderImpl {
 
-	 private static final Joiner joiner = Joiner.on("|").skipNulls();
+	private static final Joiner joiner = Joiner.on("|").skipNulls();
 	private List<String[]> lines;
 
 	public AnnotationReaderImpl(String fileName) throws IOException {
@@ -32,9 +32,21 @@ public class AnnotationReaderImpl {
 		}
 		return annotationTexts;
 	}
-	
+
+	public List<Annotation> getAnnotationForFile(String fileName) {
+		List<Annotation> annotations = new ArrayList<Annotation>();
+		for (String[] columns : lines) {
+			if (columns[5].equals(fileName)) {
+				annotations.add(new Annotation(columns[1], Integer.parseInt(columns[2]), Integer.parseInt(columns[3]),
+						0, columns[4]));
+			}
+		}
+		return annotations;
+	}
+
 	public static void main(String[] args) throws IOException {
-		AnnotationReaderImpl annotationReaderImpl = new AnnotationReaderImpl("/Users/bhsingh/Desktop/annotation-all.txt");
+		AnnotationReaderImpl annotationReaderImpl = new AnnotationReaderImpl(
+				"/Users/bhsingh/Desktop/annotation-all.txt");
 		List<String> strings = annotationReaderImpl.getAnnotationTextByType("Frequency");
 		Set<String> commonStrings = new HashSet<String>();
 		for (String string : strings) {

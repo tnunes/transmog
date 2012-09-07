@@ -11,7 +11,7 @@ import java.util.Locale;
 
 import org.biosemantics.eviped.tools.service.Annotation;
 import org.biosemantics.eviped.tools.service.AnnotationReaderImpl;
-import org.biosemantics.eviped.tools.service.AnnotationType;
+import org.biosemantics.eviped.tools.service.AnnotationTypeConstant;
 
 public class CountryImpl implements AttributeExtractorService {
 
@@ -49,11 +49,11 @@ public class CountryImpl implements AttributeExtractorService {
 				text = text.toLowerCase();
 			}
 			if (text.indexOf(countryName) != -1) {
-				annotations.add(new Annotation(AnnotationType.COUNTRY, text.indexOf(countryName), text
+				annotations.add(new Annotation(AnnotationTypeConstant.COUNTRY, text.indexOf(countryName), text
 						.indexOf(countryName) + countryName.length(), sentenceNumber, countryName));
 			}
 			if (text.indexOf(countryIso) != -1) {
-				annotations.add(new Annotation(AnnotationType.COUNTRY, text.indexOf(countryIso), text
+				annotations.add(new Annotation(AnnotationTypeConstant.COUNTRY, text.indexOf(countryIso), text
 						.indexOf(countryIso) + countryIso.length(), sentenceNumber, countryIso));
 			}
 		}
