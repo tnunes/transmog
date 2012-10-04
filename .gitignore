@@ -6,3 +6,7 @@ target/
 utility/nlm-entrez-utility/.project
 
 eviped/eviped-tools/.springBeans
+
+wsd/umls-datasource-impl/.classpath
+
+wsd/conceptstore-graph-impl/.classpath

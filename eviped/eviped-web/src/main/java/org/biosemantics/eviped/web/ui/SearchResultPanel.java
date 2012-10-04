@@ -1,16 +1,15 @@
 package org.biosemantics.eviped.web.ui;
 
-import com.vaadin.terminal.ExternalResource;
-import com.vaadin.ui.Link;
 import java.util.Collection;
 
-import org.biosemantics.eviped.tools.service.QueryResult;
-
-import com.vaadin.ui.Table;
-import com.vaadin.ui.VerticalLayout;
 import org.biosemantics.eviped.tools.service.Article;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vaadin.terminal.ExternalResource;
+import com.vaadin.ui.Link;
+import com.vaadin.ui.Table;
+import com.vaadin.ui.VerticalLayout;
 
 public class SearchResultPanel extends VerticalLayout {
 
