@@ -31,6 +31,9 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 public class PubmedDateExtrator {
 
+	
+	private static final String INPUT_FILE = "/Users/bhsingh/Desktop/herman/input/pmidag";
+	private static final String OUT_FILE = "/Users/bhsingh/Desktop/herman/output/pmidag";
 	private static final Logger logger = LoggerFactory.getLogger(PubmedDateExtrator.class);
 	private static final Joiner joiner = Joiner.on(",").skipNulls();
 
@@ -43,7 +46,7 @@ public class PubmedDateExtrator {
 		params.add("retmax", "2000000");
 		ESearchResult eSearchResult = pubmedRestClient.search(params);
 		pubmedRestClient.search(params);
-		CSVWriter csvWriter = new CSVWriter(new FileWriter(new File("/Users/bhsingh/Desktop/gene.txt")));
+		CSVWriter csvWriter = new CSVWriter(new FileWriter(new File("/Users/bhsingh/Desktop/herman/gene.txt")));
 		List<BigInteger> ids = eSearchResult.getIdList().getId();
 		logger.info("{}", ids.size());
 		for (BigInteger id : ids) {
@@ -54,7 +57,7 @@ public class PubmedDateExtrator {
 	}
 
 	public static void writeDate() throws JAXBException, IOException {
-		CSVReader csvReader = new CSVReader(new FileReader(new File("/Users/bhsingh/Desktop/gene.txt")));
+		CSVReader csvReader = new CSVReader(new FileReader(new File("/Users/bhsingh/Desktop/herman/gene.txt")));
 		List<String[]> lines = csvReader.readAll();
 		csvReader.close();
 		Map<String, Object> geneProtMap = new HashMap<String, Object>();
@@ -65,13 +68,12 @@ public class PubmedDateExtrator {
 		pubmedRestClient.setBaseUrl("http://eutils.ncbi.nlm.nih.gov/entrez/eutils/");
 
 		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
-		List<String> pmids = FileUtils.readLines(new File("/Users/bhsingh/Desktop/allPMIDsMedline_correct.txt"));
+		List<String> pmids = FileUtils.readLines(new File(INPUT_FILE));
 		int size = pmids.size();
 		logger.info("{}", size);
 		List<String> fetchPmids = new ArrayList<String>();
 		int ctr = 0;
-		CSVWriter csvWriter = new CSVWriter(
-				new FileWriter(new File("/Users/bhsingh/Desktop/Herman_owes_me_a_beer.txt")));
+		CSVWriter csvWriter = new CSVWriter(new FileWriter(new File(OUT_FILE)));
 		for (String pmid : pmids) {
 			ctr++;
 			fetchPmids.add(pmid);
@@ -81,40 +83,45 @@ public class PubmedDateExtrator {
 				params.add("db", "pubmed");
 				params.add("retmode", "xml");
 				params.add("id", joiner.join(fetchPmids));
-				PubmedArticleSet pubmedArticleSet = pubmedRestClient.fetch(params);
-				for (PubmedArticle pubmedArticle : pubmedArticleSet.getPubmedArticle()) {
-					String[] out = new String[6];
-					out[0] = pubmedArticle.getMedlineCitation().getPMID().getValue().toString();
-					out[1] = String.valueOf(geneProtMap.containsKey(pmid));
-					try {
-						out[2] = pubmedArticle.getMedlineCitation().getArticle().getJournal().getJournalIssue()
-								.getPubDate().getMonth();
-					} catch (Exception e) {
-					}
-					try {
-						out[3] = String.valueOf(pubmedArticle.getMedlineCitation().getArticle().getJournal()
-								.getJournalIssue().getPubDate().getYear());
-					} catch (Exception e) {
-					}
-					try {
-						List<PubMedPubDate> dates = pubmedArticle.getPubmedData().getHistory().getPubMedPubDate();
-						for (PubMedPubDate pubMedPubDate : dates) {
-							if (pubMedPubDate.getPubStatus().trim().equalsIgnoreCase("pubmed")) {
-								try {
-									out[4] = pubMedPubDate.getMonth();
-								} catch (Exception e) {
-								}
-								try {
-									out[5] = String.valueOf(pubMedPubDate.getYear());
-								} catch (Exception e) {
-								}
-								break;
-							}
+				try {
+					PubmedArticleSet pubmedArticleSet = pubmedRestClient.fetch(params);
+					for (PubmedArticle pubmedArticle : pubmedArticleSet.getPubmedArticle()) {
+						String[] out = new String[6];
+						out[0] = pubmedArticle.getMedlineCitation().getPMID().getValue().toString();
+						out[1] = String.valueOf(geneProtMap.containsKey(pmid));
+						try {
+							out[2] = pubmedArticle.getMedlineCitation().getArticle().getJournal().getJournalIssue()
+									.getPubDate().getMonth();
+						} catch (Exception e) {
 						}
-					} catch (Exception e) {
-					}
-					csvWriter.writeNext(out);
+						try {
+							out[3] = String.valueOf(pubmedArticle.getMedlineCitation().getArticle().getJournal()
+									.getJournalIssue().getPubDate().getYear());
+						} catch (Exception e) {
+						}
+						try {
+							List<PubMedPubDate> dates = pubmedArticle.getPubmedData().getHistory().getPubMedPubDate();
+							for (PubMedPubDate pubMedPubDate : dates) {
+								if (pubMedPubDate.getPubStatus().trim().equalsIgnoreCase("pubmed")) {
+									try {
+										out[4] = pubMedPubDate.getMonth();
+									} catch (Exception e) {
+									}
+									try {
+										out[5] = String.valueOf(pubMedPubDate.getYear());
+									} catch (Exception e) {
+									}
+									break;
+								}
+							}
+						} catch (Exception e) {
+						}
+						csvWriter.writeNext(out);
 
+					}
+				} catch (Exception e) {
+					logger.error("error", e);
+					logger.error("file : {}", INPUT_FILE);
 				}
 				fetchPmids.clear();
 				csvWriter.flush();

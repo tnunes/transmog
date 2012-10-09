@@ -10,3 +10,5 @@ eviped/eviped-tools/.springBeans
 wsd/umls-datasource-impl/.classpath
 
 wsd/conceptstore-graph-impl/.classpath
+
+utility/misc-utility/misc.log
