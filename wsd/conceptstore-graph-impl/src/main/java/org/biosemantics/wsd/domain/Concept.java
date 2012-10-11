@@ -57,6 +57,13 @@ public class Concept {
 		neo4jOperations.save(hasNotation);
 		return hasNotation;
 	}
+	
+	public Cooccurrence hasCooccurrence(Neo4jOperations neo4jOperations, Concept otherConcept, int strength, String predicate,
+			String source) {
+		Cooccurrence cooccurrence = new Cooccurrence(this, otherConcept, strength, predicate, source);
+		neo4jOperations.save(cooccurrence);
+		return cooccurrence;
+	}
 
 	public Long getNodeId() {
 		return nodeId;
