@@ -3,6 +3,7 @@ package org.biosemantics.wsd.domain;
 import java.util.Set;
 
 import org.neo4j.graphdb.Direction;
+import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.GraphId;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
@@ -35,6 +36,11 @@ public class Label {
 	public String getLanguage() {
 		return language;
 	}
+	
+	public Set<Concept> getRelatedConcepts() {
+		return concepts;
+	}
+
 
 	@Override
 	public boolean equals(Object obj) {
@@ -57,5 +63,6 @@ public class Label {
 	private String text;
 	private String language;
 	@RelatedTo(type = "HAS_LABEL", direction = Direction.INCOMING)
-	Set<Concept> concepts;
+	@Fetch
+	private Set<Concept> concepts;
 }

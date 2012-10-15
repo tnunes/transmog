@@ -12,11 +12,13 @@
 		<spring.version>3.0.7.RELEASE</spring.version>
 		<neo4j.version>1.6</neo4j.version>
 		<junit.version>4.8.2</junit.version>
+		<springdata.version>2.0.1.RELEASE</springdata.version>
 	</properties>
 	<modules>
 		<module>conceptstore-graph-impl</module>
 		<module>umls-datasource-impl</module>
 		<module>wsd-script-impl</module>
+		<module>lodd-datasource-impl</module>
 	</modules>
 	<build>
 		<plugins>

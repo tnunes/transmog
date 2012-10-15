@@ -1,8 +1,13 @@
 package org.biosemantics.wsd.domain;
 
+import java.util.Set;
+
+import org.neo4j.graphdb.Direction;
+import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.GraphId;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
+import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import com.google.common.base.Objects;
 
@@ -32,6 +37,10 @@ public class Notation {
 		return code;
 	}
 
+	public Set<Concept> getRelatedConcepts() {
+		return concepts;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof Notation) {
@@ -52,5 +61,8 @@ public class Notation {
 	private String source;
 	@Indexed
 	private String code;
+	@RelatedTo(type = "HAS_NOTATION", direction = Direction.INCOMING)
+	@Fetch
+	private Set<Concept> concepts;
 
 }
