@@ -49,6 +49,9 @@ public class TitleParserOsumeke {
 			for (String line : lines) {
 				String title = line;
 				title = title.replaceAll("\\[\\d+\\]", "");
+				if (!title.endsWith("?") || !title.endsWith(".") || !title.endsWith("!")) {
+					title = title + ".";
+				}
 				titles.add(title);
 			}
 			for (String title : titles) {
@@ -57,38 +60,42 @@ public class TitleParserOsumeke {
 				params.add("retMax", "10");
 				params.add("term", title);
 				params.add("field", "title");// search by title
-				ESearchResult esearchResult = pubmedRestClient.search(params);
-				List<BigInteger> pmids = esearchResult.getIdList().getId();
-				if (pmids.size() == 1) {
-					for (BigInteger pmid : pmids) {
-						pubmedIds.add(pmid.intValue());
-					}
-				} else if (pmids.size() == 0) {
-					logger.info("file: {},  0 results for title: {}", new Object[] { file.getName(), title });
-				} else {
-					List<Integer> multipleIds = new ArrayList<Integer>();
-					for (BigInteger pmid : pmids) {
-						multipleIds.add(pmid.intValue());
-					}
-					String strPmids = joiner.join(multipleIds);
-					MultivaluedMapImpl parameters = new MultivaluedMapImpl();
-					parameters.add("db", "pubmed");
-					parameters.add("id", strPmids);
-					parameters.add("retmode", "xml");
-					PubmedArticleSet pubmedArticleSet = pubmedRestClient.fetch(parameters);
-					for (PubmedArticle pubmedArticle : pubmedArticleSet.getPubmedArticle()) {
-						String pubmedTitle = null;
-						try {
-							pubmedTitle = pubmedArticle.getMedlineCitation().getArticle().getArticleTitle();
-						} catch (Exception e) {
-							// TODO: handle exception
+				try {
+					ESearchResult esearchResult = pubmedRestClient.search(params);
+					List<BigInteger> pmids = esearchResult.getIdList().getId();
+					if (pmids.size() == 1) {
+						for (BigInteger pmid : pmids) {
+							pubmedIds.add(pmid.intValue());
 						}
-						if (pubmedTitle != null && title.equalsIgnoreCase(pubmedTitle)) {
-							csvWriter.writeNext(extractData(file, pubmedArticle));
-							logger.info("appox. match found for title:{}", title);
-							break;
+					} else if (pmids.size() == 0) {
+						logger.info("file: {},  0 results for title: {}", new Object[] { file.getName(), title });
+					} else {
+						List<Integer> multipleIds = new ArrayList<Integer>();
+						for (BigInteger pmid : pmids) {
+							multipleIds.add(pmid.intValue());
+						}
+						String strPmids = joiner.join(multipleIds);
+						MultivaluedMapImpl parameters = new MultivaluedMapImpl();
+						parameters.add("db", "pubmed");
+						parameters.add("id", strPmids);
+						parameters.add("retmode", "xml");
+						PubmedArticleSet pubmedArticleSet = pubmedRestClient.fetch(parameters);
+						for (PubmedArticle pubmedArticle : pubmedArticleSet.getPubmedArticle()) {
+							String pubmedTitle = null;
+							try {
+								pubmedTitle = pubmedArticle.getMedlineCitation().getArticle().getArticleTitle();
+							} catch (Exception e) {
+								// TODO: handle exception
+							}
+							if (pubmedTitle != null && title.equalsIgnoreCase(pubmedTitle)) {
+								csvWriter.writeNext(extractData(file, pubmedArticle));
+								logger.info("appox. match found for title:{}", title);
+								break;
+							}
 						}
 					}
+				} catch (Exception e) {
+					logger.error("", e);
 				}
 
 			}
@@ -99,11 +106,15 @@ public class TitleParserOsumeke {
 			params.add("db", "pubmed");
 			params.add("id", strPmids);
 			params.add("retmode", "xml");
-			PubmedArticleSet pubmedArticleSet = pubmedRestClient.fetch(params);
-			List<PubmedArticle> articles = pubmedArticleSet.getPubmedArticle();
-			for (PubmedArticle pubmedArticle : articles) {
-				String[] data = extractData(file, pubmedArticle);
-				csvWriter.writeNext(data);
+			try {
+				PubmedArticleSet pubmedArticleSet = pubmedRestClient.fetch(params);
+				List<PubmedArticle> articles = pubmedArticleSet.getPubmedArticle();
+				for (PubmedArticle pubmedArticle : articles) {
+					String[] data = extractData(file, pubmedArticle);
+					csvWriter.writeNext(data);
+				}
+			} catch (Exception e) {
+				logger.error("", e);
 			}
 		}
 		csvWriter.flush();
