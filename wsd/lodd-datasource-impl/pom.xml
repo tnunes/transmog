@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.biosemantics.wsd</groupId>
 		<artifactId>wsd</artifactId>
-		<version>1.4</version>
+		<version>1.5-SNAPSHOT</version>
 	</parent>
 	<artifactId>lodd-datasource-impl</artifactId>
 	<name>lodd-datasource-impl</name>
@@ -23,7 +23,7 @@
 		<dependency>
 			<groupId>org.biosemantics.wsd</groupId>
 			<artifactId>conceptstore-graph-impl</artifactId>
-			<version>1.4</version>
+			<version>1.5-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.opencsv</groupId>
