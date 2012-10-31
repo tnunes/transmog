@@ -62,7 +62,7 @@
 		<repository>
 			<id>nbic-nexus-releases</id>
 			<name>Sonatype Nexus release repository</name>
-			<url>https://ci.nbiceng.net/nexus/content/repositories/releases//</url>
+			<url>https://ci.nbiceng.net/nexus/content/repositories/releases/</url>
 		</repository>
 	</distributionManagement>
 </project>
