@@ -18,3 +18,7 @@ utility/misc-utility/misc.log
 *.prefs
 
 *.prefs
+
+*.prefs
+
+wsd/.settings/org.eclipse.m2e.core.prefs
