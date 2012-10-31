@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>wsd</artifactId>
 		<groupId>org.biosemantics.wsd</groupId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>1.1</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<artifactId>umls-datasource-impl</artifactId>
@@ -24,7 +24,7 @@
 		<dependency>
 			<groupId>org.biosemantics.wsd</groupId>
 			<artifactId>conceptstore-graph-impl</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
