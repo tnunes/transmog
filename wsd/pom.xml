@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.biosemantics.wsd</groupId>
 	<artifactId>wsd</artifactId>
-	<version>1.5</version>
+	<version>1.6-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>wsd</name>
 	<description>wsd</description>
@@ -52,7 +52,7 @@
 		<connection>scm:git:git@github.com:bhsingh/transmog.git</connection>
 		<url>scm:git:git@github.com:bhsingh/transmog.git</url>
 		<developerConnection>scm:git:git@github.com:bhsingh/transmog.git</developerConnection>
-	  <tag>wsd-1.5</tag>
+	  <tag>HEAD</tag>
   </scm>
 	<distributionManagement>
 		<snapshotRepository>
