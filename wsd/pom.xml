@@ -44,6 +44,7 @@
 				<version>2.3.2</version>
 				<configuration>
 					<tagBase>https://svn.apache.org/repos/asf/maven/components/releases</tagBase>
+					<goals>install</goals>
 				</configuration>
 			</plugin>
 		</plugins>
