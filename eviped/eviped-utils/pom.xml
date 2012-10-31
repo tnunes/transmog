@@ -1,0 +1,106 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>eviped</artifactId>
+		<groupId>org.biosemantics.eviped</groupId>
+		<version>0.0.1-SNAPSHOT</version>
+		<relativePath>..</relativePath>
+	</parent>
+	<artifactId>eviped-utils</artifactId>
+	<name>eviped-utils</name>
+	<description>eviped-utils</description>
+
+
+	<repositories>
+		<repository>
+			<id>sesame</id>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<url>http://repo.aduna-software.org/maven2/releases/</url>
+		</repository>
+	</repositories>
+
+
+	<dependencies>
+		<dependency>
+			<groupId>com.db4o</groupId>
+			<artifactId>db4o-full-java5</artifactId>
+			<version>8.0.236.16058</version>
+			<classifier>java5</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.biosemantics.wsd</groupId>
+			<artifactId>metamap-client-utility</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-http-client</artifactId>
+			<version>2.6.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-repository-http</artifactId>
+			<version>2.6.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-runtime</artifactId>
+			<version>2.6.5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<!-- abbreviated for all the dependencies -->
+			<artifactId>spring-core</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<!-- abbreviated for all the dependencies -->
+			<artifactId>spring-context</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<!-- abbreviated for all the dependencies -->
+			<artifactId>spring-aop</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<!-- abbreviated for all the dependencies -->
+			<artifactId>spring-aspects</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<!-- abbreviated for all the dependencies -->
+			<artifactId>spring-tx</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.erasmusmc.data-mining.peregrine</groupId>
+			<artifactId>peregrine-rmi</artifactId>
+			<version>1.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>gov.nih.nlm.ncbi</groupId>
+			<artifactId>nlm-entrez-utility</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.biosemantics.common</groupId>
+			<artifactId>misc-utility</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.db4o</groupId>
+			<artifactId>db4o-full-java5</artifactId>
+			<version>8.0.236.16058</version>
+			<classifier>java5</classifier>
+		</dependency>
+	</dependencies>
+</project>
