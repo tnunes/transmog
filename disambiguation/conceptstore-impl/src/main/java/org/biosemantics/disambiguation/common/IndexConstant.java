@@ -1,7 +1,0 @@
-package org.biosemantics.disambiguation.common;
-
-public enum IndexConstant {
-
-	LABEL_INDEX, LABEL_TEXT_KEY, NOTATION_INDEX, NOTATION_CODE_KEY, CONCEPT_INDEX, CONCEPT_UUID_KEY, CONCEPT_TYPE_KEY, CONCEPT_FULL_TEXT_KEY
-
-}
