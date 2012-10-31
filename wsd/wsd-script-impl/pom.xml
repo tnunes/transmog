@@ -3,7 +3,7 @@
   <parent>
     <artifactId>wsd</artifactId>
     <groupId>org.biosemantics.wsd</groupId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.4</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>wsd-script-impl</artifactId>
@@ -13,7 +13,7 @@
   	<dependency>
   		<groupId>org.biosemantics.wsd</groupId>
   		<artifactId>conceptstore-graph-impl</artifactId>
-  		<version>0.0.1-SNAPSHOT</version>
+  		<version>1.4</version>
   	</dependency>
   	<dependency>
   		<groupId>net.sf.opencsv</groupId>
