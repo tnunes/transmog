@@ -22,3 +22,5 @@ utility/misc-utility/misc.log
 *.prefs
 
 wsd/.settings/org.eclipse.m2e.core.prefs
+
+wsd/release.properties
