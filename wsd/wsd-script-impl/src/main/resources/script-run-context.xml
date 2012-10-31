@@ -6,7 +6,8 @@
 
 
 	<context:property-placeholder location="classpath:script-run.properties" />
-	<import resource="classpath:org/biosemantics/wsd/script/script-context.xml" />
+	<import resource="classpath:/org/biosemantics/wsd/conceptstore-context.xml" />
+<!-- 	<import resource="classpath:org/biosemantics/wsd/script/script-context.xml" /> -->
 
 	<context:annotation-config />
 	<context:spring-configured />

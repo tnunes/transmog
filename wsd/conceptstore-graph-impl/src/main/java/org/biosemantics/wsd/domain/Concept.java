@@ -57,9 +57,9 @@ public class Concept {
 		neo4jOperations.save(hasNotation);
 		return hasNotation;
 	}
-	
-	public Cooccurrence hasCooccurrence(Neo4jOperations neo4jOperations, Concept otherConcept, int strength, String predicate,
-			String source) {
+
+	public Cooccurrence hasCooccurrence(Neo4jOperations neo4jOperations, Concept otherConcept, int strength,
+			String predicate, String source) {
 		Cooccurrence cooccurrence = new Cooccurrence(this, otherConcept, strength, predicate, source);
 		neo4jOperations.save(cooccurrence);
 		return cooccurrence;
@@ -75,6 +75,14 @@ public class Concept {
 
 	public ConceptType getType() {
 		return type;
+	}
+
+	public Set<Label> getLabels() {
+		return labels;
+	}
+
+	public Set<Notation> getNotations() {
+		return notations;
 	}
 
 	@Override
@@ -104,6 +112,8 @@ public class Concept {
 	@Indexed
 	private ConceptType type;
 	@RelatedTo(type = "HAS_LABEL", direction = Direction.OUTGOING)
-	Set<Label> labels;
+	private Set<Label> labels;
+	@RelatedTo(type = "HAS_NOTATION", direction = Direction.OUTGOING)
+	private Set<Notation> notations;
 
 }

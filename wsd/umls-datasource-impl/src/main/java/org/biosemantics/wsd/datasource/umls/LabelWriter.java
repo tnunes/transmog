@@ -35,7 +35,7 @@ public class LabelWriter {
 		PreparedStatement innerStatement = innerConnection.prepareStatement(GET_ALL_CUI);
 		stmt.setFetchSize(Integer.MIN_VALUE);
 		int counter = 0;
-		Transaction tx = neo4jTemplate.beginTx();
+		Transaction tx = neo4jTemplate.getGraphDatabaseService().beginTx();
 		try {
 			ResultSet rs = stmt.executeQuery(GET_ALL_SUIS);
 			while (rs.next()) {
@@ -69,7 +69,7 @@ public class LabelWriter {
 				if (++counter % 100000 == 0) {
 					tx.success();
 					tx.finish();
-					tx = neo4jTemplate.beginTx();
+					tx = neo4jTemplate.getGraphDatabaseService().beginTx();
 					logger.info("ctr:{}", counter);
 				}
 			}

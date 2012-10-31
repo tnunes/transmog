@@ -8,11 +8,18 @@
 	<packaging>pom</packaging>
 	<name>wsd</name>
 	<description>wsd</description>
+	<repositories>
+		<repository>
+			<id>spring-snapshot</id>
+			<name>Spring Maven SNAPSHOT Repository</name>
+			<url>http://repo.springsource.org/libs-milestone</url>
+		</repository>
+	</repositories>
 	<properties>
-		<spring.version>3.0.7.RELEASE</spring.version>
-		<neo4j.version>1.6</neo4j.version>
+		<spring.version>3.1.0.RELEASE</spring.version>
+		<neo4j.version>1.8</neo4j.version>
 		<junit.version>4.8.2</junit.version>
-		<springdata.version>2.0.1.RELEASE</springdata.version>
+		<springdata.version>2.1.0.RC4</springdata.version>
 	</properties>
 	<modules>
 		<module>conceptstore-graph-impl</module>

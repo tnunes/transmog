@@ -7,7 +7,7 @@ import org.springframework.data.neo4j.repository.GraphRepository;
 
 public interface NotationRepository extends GraphRepository<Notation> {
 
-	@Query("start notation=Notation(code={1}) where notation.source = {1} return notation")
+	@Query("start notation=node:Notation(code={1}) where notation.source={0} return notation")
 	Notation getNotation(String source, String code);
 
 	/**

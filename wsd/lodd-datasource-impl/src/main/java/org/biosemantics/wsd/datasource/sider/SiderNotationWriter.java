@@ -1,7 +1,8 @@
-package org.biosemantics.wsd.datasource.drugbank;
+package org.biosemantics.wsd.datasource.sider;
 
 import java.util.Set;
 
+import org.biosemantics.wsd.datasource.drugbank.DrugbankNotationWriter;
 import org.biosemantics.wsd.datasource.sesame.SesameRepositoryClient;
 import org.biosemantics.wsd.domain.Concept;
 import org.biosemantics.wsd.domain.Label;
@@ -24,13 +25,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-@Component
-public class DrugbankNotationWriter {
-
+public class SiderNotationWriter {
+	
 	@Transactional
 	public void writeAll() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
 		Repository repository = sesameRepositoryClient.getRepository();
@@ -113,5 +112,6 @@ public class DrugbankNotationWriter {
 	private static final Logger logger = LoggerFactory.getLogger(DrugbankNotationWriter.class);
 
 	private static final String DRUGBANK_ID_NAME_SPARQL = "select ?x ?y from <file://C:/fakepath/drugbank_dump.nt> where {?x <http://www.w3.org/2000/01/rdf-schema#label> ?y}";
+
 
 }

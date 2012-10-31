@@ -23,7 +23,7 @@ public class DatabasePopulatorTest {
 
 	@Transactional
 	public void populateConcepts() {
-		Transaction tx = template.beginTx();
+		Transaction tx = template.getGraphDatabaseService().beginTx();
 		Concept concept1 = new Concept("" + 0, ConceptType.CONCEPT);
 		Concept saved1 = template.save(concept1);
 		for (int i = 1; i < POP_COUNT_EVEN; i++) {

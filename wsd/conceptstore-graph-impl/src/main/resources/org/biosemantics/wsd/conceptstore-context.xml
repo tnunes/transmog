@@ -11,7 +11,7 @@
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
 	</context:component-scan>
 	<tx:annotation-driven mode="proxy" />
-	<neo4j:config storeDirectory="${graph.db}" />
+	<neo4j:config storeDirectory="/Users/bhsingh/code/neo4j-community-1.8/data/graph.db" />
 	<neo4j:repositories base-package="org.biosemantics.wsd.repository" />
 	<bean id="pathService" class="org.biosemantics.wsd.path.PathServiceImpl"></bean>
 </beans>

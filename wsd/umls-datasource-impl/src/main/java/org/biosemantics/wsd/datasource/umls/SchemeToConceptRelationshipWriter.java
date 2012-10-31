@@ -27,7 +27,7 @@ public class SchemeToConceptRelationshipWriter {
 		Statement stmt = connection.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
 				java.sql.ResultSet.CONCUR_READ_ONLY);
 		stmt.setFetchSize(Integer.MIN_VALUE);
-		Transaction tx = neo4jTemplate.beginTx();
+		Transaction tx = neo4jTemplate.getGraphDatabaseService().beginTx();
 		try {
 			ResultSet rs = stmt.executeQuery(GET_ALL_RLSP_SQL);
 			int ctr = 0;
@@ -49,7 +49,7 @@ public class SchemeToConceptRelationshipWriter {
 			if (ctr % 100000 == 0) {
 				tx.success();
 				tx.finish();
-				tx = neo4jTemplate.beginTx();
+				tx = neo4jTemplate.getGraphDatabaseService().beginTx();
 				logger.info("ctr:{}", ctr);
 			}
 			rs.close();
