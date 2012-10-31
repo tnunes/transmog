@@ -55,14 +55,14 @@
 	</scm>
 	<distributionManagement>
 		<snapshotRepository>
-			<id>sonatype-nexus-snapshots</id>
+			<id>nbic-nexus-snapshots</id>
 			<name>Sonatype Nexus snapshot repository</name>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<url>https://ci.nbiceng.net/nexus/content/repositories/snapshots/</url>
 		</snapshotRepository>
 		<repository>
-			<id>sonatype-nexus-staging</id>
+			<id>nbic-nexus-releases</id>
 			<name>Sonatype Nexus release repository</name>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+			<url>https://ci.nbiceng.net/nexus/content/repositories/releases//</url>
 		</repository>
 	</distributionManagement>
 </project>
