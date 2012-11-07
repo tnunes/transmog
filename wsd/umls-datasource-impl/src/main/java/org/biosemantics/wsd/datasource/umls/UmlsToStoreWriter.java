@@ -25,7 +25,17 @@ import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ConceptWriter {
+public class UmlsToStoreWriter {
+
+	public void writeUmlsToStore() throws SQLException {
+		writeSemanticTypePredicates();
+		writeSemanticTypePredicateHierarchy();
+		writeAndMapConceptPredicates();
+		writeConcepts();
+		writeConceptSchemes();
+		writeRlspsBetweenConcepts();
+		writeRlspsBetweenConceptsAndSchemes();
+	}
 
 	public void writeConcepts() throws SQLException {
 		Connection distinctCuiConnection = dataSource.getConnection();
@@ -289,6 +299,35 @@ public class ConceptWriter {
 	}
 
 	public void writeRlspsBetweenConceptSchemes() throws SQLException {
+		Connection conceptSchemeConnection = dataSource.getConnection();
+		Statement conceptSchemeStmt = conceptSchemeConnection.createStatement();
+		ResultSet rs = conceptSchemeStmt.executeQuery(GET_ALL_CONCEPT_SCHEME_RLSPS);
+		try {
+			int ctr = 0;
+			while (rs.next()) {
+				ctr++;
+				Transaction tx = template.getGraphDatabaseService().beginTx();
+				String fromNotation = rs.getString("UI1");
+				String predicateNotation = rs.getString("UI2");
+				String toNotation = rs.getString("UI3");
+				Concept from = notationRepository.getRelatedConcept(NotationSourceConstant.UMLS.toString(),
+						fromNotation);
+				long relationshipType = notationRepository.getRelatedConcept(NotationSourceConstant.UMLS.toString(),
+						predicateNotation).getNodeId();
+				Concept to = notationRepository.getRelatedConcept(NotationSourceConstant.UMLS.toString(), toNotation);
+				from.addRelationshipIfNoBidirectionalRlspExists(template, to, String.valueOf(relationshipType), 0,
+						SRSTRE1);
+				tx.success();
+				tx.finish();
+				logger.info("{}-{}:{}:{}", new Object[] { ctr, fromNotation, predicateNotation, toNotation });
+				System.out.println("" + System.currentTimeMillis() + " ui:" + fromNotation + " " + predicateNotation
+						+ " " + toNotation);
+			}
+		} finally {
+			rs.close();
+			conceptSchemeStmt.close();
+			conceptSchemeConnection.close();
+		}
 
 	}
 
@@ -363,7 +402,8 @@ public class ConceptWriter {
 	private static final String GET_ST_PREDICATE_HIERARCHY = "select DISTINCT(UI3) from SRSTRE1 where UI1 = ?";
 	private static final String GET_RLSP_CONCEPT_SCHEME = "select CUI, TUI from MRSTY";// 2,151,295
 	private static final String GET_CONCEPT_PREDICATES = "select VALUE, EXPL from MRDOC where DOCKEY = \"RELA\" and type = \"rela_inverse\" AND VALUE IS NOT NULL";
-	private static final Logger logger = LoggerFactory.getLogger(ConceptWriter.class);
+	private static final String GET_ALL_CONCEPT_SCHEME_RLSPS = "SELECT * FROM SRSTRE1 WHERE UI1 != UI3 AND UI1 IN (SELECT UI FROM SRDEF WHERE RT=\"STY\") AND UI3 IN (SELECT UI FROM SRDEF WHERE RT=\"STY\")";// 6371
+	private static final Logger logger = LoggerFactory.getLogger(UmlsToStoreWriter.class);
 	/**
 	 * change this for every new UMLS RELEASE
 	 * 

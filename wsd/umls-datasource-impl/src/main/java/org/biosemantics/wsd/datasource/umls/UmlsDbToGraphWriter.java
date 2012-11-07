@@ -11,10 +11,10 @@ public class UmlsDbToGraphWriter {
 	public static void main(String[] args) throws SQLException {
 		applicationContext = new ClassPathXmlApplicationContext(new String[] { "umls-import-context.xml" });
 		applicationContext.registerShutdownHook();
-		ConceptWriter conceptNodeWriter = applicationContext.getBean(ConceptWriter.class);
-		conceptNodeWriter.writeSemanticTypePredicates();
-		conceptNodeWriter.writeSemanticTypePredicateHierarchy();
-		conceptNodeWriter.writeAndMapConceptPredicates();
+		UmlsToStoreWriter umlsToStoreWriter = applicationContext.getBean(UmlsToStoreWriter.class);
+		// umlsToStoreWriter.writeUmlsToStore();
+		umlsToStoreWriter.writeConceptSchemes();
+		umlsToStoreWriter.writeRlspsBetweenConceptSchemes();
 	}
 
 }
