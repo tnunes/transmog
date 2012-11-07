@@ -2,13 +2,13 @@ package org.biosemantics.wsd.datasource.drugbank;
 
 import java.util.Set;
 
+import org.biosemantics.conceptstore.domain.Concept;
+import org.biosemantics.conceptstore.domain.Label;
+import org.biosemantics.conceptstore.domain.Notation;
+import org.biosemantics.conceptstore.domain.NotationSourceConstant;
+import org.biosemantics.conceptstore.repository.LabelRepository;
+import org.biosemantics.conceptstore.repository.NotationRepository;
 import org.biosemantics.wsd.datasource.sesame.SesameRepositoryClient;
-import org.biosemantics.wsd.domain.Concept;
-import org.biosemantics.wsd.domain.Label;
-import org.biosemantics.wsd.domain.Notation;
-import org.biosemantics.wsd.domain.NotationSourceConstant;
-import org.biosemantics.wsd.repository.LabelRepository;
-import org.biosemantics.wsd.repository.NotationRepository;
 import org.neo4j.graphdb.Relationship;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
@@ -48,7 +48,7 @@ public class DrugbankNotationWriter {
 					Value valueOfY = bindingSet.getValue("y");
 					String drugName = valueOfY.stringValue();
 					Label label = labelRepository.getLabel(drugName, "ENG");
-					Set<Concept> concepts = null;
+					Iterable<Concept> concepts = null;
 					try {
 						concepts = label.getRelatedConcepts();
 					} catch (Exception e) {
@@ -74,13 +74,14 @@ public class DrugbankNotationWriter {
 								} catch (Exception e) {
 								}
 								if (rlsp == null) {
-									concept.hasNotation(neo4jTemplate, notation, NotationSourceConstant.DRUGBANK);
+									concept.addNotationIfNoneExists(neo4jTemplate, notation,
+											NotationSourceConstant.DRUGBANK.toString());
 									logger.info("adding relationship between concept.id {} as dbid", new Object[] {
-											concept.getId(), dbId });
+											concept.getNodeId(), dbId });
 								} else {
 									logger.info(
 											"relationship exists between concept.id {} and dbid {}. Not creating new rlsp.",
-											new Object[] { concept.getId(), dbId });
+											new Object[] { concept.getNodeId(), dbId });
 								}
 							}
 						} else {

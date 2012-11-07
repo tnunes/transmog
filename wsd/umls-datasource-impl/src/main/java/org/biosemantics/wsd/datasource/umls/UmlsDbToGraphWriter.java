@@ -11,23 +11,10 @@ public class UmlsDbToGraphWriter {
 	public static void main(String[] args) throws SQLException {
 		applicationContext = new ClassPathXmlApplicationContext(new String[] { "umls-import-context.xml" });
 		applicationContext.registerShutdownHook();
-		ConceptNodeWriter conceptNodeWriter = applicationContext.getBean(ConceptNodeWriter.class);
-		conceptNodeWriter.writeAll();
-		
-
-		SchemeNodeWriter schemeNodeWriter = applicationContext.getBean(SchemeNodeWriter.class);
-		schemeNodeWriter.writeAll();
-		
-		SchemeRelationshipWriter schemeRelationshipWriter = applicationContext.getBean(SchemeRelationshipWriter.class);
-		schemeRelationshipWriter.writeAll();
-		SchemeToConceptRelationshipWriter schemeToConceptRelationshipWriter = applicationContext
-				.getBean(SchemeToConceptRelationshipWriter.class);
-		schemeToConceptRelationshipWriter.writeAll();
-		RelationshipWriter relationshipWriter = applicationContext.getBean(RelationshipWriter.class);
-		relationshipWriter.writeAll();
-		LabelWriter labelWriter = applicationContext.getBean(LabelWriter.class);
-		labelWriter.writeAll();
-		applicationContext.close();
+		ConceptWriter conceptNodeWriter = applicationContext.getBean(ConceptWriter.class);
+		conceptNodeWriter.writeSemanticTypePredicates();
+		conceptNodeWriter.writeSemanticTypePredicateHierarchy();
+		conceptNodeWriter.writeAndMapConceptPredicates();
 	}
 
 }

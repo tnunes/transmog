@@ -2,8 +2,8 @@ package org.biosemantics.wsd.datasource.drugbank;
 
 import java.sql.SQLException;
 
-import org.biosemantics.wsd.domain.Notation;
-import org.biosemantics.wsd.repository.NotationRepository;
+import org.biosemantics.conceptstore.domain.Notation;
+import org.biosemantics.conceptstore.repository.NotationRepository;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.repository.RepositoryException;

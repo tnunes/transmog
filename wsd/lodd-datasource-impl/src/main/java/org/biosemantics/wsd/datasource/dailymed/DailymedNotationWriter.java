@@ -1,12 +1,10 @@
 package org.biosemantics.wsd.datasource.dailymed;
 
-import java.util.Set;
-
+import org.biosemantics.conceptstore.domain.Concept;
+import org.biosemantics.conceptstore.domain.Notation;
+import org.biosemantics.conceptstore.domain.NotationSourceConstant;
+import org.biosemantics.conceptstore.repository.NotationRepository;
 import org.biosemantics.wsd.datasource.sesame.SesameRepositoryClient;
-import org.biosemantics.wsd.domain.Concept;
-import org.biosemantics.wsd.domain.Notation;
-import org.biosemantics.wsd.domain.NotationSourceConstant;
-import org.biosemantics.wsd.repository.NotationRepository;
 import org.neo4j.graphdb.Relationship;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
@@ -44,21 +42,22 @@ public class DailymedNotationWriter {
 				if (drugbankId.startsWith("DB") && drugbankId.length() == 7) {
 					Notation drugbankNotation = null;
 					try {
-						drugbankNotation = notationRepository.getNotation(NotationSourceConstant.DRUGBANK, drugbankId);
-						Set<Concept> concepts = drugbankNotation.getRelatedConcepts();
+						drugbankNotation = notationRepository.getNotation(NotationSourceConstant.DRUGBANK.toString(),
+								drugbankId);
+						Iterable<Concept> concepts = drugbankNotation.getRelatedConcepts();
 						Value valueOfX = bindingSet.getValue("x");
 						String strDailymedId = valueOfX.stringValue();
 						String[] strings = strDailymedId.split("/");
 						int dailymedId = Integer.parseInt(strings[strings.length - 1]);
 						Notation dailymedNotation = null;
 						try {
-							dailymedNotation = notationRepository.getNotation(NotationSourceConstant.DAILYMED, ""
-									+ dailymedId);
+							dailymedNotation = notationRepository.getNotation(
+									NotationSourceConstant.DAILYMED.toString(), "" + dailymedId);
 						} catch (NullPointerException e) {
 						}
 						if (dailymedNotation == null) {
-							dailymedNotation = notationRepository.save(new Notation(NotationSourceConstant.DAILYMED, ""
-									+ dailymedId));
+							dailymedNotation = notationRepository.save(new Notation(NotationSourceConstant.DAILYMED
+									.toString(), "" + dailymedId));
 						}
 						for (Concept concept : concepts) {
 							Relationship rlsp = null;
@@ -67,13 +66,14 @@ public class DailymedNotationWriter {
 							} catch (Exception e) {
 							}
 							if (rlsp == null) {
-								concept.hasNotation(neo4jTemplate, dailymedNotation, NotationSourceConstant.DAILYMED);
+								concept.addNotationIfNoneExists(neo4jTemplate, dailymedNotation,
+										NotationSourceConstant.DAILYMED.toString());
 								logger.info("adding relationship between concept.id {} as dailymedId {}", new Object[] {
-										concept.getId(), dailymedId });
+										concept.getNodeId(), dailymedId });
 							} else {
 								logger.info(
 										"relationship exists between concept.id {} and dailymedId {}. Not creating new rlsp.",
-										new Object[] { concept.getId(), dailymedId });
+										new Object[] { concept.getNodeId(), dailymedId });
 							}
 						}
 					} catch (Exception e) {

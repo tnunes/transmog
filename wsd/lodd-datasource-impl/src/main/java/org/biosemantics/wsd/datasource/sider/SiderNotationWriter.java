@@ -2,14 +2,14 @@ package org.biosemantics.wsd.datasource.sider;
 
 import java.util.Set;
 
+import org.biosemantics.conceptstore.domain.Concept;
+import org.biosemantics.conceptstore.domain.Label;
+import org.biosemantics.conceptstore.domain.Notation;
+import org.biosemantics.conceptstore.domain.NotationSourceConstant;
+import org.biosemantics.conceptstore.repository.LabelRepository;
+import org.biosemantics.conceptstore.repository.NotationRepository;
 import org.biosemantics.wsd.datasource.drugbank.DrugbankNotationWriter;
 import org.biosemantics.wsd.datasource.sesame.SesameRepositoryClient;
-import org.biosemantics.wsd.domain.Concept;
-import org.biosemantics.wsd.domain.Label;
-import org.biosemantics.wsd.domain.Notation;
-import org.biosemantics.wsd.domain.NotationSourceConstant;
-import org.biosemantics.wsd.repository.LabelRepository;
-import org.biosemantics.wsd.repository.NotationRepository;
 import org.neo4j.graphdb.Relationship;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
@@ -73,7 +73,7 @@ public class SiderNotationWriter {
 								} catch (Exception e) {
 								}
 								if (rlsp == null) {
-									concept.hasNotation(neo4jTemplate, notation, NotationSourceConstant.DRUGBANK);
+									concept.addNotationIfNoneExists(neo4jTemplate, notation, NotationSourceConstant.DRUGBANK);
 									logger.info("adding relationship between concept.id {} as dbid", new Object[] {
 											concept.getId(), dbId });
 								} else {
