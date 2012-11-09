@@ -5,9 +5,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.biosemantics.conceptstore.domain.Concept;
 import org.biosemantics.conceptstore.domain.ConceptType;
 import org.biosemantics.conceptstore.domain.Label;
@@ -332,7 +335,77 @@ public class UmlsToStoreWriter {
 	}
 
 	public void writeRlspsBetweenConcepts() throws SQLException {
+		Connection uniqueRelConn = dataSource.getConnection();
+		Statement uniqueRelStmt = uniqueRelConn.createStatement();
+		ResultSet uniqueRelRs = uniqueRelStmt.executeQuery(GET_ALL_REL);
+		Transaction tx1 = template.getGraphDatabaseService().beginTx();
+		try {
+			while (uniqueRelRs.next()) {
+				String rel = uniqueRelRs.getString("REL");
+				Notation notation = notationRepository.save(new Notation(NotationSourceConstant.UMLS.toString(), rel));
+				Concept concept = conceptRepository.save(new Concept(ConceptType.PREDICATE));
+				concept.addNotationIfNoneExists(template, notation, MRREL);
+			}
+			uniqueRelRs.close();
+			tx1.success();
+			tx1.finish();
+		} finally {
+			uniqueRelStmt.close();
+			uniqueRelConn.close();
+		}
 
+		Connection conceptRlspConn = dataSource.getConnection();
+		Statement conceptRlspStmt = conceptRlspConn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
+				java.sql.ResultSet.CONCUR_READ_ONLY);
+		conceptRlspStmt.setFetchSize(Integer.MIN_VALUE);
+		ResultSet rs = conceptRlspStmt.executeQuery(GET_RLSP_CONCEPTS);
+		Map<String, Long> predicateMap = new HashMap<String, Long>();
+		try {
+			while (rs.next()) {
+				Transaction tx = template.getGraphDatabaseService().beginTx();
+				String rela = rs.getString("RELA");
+				String rel = rs.getString("REL");
+				String sourceCui = rs.getString("CUI2");
+				String targetCui = rs.getString("CUI1");
+				try {
+					String predicateNotationCode = null;
+					if (StringUtils.isBlank(rela)) {
+						predicateNotationCode = rel;
+					} else {
+						predicateNotationCode = rela;
+					}
+					Concept srcConcept = notationRepository.getRelatedConcept(NotationSourceConstant.UMLS.toString(),
+							sourceCui);
+					Concept targetConcept = notationRepository.getRelatedConcept(
+							NotationSourceConstant.UMLS.toString(), targetCui);
+					Long relationshipType = null;
+					if (predicateMap.containsKey(predicateNotationCode)) {
+						relationshipType = predicateMap.get(predicateNotationCode);
+					} else {
+						relationshipType = notationRepository.getRelatedConcept(NotationSourceConstant.UMLS.toString(),
+								predicateNotationCode).getNodeId();
+						if (relationshipType != null) {
+							predicateMap.put(predicateNotationCode, relationshipType);
+						}
+					}
+					srcConcept.addRelationshipIfNoBidirectionalRlspExists(template, targetConcept,
+							relationshipType.toString(), 0, MRREL);
+					tx.success();
+					tx.finish();
+					System.out.println("sourceCui:" + sourceCui + " targetCui:" + targetCui + " rel" + rel + " rela:"
+							+ rela);
+				} catch (Exception e) {
+					tx.failure();
+					tx.finish();
+					System.err.println("ERROR! sourceCui:" + sourceCui + " targetCui:" + targetCui + " rel" + rel
+							+ " rela:" + rela);
+				}
+			}
+		} finally {
+			rs.close();
+			conceptRlspStmt.close();
+			conceptRlspConn.close();
+		}
 	}
 
 	public void writeRlspsBetweenConceptsAndSchemes() throws SQLException {
@@ -401,6 +474,8 @@ public class UmlsToStoreWriter {
 	private static final String GET_UNIQUE_ST_PREDICATE_NOTATIONS = "select DISTINCT(UI) from SRDEF where RT=\"RL\"";
 	private static final String GET_ST_PREDICATE_HIERARCHY = "select DISTINCT(UI3) from SRSTRE1 where UI1 = ?";
 	private static final String GET_RLSP_CONCEPT_SCHEME = "select CUI, TUI from MRSTY";// 2,151,295
+	private static final String GET_ALL_REL = "select DISTINCT(REL) from MRREL";// ???
+	private static final String GET_RLSP_CONCEPTS = "select CUI1, CUI2, REL, RELA from MRREL where CUI1 != CUI2";// ???
 	private static final String GET_CONCEPT_PREDICATES = "select VALUE, EXPL from MRDOC where DOCKEY = \"RELA\" and type = \"rela_inverse\" AND VALUE IS NOT NULL";
 	private static final String GET_ALL_CONCEPT_SCHEME_RLSPS = "SELECT * FROM SRSTRE1 WHERE UI1 != UI3 AND UI1 IN (SELECT UI FROM SRDEF WHERE RT=\"STY\") AND UI3 IN (SELECT UI FROM SRDEF WHERE RT=\"STY\")";// 6371
 	private static final Logger logger = LoggerFactory.getLogger(UmlsToStoreWriter.class);
