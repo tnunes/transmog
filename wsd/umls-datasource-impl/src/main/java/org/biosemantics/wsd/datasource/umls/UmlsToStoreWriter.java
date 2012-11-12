@@ -31,13 +31,22 @@ import org.springframework.stereotype.Component;
 public class UmlsToStoreWriter {
 
 	public void writeUmlsToStore() throws SQLException {
-		writeSemanticTypePredicates();
-		writeSemanticTypePredicateHierarchy();
-		writeAndMapConceptPredicates();
-		writeConcepts();
-		writeConceptSchemes();
-		writeRlspsBetweenConcepts();
+		// writeSemanticTypePredicates();
+		// System.out.println("1111111111111111111111");
+		// writeSemanticTypePredicateHierarchy();
+		// System.out.println("2222222222222222222222");
+		// writeAndMapConceptPredicates();
+		// System.out.println("333333333333333333333");
+		// writeConceptSchemes();
+		// System.out.println("4444444444444444444444");
+		// writeRlspsBetweenConceptSchemes();
+		// System.out.println("5555555555555555555555555");
+		// writeConcepts();
+		System.out.println("666666666666666666666666");
 		writeRlspsBetweenConceptsAndSchemes();
+		System.out.println("77777777777777777777777");
+		// writeRlspsBetweenConcepts();
+		// System.out.println("8888888888888888888888888");
 	}
 
 	public void writeConcepts() throws SQLException {
@@ -182,25 +191,26 @@ public class UmlsToStoreWriter {
 	}
 
 	private Concept getOrCreatePredicateConcept(String text, String invText) {
+		Concept preConcept = null;
 		Label label = labelRepository.getLabel(text, "ENG");
 		if (label == null) {
 			label = labelRepository.getLabel(invText, "ENG");
 		}
-		Concept preConcept = null;
-		if (label == null) {
-			// create new predicate with these labels
-			Label labelForText = labelRepository.save(new Label(text, "ENG"));
-			Label labelForInvText = labelRepository.save(new Label(invText, "ENG"));
-			preConcept = conceptRepository.save(new Concept(ConceptType.PREDICATE));
-			preConcept.addLabelIfNoneExists(template, labelForText, LabelType.PREFERRED, MRREL);
-			preConcept.addLabelIfNoneExists(template, labelForInvText, LabelType.ALTERNATE, MRREL);
-		} else {
+		if (label != null) {
 			Iterable<Concept> relatedConcepts = label.getRelatedConcepts();
 			for (Concept relatedConcept : relatedConcepts) {
 				if (relatedConcept.getType() == ConceptType.PREDICATE) {
 					preConcept = relatedConcept;
 				}
 			}
+		}
+		if (preConcept == null) {
+			// create new predicate with these labels
+			Label labelForText = labelRepository.save(new Label(text, "ENG"));
+			Label labelForInvText = labelRepository.save(new Label(invText, "ENG"));
+			preConcept = conceptRepository.save(new Concept(ConceptType.PREDICATE));
+			preConcept.addLabelIfNoneExists(template, labelForText, LabelType.PREFERRED, MRREL);
+			preConcept.addLabelIfNoneExists(template, labelForInvText, LabelType.ALTERNATE, MRREL);
 		}
 		return preConcept;
 	}
@@ -335,6 +345,7 @@ public class UmlsToStoreWriter {
 	}
 
 	public void writeRlspsBetweenConcepts() throws SQLException {
+		Map<String, Long> predicateMap = new HashMap<String, Long>();
 		Connection uniqueRelConn = dataSource.getConnection();
 		Statement uniqueRelStmt = uniqueRelConn.createStatement();
 		ResultSet uniqueRelRs = uniqueRelStmt.executeQuery(GET_ALL_REL);
@@ -345,6 +356,10 @@ public class UmlsToStoreWriter {
 				Notation notation = notationRepository.save(new Notation(NotationSourceConstant.UMLS.toString(), rel));
 				Concept concept = conceptRepository.save(new Concept(ConceptType.PREDICATE));
 				concept.addNotationIfNoneExists(template, notation, MRREL);
+				// Concept concept =
+				// notationRepository.getRelatedConcept(NotationSourceConstant.UMLS.toString(),
+				// rel);
+				predicateMap.put(rel, concept.getNodeId());
 			}
 			uniqueRelRs.close();
 			tx1.success();
@@ -353,54 +368,90 @@ public class UmlsToStoreWriter {
 			uniqueRelStmt.close();
 			uniqueRelConn.close();
 		}
-
+		System.out.println("created all distinct rel predicates, now checking is all RELA predicates are available");
+		Connection uniqueRelaConn = dataSource.getConnection();
+		Statement uniqueRelaStmt = uniqueRelaConn.createStatement();
+		ResultSet uniqueRelaRs = uniqueRelaStmt.executeQuery(GET_ALL_RELA);
+		Transaction tx2 = template.getGraphDatabaseService().beginTx();
+		try {
+			while (uniqueRelaRs.next()) {
+				String rela = uniqueRelaRs.getString("RELA");
+				if (!StringUtils.isEmpty(rela)) {
+					Iterable<Concept> concepts = labelRepository.getLabel(rela, "ENG").getRelatedConcepts();
+					Concept concept = null;
+					for (Concept foundConcept : concepts) {
+						if (foundConcept.getType() == ConceptType.PREDICATE) {
+							concept = foundConcept;
+						}
+					}
+					if (concept == null || concept.getType() != ConceptType.PREDICATE) {
+						throw new IllegalStateException(
+								"concept cannot be null or not a predicate for predicate rela = " + rela + " concept:"
+										+ concept);
+					} else {
+						predicateMap.put(rela, concept.getNodeId());
+					}
+				}
+			}
+			uniqueRelaRs.close();
+			tx2.success();
+			tx2.finish();
+		} finally {
+			uniqueRelaStmt.close();
+			uniqueRelaConn.close();
+		}
+		System.out.println("check complete begining inserts");
 		Connection conceptRlspConn = dataSource.getConnection();
 		Statement conceptRlspStmt = conceptRlspConn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
 				java.sql.ResultSet.CONCUR_READ_ONLY);
 		conceptRlspStmt.setFetchSize(Integer.MIN_VALUE);
 		ResultSet rs = conceptRlspStmt.executeQuery(GET_RLSP_CONCEPTS);
-		Map<String, Long> predicateMap = new HashMap<String, Long>();
+		int ctr = 0;
 		try {
+			Transaction tx = template.getGraphDatabaseService().beginTx();
 			while (rs.next()) {
-				Transaction tx = template.getGraphDatabaseService().beginTx();
 				String rela = rs.getString("RELA");
 				String rel = rs.getString("REL");
 				String sourceCui = rs.getString("CUI2");
 				String targetCui = rs.getString("CUI1");
-				try {
-					String predicateNotationCode = null;
-					if (StringUtils.isBlank(rela)) {
-						predicateNotationCode = rel;
-					} else {
-						predicateNotationCode = rela;
+				if (ignoredCuiReader.isIgnored(sourceCui) || ignoredCuiReader.isIgnored(targetCui)) {
+					continue;
+				}
+				String predicateNotationCode = null;
+				if (StringUtils.isBlank(rela)) {
+					predicateNotationCode = rel;
+				} else {
+					predicateNotationCode = rela;
+				}
+				Notation srcNotation = notationRepository.findByPropertyValue("code", sourceCui);
+				Notation targetNotation = notationRepository.findByPropertyValue("code", targetCui);
+				Long relationshipType = predicateMap.get(predicateNotationCode);
+				if (srcNotation != null && targetNotation != null) {
+					Concept srcConcept = null;
+					for (Concept concept : srcNotation.getRelatedConcepts()) {
+						srcConcept = concept;
 					}
-					Concept srcConcept = notationRepository.getRelatedConcept(NotationSourceConstant.UMLS.toString(),
-							sourceCui);
-					Concept targetConcept = notationRepository.getRelatedConcept(
-							NotationSourceConstant.UMLS.toString(), targetCui);
-					Long relationshipType = null;
-					if (predicateMap.containsKey(predicateNotationCode)) {
-						relationshipType = predicateMap.get(predicateNotationCode);
-					} else {
-						relationshipType = notationRepository.getRelatedConcept(NotationSourceConstant.UMLS.toString(),
-								predicateNotationCode).getNodeId();
-						if (relationshipType != null) {
-							predicateMap.put(predicateNotationCode, relationshipType);
-						}
+					Concept targetConcept = null;
+					for (Concept concept : targetNotation.getRelatedConcepts()) {
+						targetConcept = concept;
 					}
-					srcConcept.addRelationshipIfNoBidirectionalRlspExists(template, targetConcept,
-							relationshipType.toString(), 0, MRREL);
+					if (srcConcept != null && targetConcept != null && relationshipType != null) {
+						srcConcept.addRelationshipIfNoBidirectionalRlspExists(template, targetConcept,
+								relationshipType.toString(), 0, MRREL);
+					} else {
+						System.err.println("sourceCui:" + sourceCui + " targetCui:" + targetCui + " rel" + rel
+								+ " rela:" + rela);
+					}
+				}
+				if (++ctr % txSize == 0) {
 					tx.success();
 					tx.finish();
-					System.out.println("sourceCui:" + sourceCui + " targetCui:" + targetCui + " rel" + rel + " rela:"
-							+ rela);
-				} catch (Exception e) {
-					tx.failure();
-					tx.finish();
-					System.err.println("ERROR! sourceCui:" + sourceCui + " targetCui:" + targetCui + " rel" + rel
-							+ " rela:" + rela);
+					tx = template.getGraphDatabaseService().beginTx();
+					System.out.println("millis:" + System.currentTimeMillis() + " ctr:" + ctr);
 				}
 			}
+			tx.success();
+			tx.finish();
 		} finally {
 			rs.close();
 			conceptRlspStmt.close();
@@ -415,28 +466,42 @@ public class UmlsToStoreWriter {
 		conceptSchemeStmt.setFetchSize(Integer.MIN_VALUE);
 		//
 		ResultSet rs = conceptSchemeStmt.executeQuery(GET_RLSP_CONCEPT_SCHEME);
+		int ctr = 0;
+		Transaction tx = template.getGraphDatabaseService().beginTx();
 		try {
 			while (rs.next()) {
-				Transaction tx = template.getGraphDatabaseService().beginTx();
-				try {
-					String cui = rs.getString("CUI");
-					if (ignoredCuiReader.isIgnored(cui)) {
-						continue;
+				String cui = rs.getString("CUI");
+				if (ignoredCuiReader.isIgnored(cui)) {
+					continue;
+				}
+				String tui = rs.getString("TUI");
+				Notation srcNotation = notationRepository.findByPropertyValue("code", cui);
+				Notation targetNotation = notationRepository.findByPropertyValue("code", tui);
+				if (srcNotation != null && targetNotation != null) {
+					Concept srcConcept = null;
+					for (Concept concept : srcNotation.getRelatedConcepts()) {
+						srcConcept = concept;
 					}
-					String tui = rs.getString("TUI");
-					Concept concept = notationRepository.getRelatedConcept(NotationSourceConstant.UMLS.toString(), cui);
-					Concept conceptScheme = notationRepository.getRelatedConcept(
-							NotationSourceConstant.UMLS.toString(), tui);
-					concept.addRelationshipIfNoneExists(template, conceptScheme, "IN_SCHEME", 0, MRSTY);
+					Concept conceptScheme = null;
+					for (Concept concept : targetNotation.getRelatedConcepts()) {
+						conceptScheme = concept;
+					}
+					if (srcConcept != null && conceptScheme != null) {
+						srcConcept.addRelationshipIfNoneExists(template, conceptScheme, "IN_SCHEME", 0, MRSTY);
+					} else {
+						System.err.println("millis:" + System.currentTimeMillis() + " tui:" + tui + " cui:" + cui
+								+ " srcConcept:" + srcConcept + " conceptScheme:" + conceptScheme);
+					}
+				}
+				if (++ctr % txSize == 0) {
 					tx.success();
 					tx.finish();
-					System.out.println("" + System.currentTimeMillis() + " tui:" + tui + " cui:" + cui);
-				} catch (Exception e) {
-					logger.error("", e);
+					tx = template.getGraphDatabaseService().beginTx();
+					System.out.println("millis:" + System.currentTimeMillis() + " ctr:" + ctr);
 				}
-
 			}
-
+			tx.success();
+			tx.finish();
 		} finally {
 			rs.close();
 			conceptSchemeStmt.close();
@@ -475,8 +540,9 @@ public class UmlsToStoreWriter {
 	private static final String GET_ST_PREDICATE_HIERARCHY = "select DISTINCT(UI3) from SRSTRE1 where UI1 = ?";
 	private static final String GET_RLSP_CONCEPT_SCHEME = "select CUI, TUI from MRSTY";// 2,151,295
 	private static final String GET_ALL_REL = "select DISTINCT(REL) from MRREL";// ???
+	private static final String GET_ALL_RELA = "select DISTINCT(RELA) from MRREL";// ???
 	private static final String GET_RLSP_CONCEPTS = "select CUI1, CUI2, REL, RELA from MRREL where CUI1 != CUI2";// ???
-	private static final String GET_CONCEPT_PREDICATES = "select VALUE, EXPL from MRDOC where DOCKEY = \"RELA\" and type = \"rela_inverse\" AND VALUE IS NOT NULL";
+	private static final String GET_CONCEPT_PREDICATES = "select VALUE, EXPL from MRDOC where DOCKEY = \"RELA\" and type = \"rela_inverse\" AND VALUE IS NOT NULL";//623
 	private static final String GET_ALL_CONCEPT_SCHEME_RLSPS = "SELECT * FROM SRSTRE1 WHERE UI1 != UI3 AND UI1 IN (SELECT UI FROM SRDEF WHERE RT=\"STY\") AND UI3 IN (SELECT UI FROM SRDEF WHERE RT=\"STY\")";// 6371
 	private static final Logger logger = LoggerFactory.getLogger(UmlsToStoreWriter.class);
 	/**
@@ -494,7 +560,7 @@ public class UmlsToStoreWriter {
 	 * 10000/4G XMX memory runtime memory allocated. Only helpful if you have
 	 * slow disks, because its staggers writes
 	 */
-	private static final int txSize = 10000;
+	private static final int txSize = 1000;
 	private static final String IS_A = "T186";
 
 }
