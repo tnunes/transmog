@@ -1,10 +1,12 @@
 package org.biosemantics.wsd.datasource.umls;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,8 +15,11 @@ import org.apache.commons.io.LineIterator;
 import org.biosemantics.conceptstore.domain.Concept;
 import org.biosemantics.conceptstore.domain.ConceptType;
 import org.biosemantics.conceptstore.domain.Label;
+import org.biosemantics.conceptstore.domain.LabelType;
 import org.biosemantics.conceptstore.domain.Notation;
 import org.biosemantics.conceptstore.domain.NotationSourceConstant;
+import org.biosemantics.conceptstore.domain.RlspType;
+import org.biosemantics.conceptstore.repository.ConceptRepository;
 import org.biosemantics.conceptstore.repository.LabelRepository;
 import org.biosemantics.conceptstore.repository.NotationRepository;
 import org.neo4j.graphdb.Transaction;
@@ -24,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
+import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
 @Component
@@ -111,7 +117,7 @@ public class PubmedFileRlspWriter {
 		}
 	}
 
-	public void validateFile() throws IOException {
+	public void validatePredicates() throws IOException {
 		LineIterator iterator = FileUtils.lineIterator(inputFile, "UTF-8");
 		Set<String> predicates = new HashSet<String>();
 		System.out.println(System.currentTimeMillis() + " iterating file");
@@ -142,6 +148,38 @@ public class PubmedFileRlspWriter {
 		csvWriter.close();
 	}
 
+	public void createMissingPredicates(String csvFile) throws IOException {
+		CSVReader csvReader = new CSVReader(new FileReader(csvFile));
+		List<String[]> lines = csvReader.readAll();
+		Transaction tx = template.getGraphDatabaseService().beginTx();
+		for (String[] columns : lines) {
+			if (columns[1].trim().equalsIgnoreCase("FALSE")) {
+				String predText = columns[0].trim();
+				Concept predicateConcept = null;
+				Label label = labelRepository.save(new Label(predText, "ENG"));
+				predicateConcept = conceptRepository.save(new Concept(ConceptType.PREDICATE));
+				predicateConcept.addLabelIfNoneExists(template, label, LabelType.PREFERRED, "PUBMED_RLSP_FILE");
+				if (predText.startsWith("neg_")) {
+					predText = predText.substring(4);
+					Label foundLabel = labelRepository.findByPropertyValue(predText, "ENG");
+					if (foundLabel != null) {
+						// create rlsp
+						Iterable<Concept> concepts = foundLabel.getRelatedConcepts();
+						for (Concept concept : concepts) {
+							if (concept.getType() == ConceptType.PREDICATE) {
+								concept.addRelationshipIfNoneExists(template, predicateConcept,
+										RlspType.IS_INVERSE_OF.toString(), 0, "PUBMED_RLSP_FILE");
+							}
+						}
+					}
+				}
+			}
+		}
+		tx.success();
+		tx.finish();
+		System.out.println("done creating predicates");
+	}
+
 	private static final Logger logger = LoggerFactory.getLogger(PubmedFileRlspWriter.class);
 
 	@Autowired
@@ -152,6 +190,8 @@ public class PubmedFileRlspWriter {
 	private LabelRepository labelRepository;
 	@Autowired
 	private Neo4jTemplate template;
+	@Autowired
+	private ConceptRepository conceptRepository;
 	private Map<String, Long> predicateNodeIdMap = new HashMap<String, Long>();
 
 	private static final int txSize = 1000;

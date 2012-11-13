@@ -48,13 +48,12 @@ public class DrugbankNotationWriter {
 					Value valueOfY = bindingSet.getValue("y");
 					String drugName = valueOfY.stringValue();
 					Label label = labelRepository.getLabel(drugName, "ENG");
-					Iterable<Concept> concepts = null;
-					try {
-						concepts = label.getRelatedConcepts();
-					} catch (Exception e) {
-						logger.info("exception {} for label drugName = {}", new Object[] { e, drugName });
+					Concept found = null;
+					Iterable<Concept> concepts = label.getRelatedConcepts();
+					for (Concept concept : concepts) {
+						
 					}
-					if (!CollectionUtils.isEmpty(concepts)) {
+					if (concepts != null) {
 						if (concepts.size() == 1) {
 							for (Concept concept : concepts) {
 								Notation notation = null;

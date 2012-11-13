@@ -46,11 +46,11 @@ public class UmlsToStoreWriter {
 		// writeRlspsBetweenConceptSchemes();
 		// System.out.println("5555555555555555555555555");
 		// writeConcepts();
-		System.out.println("666666666666666666666666");
-		writeRlspsBetweenConceptsAndSchemes();
+//		System.out.println("666666666666666666666666");
+//		writeRlspsBetweenConceptsAndSchemes();
 		System.out.println("77777777777777777777777");
-		// writeRlspsBetweenConcepts();
-		// System.out.println("8888888888888888888888888");
+		 writeRlspsBetweenConcepts();
+		 System.out.println("8888888888888888888888888");
 	}
 
 	public void writeConcepts() throws SQLException {
@@ -569,7 +569,7 @@ public class UmlsToStoreWriter {
 			uniqueRelaStmt.close();
 			uniqueRelaConn.close();
 		}
-		System.out.println("check complete begining inserts");
+		System.out.println("RELA check complete begining inserts");
 		Connection conceptRlspConn = dataSource.getConnection();
 		Statement conceptRlspStmt = conceptRlspConn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
 				java.sql.ResultSet.CONCUR_READ_ONLY);
