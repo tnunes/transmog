@@ -1,5 +1,7 @@
 package org.biosemantics.wsd.datasource.umls;
 
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -26,6 +28,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
+
+import au.com.bytecode.opencsv.CSVReader;
 
 @Component
 public class UmlsToStoreWriter {
@@ -344,6 +348,171 @@ public class UmlsToStoreWriter {
 
 	}
 
+	public void createPredicatesForConcepts() throws SQLException {
+		Map<String, Long> predicateMap = new HashMap<String, Long>();
+		Connection uniqueRelConn = dataSource.getConnection();
+		Statement uniqueRelStmt = uniqueRelConn.createStatement();
+		ResultSet uniqueRelRs = uniqueRelStmt.executeQuery(GET_ALL_REL);
+		Transaction tx1 = template.getGraphDatabaseService().beginTx();
+		try {
+			while (uniqueRelRs.next()) {
+				String rel = uniqueRelRs.getString("REL");
+				Notation notation = notationRepository.save(new Notation(NotationSourceConstant.UMLS.toString(), rel));
+				Concept concept = conceptRepository.save(new Concept(ConceptType.PREDICATE));
+				concept.addNotationIfNoneExists(template, notation, MRREL);
+				// Concept concept =
+				// notationRepository.getRelatedConcept(NotationSourceConstant.UMLS.toString(),
+				// rel);
+				predicateMap.put(rel, concept.getNodeId());
+			}
+			uniqueRelRs.close();
+			tx1.success();
+			tx1.finish();
+		} finally {
+			uniqueRelStmt.close();
+			uniqueRelConn.close();
+		}
+		System.out.println("created all distinct rel predicates, now checking is all RELA predicates are available");
+		Connection uniqueRelaConn = dataSource.getConnection();
+		Statement uniqueRelaStmt = uniqueRelaConn.createStatement();
+		ResultSet uniqueRelaRs = uniqueRelaStmt.executeQuery(GET_ALL_RELA);
+		Transaction tx2 = template.getGraphDatabaseService().beginTx();
+		try {
+			while (uniqueRelaRs.next()) {
+				String rela = uniqueRelaRs.getString("RELA");
+				if (!StringUtils.isEmpty(rela)) {
+					Iterable<Concept> concepts = labelRepository.getLabel(rela, "ENG").getRelatedConcepts();
+					Concept concept = null;
+					for (Concept foundConcept : concepts) {
+						if (foundConcept.getType() == ConceptType.PREDICATE) {
+							concept = foundConcept;
+						}
+					}
+					if (concept == null || concept.getType() != ConceptType.PREDICATE) {
+						throw new IllegalStateException(
+								"concept cannot be null or not a predicate for predicate rela = " + rela + " concept:"
+										+ concept);
+					} else {
+						predicateMap.put(rela, concept.getNodeId());
+					}
+				}
+			}
+			uniqueRelaRs.close();
+			tx2.success();
+			tx2.finish();
+		} finally {
+			uniqueRelaStmt.close();
+			uniqueRelaConn.close();
+		}
+	}
+
+	public void writeRlspsBetweenConceptsFromCsvFile(String file) throws IOException {
+		Map<String, Long> predicateMap = new HashMap<String, Long>();
+		Map<String, Long> cuiMap = new HashMap<String, Long>();// 2669192
+		CSVReader reader = new CSVReader(new FileReader(file));
+		String[] nextLine;
+		Transaction tx = template.getGraphDatabaseService().beginTx();
+		int ctr = 0;
+		int totalLines = 0;
+		while ((nextLine = reader.readNext()) != null) {
+			if (nextLine.length == 4) {
+				if (++totalLines % txSize == 0) {
+					System.out.println("millis:" + System.currentTimeMillis() + " lines:" + totalLines);
+				}
+				String rela = nextLine[3].trim();
+				String rel = nextLine[2].trim();
+				boolean useRel = false;
+				if (StringUtils.isBlank(rela) || rela.equalsIgnoreCase("N")) {
+					useRel = true;
+				}
+				// rlsps in mrrel are CUI2 to CUI1
+				String sourceCui = nextLine[1].trim();
+				String targetCui = nextLine[0].trim();
+				if (ignoredCuiReader.isIgnored(sourceCui) || ignoredCuiReader.isIgnored(targetCui)) {
+					continue;
+				}
+				Long predNodeId = null;
+				if (useRel) {
+					if (predicateMap.containsKey(rel)) {
+						predNodeId = predicateMap.get(rel);
+					} else {
+						Notation predNotation = notationRepository.findByPropertyValue("code", rel);
+						if (predNotation != null) {
+							for (Concept concept : predNotation.getRelatedConcepts()) {
+								if (concept.getType() == ConceptType.PREDICATE) {
+									predNodeId = concept.getNodeId();
+									predicateMap.put(rel, predNodeId);
+									break;
+								}
+							}
+						}
+					}
+				} else {
+					if (predicateMap.containsKey(rela)) {
+						predNodeId = predicateMap.get(rela);
+					} else {
+						Label predLabel = labelRepository.findByPropertyValue("text", rela);
+						if (predLabel != null) {
+							for (Concept concept : predLabel.getRelatedConcepts()) {
+								if (concept.getType() == ConceptType.PREDICATE) {
+									predNodeId = concept.getNodeId();
+									predicateMap.put(rela, predNodeId);
+									break;
+								}
+							}
+						}
+					}
+				}
+				Long sourceNodeId = null;
+				if (cuiMap.containsKey(sourceCui)) {
+					sourceNodeId = cuiMap.get(sourceCui);
+				} else {
+					Notation srcNotation = notationRepository.findByPropertyValue("code", sourceCui);
+					if (srcNotation != null) {
+						for (Concept concept : srcNotation.getRelatedConcepts()) {
+							if (concept.getType() == ConceptType.CONCEPT) {
+								sourceNodeId = concept.getNodeId();
+								cuiMap.put(sourceCui, sourceNodeId);
+								break;
+							}
+						}
+					}
+				}
+				Long targetNodeId = null;
+				if (cuiMap.containsKey(targetCui)) {
+					targetNodeId = cuiMap.get(targetCui);
+				} else {
+					Notation targetNotation = notationRepository.findByPropertyValue("code", targetCui);
+					if (targetNotation != null) {
+						for (Concept concept : targetNotation.getRelatedConcepts()) {
+							if (concept.getType() == ConceptType.CONCEPT) {
+								targetNodeId = concept.getNodeId();
+								cuiMap.put(targetCui, targetNodeId);
+							}
+						}
+					}
+				}
+				if (sourceNodeId != null && targetNodeId != null && predNodeId != null) {
+					Concept srcConcept = conceptRepository.findOne(sourceNodeId);
+					Concept targetConcept = conceptRepository.findOne(targetNodeId);
+					srcConcept.addRelationshipIfNoBidirectionalRlspExists(template, targetConcept,
+							predNodeId.toString(), 0, MRREL);
+				} else {
+					System.err.println("sourceCui:" + sourceCui + " targetCui:" + targetCui + " rel" + rel + " rela:"
+							+ rela);
+				}
+				if (++ctr % txSize == 0) {
+					tx.success();
+					tx.finish();
+					tx = template.getGraphDatabaseService().beginTx();
+					System.out.println("millis:" + System.currentTimeMillis() + " ctr:" + ctr);
+				}
+			}
+		}
+		tx.success();
+		tx.finish();
+	}
+
 	public void writeRlspsBetweenConcepts() throws SQLException {
 		Map<String, Long> predicateMap = new HashMap<String, Long>();
 		Connection uniqueRelConn = dataSource.getConnection();
@@ -542,7 +711,7 @@ public class UmlsToStoreWriter {
 	private static final String GET_ALL_REL = "select DISTINCT(REL) from MRREL";// ???
 	private static final String GET_ALL_RELA = "select DISTINCT(RELA) from MRREL";// ???
 	private static final String GET_RLSP_CONCEPTS = "select CUI1, CUI2, REL, RELA from MRREL where CUI1 != CUI2";// ???
-	private static final String GET_CONCEPT_PREDICATES = "select VALUE, EXPL from MRDOC where DOCKEY = \"RELA\" and type = \"rela_inverse\" AND VALUE IS NOT NULL";//623
+	private static final String GET_CONCEPT_PREDICATES = "select VALUE, EXPL from MRDOC where DOCKEY = \"RELA\" and type = \"rela_inverse\" AND VALUE IS NOT NULL";// 623
 	private static final String GET_ALL_CONCEPT_SCHEME_RLSPS = "SELECT * FROM SRSTRE1 WHERE UI1 != UI3 AND UI1 IN (SELECT UI FROM SRDEF WHERE RT=\"STY\") AND UI3 IN (SELECT UI FROM SRDEF WHERE RT=\"STY\")";// 6371
 	private static final Logger logger = LoggerFactory.getLogger(UmlsToStoreWriter.class);
 	/**
