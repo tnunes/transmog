@@ -127,8 +127,8 @@ public class PubmedFileRlspWriter {
 					srcConcept.addRelationshipIfNoBidirectionalRlspExists(template, targetConcept,
 							predNodeId.toString(), 0, MRREL);
 				} else {
-					System.err.println("sourceCui:" + sourceCui + " targetCui:" + targetCui + " rel" + rel + " rela:"
-							+ rela);
+//					System.err.println("sourceCui:" + sourceCui + " targetCui:" + targetCui + " rel" + rel + " rela:"
+//							+ rela);
 				}
 				if (++ctr % txSize == 0) {
 					tx.success();
@@ -206,8 +206,8 @@ public class PubmedFileRlspWriter {
 								System.out.println("millis:" + System.currentTimeMillis() + " ctr:" + ctr);
 							}
 						} else {
-							System.err.println("src:" + srcCui + ":" + srcConceptNodeId + " pred:" + predicateText
-									+ ":" + predConceptNodeId + " tgt:" + tgtCui + ":" + tgtConceptNodeId);
+//							System.err.println("src:" + srcCui + ":" + srcConceptNodeId + " pred:" + predicateText
+//									+ ":" + predConceptNodeId + " tgt:" + tgtCui + ":" + tgtConceptNodeId);
 						}
 					}
 				} else {
