@@ -1,7 +1,6 @@
 package org.biosemantics.conceptstore.domain;
 
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.Relationship;
 import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.GraphId;
 import org.springframework.data.neo4j.annotation.Indexed;

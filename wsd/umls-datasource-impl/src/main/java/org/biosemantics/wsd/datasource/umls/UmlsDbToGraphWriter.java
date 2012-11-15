@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.core.task.*;
 
 public class UmlsDbToGraphWriter {
 
@@ -13,15 +14,14 @@ public class UmlsDbToGraphWriter {
 	public static void main(String[] args) throws SQLException, IOException {
 		applicationContext = new ClassPathXmlApplicationContext(new String[] { "umls-import-context.xml" });
 		applicationContext.registerShutdownHook();
-		UmlsToStoreWriter umlsToStoreWriter = applicationContext.getBean(UmlsToStoreWriter.class);
-		PubmedFileRlspWriter pubmedFileRlspWriter = applicationContext.getBean(PubmedFileRlspWriter.class);
-//		umlsToStoreWriter.createPredicatesForConcepts();
-//		pubmedFileRlspWriter
-//				.createMissingPredicates("/home/bharat/code/git/transmog/wsd/umls-datasource-impl/src/main/resources/predicate_pubmed_all.csv");
-		pubmedFileRlspWriter.addPubmedRelationships(new File("/home/bharat/Erik"));
-		System.out.println("DONE ERIK!");
-		pubmedFileRlspWriter.writeRlspsBetweenConceptsFromCsvFile("/home/bharat/result.csv");
-		System.out.println("DONE MRREL!");
+		PubmedFileImporter pubmedFileImporter = applicationContext.getBean(PubmedFileImporter.class);
+		TaskExecutor taskExecutor = applicationContext.getBean(TaskExecutor.class);
+
+		MultithreadedFileImport multithreadedFileImport = new MultithreadedFileImport(taskExecutor, pubmedFileImporter);
+		multithreadedFileImport.setFolder(new File("/Users/bhsingh/code/pubmed"));
+		multithreadedFileImport.createCache();
+		multithreadedFileImport.fire();
+
 	}
 
 }

@@ -17,13 +17,7 @@
 		<property name="password" value="${jdbc.password}" />
 	</bean>
 
-
-	<bean id="multithreadedFileImport" class="org.biosemantics.wsd.datasource.umls.MultithreadedFileImport">
-		<constructor-arg ref="taskExecutor" type="org.springframework.core.task.TaskExecutor"></constructor-arg>
-		<constructor-arg ref="pubmedGraphFileImporter" type="org.biosemantics.wsd.datasource.umls.GraphFileImporter"></constructor-arg>
-	</bean>
-
-	<bean id="pubmedGraphFileImporter" class="org.biosemantics.wsd.datasource.umls.PubmedGraphFileImporter" />
+	<bean id="pubmedFileImporter" class="org.biosemantics.wsd.datasource.umls.PubmedFileImporter" />
 
 	<bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
 		<property name="corePoolSize" value="10" />
