@@ -1,22 +1,17 @@
 package org.biosemantics.conceptstore.domain;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-import org.apache.commons.lang.StringUtils;
-import org.springframework.data.neo4j.annotation.EndNode;
-import org.springframework.data.neo4j.annotation.GraphId;
-import org.springframework.data.neo4j.annotation.RelationshipEntity;
-import org.springframework.data.neo4j.annotation.StartNode;
+import org.apache.commons.lang.*;
+import org.springframework.data.neo4j.annotation.*;
 
-import com.google.common.base.Objects;
+import com.google.common.base.*;
 
 @RelationshipEntity(type = "HAS_LABEL", useShortNames = true)
 public class HasLabel {
 
 	public HasLabel() {
 		super();
-		this.sources = new ArrayList<String>();
 	}
 
 	public Concept getConcept() {
@@ -39,18 +34,18 @@ public class HasLabel {
 		this.type = type;
 	}
 
-	public List<String> getSources() {
+	public Set<String> getSources() {
 		// returning coppied list: effective java
 		if (sources != null && !sources.isEmpty()) {
-			return new ArrayList<String>(sources);
+			return new HashSet<String>(sources);
 		}
-		return new ArrayList<String>();
+		return new HashSet<String>();
 	}
 
 	public void addSources(String... sources) {
 		if (sources != null) {
 			if (this.sources == null) {
-				this.sources = new ArrayList<String>();
+				this.sources = new HashSet<String>();
 			}
 			for (String source : sources) {
 				if (!StringUtils.isBlank(source)) {
@@ -81,7 +76,7 @@ public class HasLabel {
 	@EndNode
 	private Label label;
 	private LabelType type;
-	private List<String> sources;
+	private Set<String> sources;
 	@GraphId
 	private Long relationshipId;
 

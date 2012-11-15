@@ -1,7 +1,7 @@
 package org.biosemantics.conceptstore.domain;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.data.neo4j.annotation.EndNode;
@@ -31,18 +31,18 @@ public class Rlsp {
 		return strength;
 	}
 
-	public List<String> getSources() {
-		// returning coppied list: effective java
+	public Set<String> getSources() {
+		// returning copied Set: effective java
 		if (sources != null && !sources.isEmpty()) {
-			return new ArrayList<String>(sources);
+			return new HashSet<String>(sources);
 		}
-		return new ArrayList<String>();
+		return new HashSet<String>();
 	}
 
 	public void addSources(String... sources) {
 		if (sources != null) {
 			if (this.sources == null) {
-				this.sources = new ArrayList<String>();
+				this.sources = new HashSet<String>();
 			}
 			for (String source : sources) {
 				if (!StringUtils.isBlank(source)) {
@@ -86,7 +86,7 @@ public class Rlsp {
 	@EndNode
 	private Concept toConcept;
 	private int strength;
-	private List<String> sources = new ArrayList<String>();
+	private Set<String> sources;
 	@GraphId
 	private Long relationshipId;
 
