@@ -21,7 +21,6 @@ public class UmlsDbToGraphWriter {
 		multithreadedFileImport.setFolder(new File("/Users/bhsingh/code/pubmed"));
 		multithreadedFileImport.createCache();
 		multithreadedFileImport.fire();
-
 	}
 
 }
