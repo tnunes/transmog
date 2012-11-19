@@ -32,7 +32,6 @@ import org.springframework.stereotype.Component;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
-@Component
 public class PubmedFileRlspWriter {
 
 	private File inputFile;

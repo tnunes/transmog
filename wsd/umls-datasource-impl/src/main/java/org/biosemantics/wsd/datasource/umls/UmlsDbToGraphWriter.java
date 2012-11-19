@@ -1,11 +1,9 @@
 package org.biosemantics.wsd.datasource.umls;
 
-import java.io.File;
-import java.io.IOException;
-import java.sql.SQLException;
+import java.io.*;
+import java.sql.*;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.core.task.*;
+import org.springframework.context.support.*;
 
 public class UmlsDbToGraphWriter {
 
@@ -14,13 +12,9 @@ public class UmlsDbToGraphWriter {
 	public static void main(String[] args) throws SQLException, IOException {
 		applicationContext = new ClassPathXmlApplicationContext(new String[] { "umls-import-context.xml" });
 		applicationContext.registerShutdownHook();
-		PubmedFileImporter pubmedFileImporter = applicationContext.getBean(PubmedFileImporter.class);
-		TaskExecutor taskExecutor = applicationContext.getBean(TaskExecutor.class);
-
-		MultithreadedFileImport multithreadedFileImport = new MultithreadedFileImport(taskExecutor, pubmedFileImporter);
-		multithreadedFileImport.setFolder(new File("/Users/bhsingh/code/pubmed"));
-		multithreadedFileImport.createCache();
-		multithreadedFileImport.fire();
+		ConceptWriter conceptWriter = applicationContext.getBean(ConceptWriter.class);
+		conceptWriter.writeSemanticTypes();
+		conceptWriter.writeConcepts();
 	}
 
 }

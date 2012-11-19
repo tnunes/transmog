@@ -1,19 +1,13 @@
 package org.biosemantics.wsd.datasource.umls;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
+import org.slf4j.*;
 
-import au.com.bytecode.opencsv.CSVReader;
+import au.com.bytecode.opencsv.*;
 
-@Component
+
 public class SemanticTypeConceptPredicateMapper {
 
 	public void init() throws IOException {

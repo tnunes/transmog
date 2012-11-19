@@ -31,7 +31,6 @@ import org.springframework.stereotype.Component;
 
 import au.com.bytecode.opencsv.CSVReader;
 
-@Component
 public class UmlsToStoreWriter {
 
 	public void writeUmlsToStore() throws SQLException {

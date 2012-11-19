@@ -46,13 +46,11 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>${slf4j.version}</version>
 		</dependency>
-		<!-- <dependency> -->
-		<!-- <groupId>ch.qos.logback</groupId> -->
-		<!-- <artifactId>logback-classic</artifactId> -->
-		<!-- <version>${logback.version}</version> -->
-		<!-- <type>jar</type> -->
-		<!-- <scope>compile</scope> -->
-		<!-- </dependency> -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>${logback.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
