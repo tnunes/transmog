@@ -25,6 +25,7 @@
 		<module>umls-datasource-impl</module>
 		<module>wsd-script-impl</module>
 		<module>lodd-datasource-impl</module>
+		<module>conceptstore-client</module>
 	</modules>
 	<build>
 		<plugins>
