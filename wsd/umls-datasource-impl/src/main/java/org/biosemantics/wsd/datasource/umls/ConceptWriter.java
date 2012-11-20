@@ -34,6 +34,8 @@ public class ConceptWriter {
 		notationIndex.setCacheCapacity("code", 100000);
 		conceptIndex = indexProvider.nodeIndex("Concept", MapUtil.stringMap("type", "exact"));
 		notationIndex.setCacheCapacity("type", 100000);
+		relationshipTypeIndex = indexProvider.relationshipIndex("type", MapUtil.stringMap("type", "exact"));
+		relationshipTypeIndex.setCacheCapacity("type", 100000);
 	}
 
 	public void writeSemanticTypes() throws SQLException {
@@ -227,7 +229,7 @@ public class ConceptWriter {
 				Long labelNode = null;
 				if (hits != null && hits.size() > 0) {
 					labelNode = hits.getSingle();
-					logger.info("{} {}", new Object[] { str, hits.getSingle() });
+					logger.info("{} {}", new Object[] { str, labelNode });
 				} else {
 					nodeProperties.put("language", ENG);
 					nodeProperties.put("text", str);
@@ -263,7 +265,7 @@ public class ConceptWriter {
 				ResultSet rs = pstmt.executeQuery();
 				while (rs.next()) {
 					String sui = rs.getString("SUI");
-					rlspProperties.put("type", LabelType.ALTERNATE);
+					rlspProperties.put("type", LabelType.ALTERNATE.toString());
 					Iterable<BatchRelationship> batchRlsps = inserter.getRelationships(hit);
 					Long conceptNode = null;
 					for (BatchRelationship batchRelationship : batchRlsps) {
@@ -607,6 +609,8 @@ public class ConceptWriter {
 							missingCuis.add(srcCui);
 						}
 
+					} else {
+						logger.error("ignored srccui = {} or tgtcui = {}", new Object[] { srcCui, tgtCui });
 					}
 				}
 			}
@@ -647,6 +651,7 @@ public class ConceptWriter {
 	private BatchInserterIndex labelIndex;
 	private BatchInserterIndex notationIndex;
 	private BatchInserterIndex conceptIndex;
+	private BatchInserterIndex relationshipTypeIndex;
 	@Autowired
 	private DataSource dataSource;
 	@Autowired
@@ -657,7 +662,7 @@ public class ConceptWriter {
 	private Map<String, Long> suiMap = new HashMap<String, Long>();
 
 	private static final String GET_ALL_DISTINCT_CUIS = "select distinct(CUI) from MRCONSO";
-	private static final String GET_ALL_DISTINCT_SUIS = "select distinct(SUI), STR from MRCONSO";
+	private static final String GET_ALL_DISTINCT_SUIS = "select distinct(SUI), STR from MRCONSO";//
 	private static final String SUI_FOR_CUI = "select DISTINCT(SUI) from MRCONSO WHERE CUI = ?";
 	// SemanticType
 	private static final String GET_ALL_ST_DEF = "select * from SRDEF";
