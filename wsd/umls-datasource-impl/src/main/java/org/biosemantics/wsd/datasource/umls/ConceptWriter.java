@@ -1,11 +1,13 @@
 package org.biosemantics.wsd.datasource.umls;
 
+import java.io.*;
 import java.sql.*;
 import java.util.*;
 import java.util.Map.Entry;
 
 import javax.sql.*;
 
+import org.apache.commons.io.*;
 import org.apache.commons.lang.*;
 import org.biosemantics.conceptstore.domain.*;
 import org.neo4j.graphdb.*;
@@ -16,6 +18,8 @@ import org.neo4j.unsafe.batchinsert.BatchInserterIndex;
 import org.neo4j.unsafe.batchinsert.BatchInserterIndexProvider;
 import org.slf4j.*;
 import org.springframework.beans.factory.annotation.*;
+
+import au.com.bytecode.opencsv.*;
 
 public class ConceptWriter {
 
@@ -111,7 +115,6 @@ public class ConceptWriter {
 					// rlsps done
 					uiNodeMap.put(notationCode, conceptNode);
 				}
-				logger.debug("{}", ++ctr);
 			}
 			rs.close();
 		} finally {
@@ -153,15 +156,17 @@ public class ConceptWriter {
 		linkSuiAndCui();
 	}
 
-	private static LabelType getLabelType(String ts, String isPref, String stt) {
-		if (ts.equalsIgnoreCase("P") && isPref.equalsIgnoreCase("Y") && stt.equalsIgnoreCase("PF")) {
-			return LabelType.PREFERRED;
-		} else {
-			return LabelType.ALTERNATE;
-		}
-	}
+	// private static LabelType getLabelType(String ts, String isPref, String
+	// stt) {
+	// if (ts.equalsIgnoreCase("P") && isPref.equalsIgnoreCase("Y") &&
+	// stt.equalsIgnoreCase("PF")) {
+	// return LabelType.PREFERRED;
+	// } else {
+	// return LabelType.ALTERNATE;
+	// }
+	// }
 
-	public void writeCuis() throws SQLException {
+	private void writeCuis() throws SQLException {
 		Connection connection = dataSource.getConnection();
 		Statement stmt = connection.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
 				java.sql.ResultSet.CONCUR_READ_ONLY);
@@ -206,7 +211,7 @@ public class ConceptWriter {
 		logger.info("cuis inserted:{}", ctr);
 	}
 
-	public void writeSuis() throws SQLException {
+	private void writeSuis() throws SQLException {
 		Connection connection = dataSource.getConnection();
 		Statement stmt = connection.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
 				java.sql.ResultSet.CONCUR_READ_ONLY);
@@ -243,7 +248,7 @@ public class ConceptWriter {
 		logger.info("6427110 suis inserted:{}", suiMap.size());
 	}
 
-	public void linkSuiAndCui() throws SQLException {
+	private void linkSuiAndCui() throws SQLException {
 		Connection conn = dataSource.getConnection();
 		PreparedStatement pstmt = conn.prepareStatement(SUI_FOR_CUI);
 		Map<String, Object> rlspProperties = new HashMap<String, Object>();
@@ -263,7 +268,7 @@ public class ConceptWriter {
 					Long conceptNode = null;
 					for (BatchRelationship batchRelationship : batchRlsps) {
 						if (batchRelationship.getType().name().equalsIgnoreCase(RlspType.HAS_NOTATION.toString())) {
-							conceptNode = batchRelationship.getEndNode();
+							conceptNode = batchRelationship.getStartNode();
 							break;
 						}
 					}
@@ -284,168 +289,335 @@ public class ConceptWriter {
 		logger.info("sui and cui mapped cui:{}", ctr);
 	}
 
-	public void writeAndMapConceptPredicates() throws SQLException {
+	public void writeRelaPredicates() throws SQLException {
 		Connection getConceptPredicateConn = dataSource.getConnection();
 		Statement getConceptRedicatesStmt = getConceptPredicateConn.createStatement();
+		Map<String, Object> nodeProperties = new HashMap<String, Object>();
+		Map<String, Object> rlspProperties = new HashMap<String, Object>();
 		try {
 			ResultSet rs = getConceptRedicatesStmt.executeQuery(GET_ALL_RELA_PREDICATES);
 			while (rs.next()) {
 				String text = rs.getString("VALUE");
-				String invText = rs.getString("EXPL");
+
 				Long textNode = null;
 				IndexHits<Long> textHits = labelIndex.get("text", text);
 				if (textHits != null && textHits.size() > 0) {
 					textNode = textHits.getSingle();
 				}
+				String invText = rs.getString("EXPL");
+
 				Long invTextNode = null;
 				IndexHits<Long> invTextHits = labelIndex.get("text", invText);
 				if (invTextHits != null && invTextHits.size() > 0) {
 					invTextNode = invTextHits.getSingle();
 				}
-				if(textNode == null && invTextNode == null){
-					//create predicate
-				}else if(textNode == null || invTextNode == null){
-					// if linked to predicate add label
-					
-					// if not linked to predicate: create predicate
-					
-				}else{
-					//if linked  to predicate do nothing
-					
-					//if not linked to predicate - create predicate and link
-				}
-				
+				if (textNode == null && invTextNode == null) {
 
-				Long invTextNode = null;
+					// create predicate and labels
+					nodeProperties.put("language", ENG);
+					nodeProperties.put("text", text);
+					nodeProperties.put("id", text + ENG);
+					Long newTextNode = inserter.createNode(nodeProperties);
+					labelIndex.add(newTextNode, nodeProperties);
+					nodeProperties.clear();
 
-				Label label = labelRepository.getLabel(text, "ENG");
-				if (label == null) {
-					label = labelRepository.getLabel(invText, "ENG");
-				}
-				Concept conceptPredicate = null;
-				// no label with text/inv text exists create new predicate
-				if (label == null) {
-					Label labelForText = labelRepository.save(new Label(text, "ENG"));
-					Label labelForInvText = labelRepository.save(new Label(invText, "ENG"));
-					conceptPredicate = conceptRepository.save(new Concept(ConceptType.PREDICATE));
-					conceptPredicate.addLabelIfNoneExists(template, labelForText, LabelType.PREFERRED, MRREL);
-					conceptPredicate.addLabelIfNoneExists(template, labelForInvText, LabelType.ALTERNATE, MRREL);
+					Long newInvTextNode = null;
+					if (!text.equalsIgnoreCase(invText)) {
+						nodeProperties.put("language", ENG);
+						nodeProperties.put("text", invText);
+						nodeProperties.put("id", invText + ENG);
+						newInvTextNode = inserter.createNode(nodeProperties);
+						labelIndex.add(newInvTextNode, nodeProperties);
+						nodeProperties.clear();
+					}
+
+					nodeProperties.put("type", ConceptType.PREDICATE.toString());
+					Long conceptNode = inserter.createNode(nodeProperties);
+					conceptIndex.add(conceptNode, nodeProperties);
+					nodeProperties.clear();
+
+					rlspProperties.put("sources", new String[] { SRDEF });
+					rlspProperties.put("type", LabelType.ALTERNATE.toString());
+					inserter.createRelationship(conceptNode, newTextNode, hasLabel, rlspProperties);
+					if (!text.equalsIgnoreCase(invText)) {
+						inserter.createRelationship(conceptNode, newInvTextNode, hasLabel, rlspProperties);
+					}
+					rlspProperties.clear();
+
+				} else if (textNode == null || invTextNode == null) {
+					String missingLabelText = text;
+					if (!StringUtils.isBlank(missingLabelText)) {
+						missingLabelText = invText;
+					}
+					Long availableNode = textNode;
+					if (availableNode == null) {
+						availableNode = invTextNode;
+					}
+					nodeProperties.put("language", ENG);
+					nodeProperties.put("text", missingLabelText);
+					nodeProperties.put("id", missingLabelText + ENG);
+					Long newTextNode = inserter.createNode(nodeProperties);
+					labelIndex.add(newTextNode, nodeProperties);
+					nodeProperties.clear();
+
+					Iterable<BatchRelationship> batchRlsps = inserter.getRelationships(availableNode);
+					Long conceptNode = null;
+					for (BatchRelationship batchRelationship : batchRlsps) {
+						if (batchRelationship.getType().name().equalsIgnoreCase(RlspType.HAS_LABEL.toString())) {
+							conceptNode = batchRelationship.getStartNode();
+							break;
+						}
+					}
+
+					rlspProperties.put("sources", new String[] { SRDEF });
+					rlspProperties.put("type", LabelType.ALTERNATE.toString());
+					inserter.createRelationship(conceptNode, newTextNode, hasLabel, rlspProperties);
+					rlspProperties.clear();
+
 				} else {
-					for (Concept relatedConcept : label.getRelatedConcepts()) {
-						if (relatedConcept.getType() == ConceptType.PREDICATE) {
-							conceptPredicate = relatedConcept;
-						}
-					}
-				}
-				Concept preConcept;
-				// check if predicate maps to semantic type predicate
-				SemanticTypePredicate semanticTypePredicate = predicateMapper.getMappedSemanticTypePredicate(text);
-				if (semanticTypePredicate == null) {
-					semanticTypePredicate = predicateMapper.getMappedSemanticTypePredicate(invText);
-				}
-				// if mapping not found
-				if (semanticTypePredicate == null) {
-					preConcept = getOrCreatePredicateConcept(text, invText);
-				}
-				if (semanticTypePredicate != null) {
-					// found
-					if (semanticTypePredicate.getRelationship() == SemanticTypePredicate.EQ_PROP) {
-						// add the labels to the ST predicate
-						Label labelForText = labelRepository.save(new Label(text, "ENG"));
-						Label labelForInvText = labelRepository.save(new Label(invText, "ENG"));
-						Label predicateLabel = labelRepository.getLabel(semanticTypePredicate.getRelatedTo(), "ENG");
-						Iterable<Concept> concepts = predicateLabel.getRelatedConcepts();
-						for (Concept concept : concepts) {
-							if (concept.getType() == ConceptType.PREDICATE) {
-								concept.addLabelIfNoneExists(template, labelForText, LabelType.ALTERNATE,
-										"ERIK_TSV_FILE");
-								concept.addLabelIfNoneExists(template, labelForInvText, LabelType.ALTERNATE,
-										"ERIK_TSV_FILE");
-							}
-						}
-					} else if (semanticTypePredicate.getRelationship() == SemanticTypePredicate.SUB_PROP) {
-						// ConceptType.PREDICATE
-						preConcept = getOrCreatePredicateConcept(text, invText);
-						Label predicateLabel = labelRepository.getLabel(semanticTypePredicate.getRelatedTo(), "ENG");
-						Iterable<Concept> concepts = predicateLabel.getRelatedConcepts();
-						long relationshipType = notationRepository.getRelatedConcept(
-								NotationSourceConstant.UMLS.toString(), IS_A).getNodeId();
-						for (Concept predicateConcept : concepts) {
-							if (predicateConcept.getType() == ConceptType.PREDICATE) {
-								predicateConcept.addRelationshipIfNoneExists(template, preConcept, ""
-										+ relationshipType, 0, "ERIK_TSV_FILE");
-							}
-						}
-					}
-				}
+					// if linked to predicate do nothing
+					// if not linked to predicate - create predicate and link
 
-				tx.success();
-				tx.finish();
+				}
+				labelIndex.flush();
+				notationIndex.flush();
 			}
-			rs.close();
 		} finally {
 			getConceptRedicatesStmt.close();
 			getConceptPredicateConn.close();
 		}
+	}
+
+	public void mapRelaPredicatesToSemanticTypePredicates() throws SQLException {
+		Map<String, SemanticTypePredicate> mapping = predicateMapper.getMappingMap();
+		Map<String, Object> rlspProps = new HashMap<String, Object>();
+		rlspProps.put("sources", new String[] { ERIK_TSV_FILE });
+		for (Entry<String, SemanticTypePredicate> entry : mapping.entrySet()) {
+			String key = entry.getKey();
+			IndexHits<Long> fromHits = labelIndex.get("text", key);
+			Long fromHit = null;
+			if (fromHits != null && fromHits.size() > 0) {
+				if (fromHits.size() > 1) {
+					System.err.println("here");
+				}
+				fromHit = fromHits.getSingle();
+			}
+			if (entry.getValue().getRelatedTo() == null) {
+				System.out.println("here");
+			}
+			IndexHits<Long> toHits = labelIndex.get("text", entry.getValue().getRelatedTo());
+			Long toHit = null;
+			if (toHits != null && toHits.size() > 0) {
+				toHit = toHits.getSingle();
+			}
+
+			if (fromHit != null && toHit != null) {
+				if (entry.getValue().getRelationship() == SemanticTypePredicate.EQ_PROP) {
+					inserter.createRelationship(fromHit, toHit, sameAs, rlspProps);
+				} else {
+					inserter.createRelationship(fromHit, toHit, subPropOf, rlspProps);
+				}
+			} else {
+				logger.error("{} {}", new Object[] { fromHit, toHit });
+			}
+
+		}
+	}
+
+	public void writeRlspsBetweenConceptsAndSchemes() throws SQLException {
+		Connection conceptSchemeConn = dataSource.getConnection();
+		Statement conceptSchemeStmt = conceptSchemeConn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
+				java.sql.ResultSet.CONCUR_READ_ONLY);
+		conceptSchemeStmt.setFetchSize(Integer.MIN_VALUE);
+		Map<String, Object> rlspProps = new HashMap<String, Object>();
+		rlspProps.put("sources", new String[] { MRSTY });
+		ResultSet rs = conceptSchemeStmt.executeQuery(GET_RLSP_CONCEPT_SCHEME);
+		int ctr = 0;
+		try {
+			while (rs.next()) {
+				String cui = rs.getString("CUI");
+				if (ignoredCuiReader.isIgnored(cui)) {
+					continue;
+				}
+				String tui = rs.getString("TUI");
+				IndexHits<Long> cuiHits = notationIndex.get("code", cui);
+				Long cuiNotationNode = cuiHits.getSingle();
+				Long cuiConceptNode = null;
+				Iterable<BatchRelationship> batchRlsps = inserter.getRelationships(cuiNotationNode);
+				for (BatchRelationship batchRelationship : batchRlsps) {
+					if (batchRelationship.getType().name().equalsIgnoreCase(RlspType.HAS_NOTATION.toString())) {
+						cuiConceptNode = batchRelationship.getStartNode();
+						break;
+					}
+				}
+				IndexHits<Long> tuiHits = notationIndex.get("code", tui);
+				Long tuiNotationNode = tuiHits.getSingle();
+				Long tuiConceptNode = null;
+				Iterable<BatchRelationship> tuiRlsps = inserter.getRelationships(tuiNotationNode);
+				for (BatchRelationship batchRelationship : tuiRlsps) {
+					if (batchRelationship.getType().name().equalsIgnoreCase(RlspType.HAS_NOTATION.toString())) {
+						tuiConceptNode = batchRelationship.getStartNode();
+						break;
+					}
+				}
+				inserter.createRelationship(cuiConceptNode, tuiConceptNode, inScheme, rlspProps);
+				ctr++;
+			}
+			logger.info("{} concept to concept scheme rlsps created", ctr);
+		} finally {
+			conceptSchemeStmt.close();
+			conceptSchemeConn.close();
+		}
 
 	}
 
-	public void writeConceptPredicates() throws SQLException {
-		Map<String, Long> predicateMap = new HashMap<String, Long>();
-		Connection uniqueRelConn = dataSource.getConnection();
-		Statement uniqueRelStmt = uniqueRelConn.createStatement();
-		ResultSet uniqueRelRs = uniqueRelStmt.executeQuery(GET_ALL_REL);
+	public void writeRelPredicates() throws SQLException {
+
+	}
+
+	public void writeNotNullRelaRlsps() throws SQLException {
+		// load all predicates in map
+		// Map<String, Long> predicatesMap = new HashMap<String, Long>();
+
+		Connection connection = dataSource.getConnection();
+		Statement stmt = connection.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
+				java.sql.ResultSet.CONCUR_READ_ONLY);
+		stmt.setFetchSize(Integer.MIN_VALUE);
+		ResultSet rs = stmt.executeQuery(GET_NOT_NULL_RELA);
+		Map<String, Object> rlspProps = new HashMap<String, Object>();
+		rlspProps.put("sources", new String[] { MRREL });
 		try {
-			while (uniqueRelRs.next()) {
-				String rel = uniqueRelRs.getString("REL");
-				Notation notation = notationRepository.save(new Notation(NotationSourceConstant.UMLS.toString(), rel));
-				Concept concept = conceptRepository.save(new Concept(ConceptType.PREDICATE));
-				concept.addNotationIfNoneExists(template, notation, MRREL);
-				// Concept concept =
-				// notationRepository.getRelatedConcept(NotationSourceConstant.UMLS.toString(),
-				// rel);
-				predicateMap.put(rel, concept.getNodeId());
+			while (rs.next()) {
+				String cui1 = rs.getString("CUI1");
+				String cui2 = rs.getString("CUI2");
+				String rela = rs.getString("rela");
+				IndexHits<Long> cui1Hits = notationIndex.get("code", cui1);
+				Long cui1Node = cui1Hits.getSingle();
+				IndexHits<Long> cui2Hits = notationIndex.get("code", cui2);
+				Long cui2Node = cui2Hits.getSingle();
+				IndexHits<Long> indexHits = labelIndex.get("text", rela);
+				Long relaNode = indexHits.getSingle();
+				inserter.createRelationship(cui1Node, cui2Node, DynamicRelationshipType.withName(relaNode.toString()),
+						rlspProps);
+
 			}
-			uniqueRelRs.close();
-			tx1.success();
-			tx1.finish();
+			rs.close();
 		} finally {
-			uniqueRelStmt.close();
-			uniqueRelConn.close();
+			stmt.close();
+			connection.close();
 		}
-		System.out.println("created all distinct rel predicates, now checking is all RELA predicates are available");
-		Connection uniqueRelaConn = dataSource.getConnection();
-		Statement uniqueRelaStmt = uniqueRelaConn.createStatement();
-		ResultSet uniqueRelaRs = uniqueRelaStmt.executeQuery(GET_ALL_RELA);
-		Transaction tx2 = template.getGraphDatabaseService().beginTx();
+
+	}
+
+	public void writeMissingPubmedPredicates(String csvFile) throws IOException {
+		CSVReader csvReader = new CSVReader(new FileReader(csvFile));
+		List<String[]> lines = csvReader.readAll();
+		Map<String, Object> nodeProperties = new HashMap<String, Object>();
+		Map<String, Object> rlspProperties = new HashMap<String, Object>();
+		Map<String, Object> sources = new HashMap<String, Object>();
+		sources.put("sources", new String[] { ERIK_TSV_FILE });
+		logger.info("{} predicates read", lines.size());
+		int ctr = 0;
 		try {
-			while (uniqueRelaRs.next()) {
-				String rela = uniqueRelaRs.getString("RELA");
-				if (!StringUtils.isEmpty(rela)) {
-					Iterable<Concept> concepts = labelRepository.getLabel(rela, "ENG").getRelatedConcepts();
-					Concept concept = null;
-					for (Concept foundConcept : concepts) {
-						if (foundConcept.getType() == ConceptType.PREDICATE) {
-							concept = foundConcept;
+			for (String[] columns : lines) {
+				ctr++;
+				String predText = columns[0].trim();
+				IndexHits<Long> labelIndexHits = labelIndex.get("text", predText);
+				if (labelIndexHits != null && labelIndexHits.size() > 0) {
+					logger.info("existing predicate = {}", predText);
+				} else {
+					nodeProperties.put("language", ENG);
+					nodeProperties.put("text", predText);
+					nodeProperties.put("id", predText + ENG);
+					Long newTextNode = inserter.createNode(nodeProperties);
+					labelIndex.add(newTextNode, nodeProperties);
+					nodeProperties.clear();
+
+					nodeProperties.put("type", ConceptType.PREDICATE.toString());
+					Long conceptNode = inserter.createNode(nodeProperties);
+					conceptIndex.add(conceptNode, nodeProperties);
+					nodeProperties.clear();
+
+					rlspProperties.put("sources", new String[] { ERIK_TSV_FILE });
+					rlspProperties.put("type", LabelType.ALTERNATE.toString());
+					inserter.createRelationship(conceptNode, newTextNode, hasLabel, rlspProperties);
+					rlspProperties.clear();
+					if (predText.startsWith("neg_")) {
+						predText = predText.substring(4);
+						IndexHits<Long> hits = labelIndex.get("text", predText);
+						Long hit = null;
+						if (hits != null && hits.size() > 0) {
+							hit = hits.getSingle();
+							inserter.createRelationship(hit, conceptNode,
+									DynamicRelationshipType.withName(RlspType.IS_INVERSE_OF.name()), sources);
 						}
-					}
-					if (concept == null || concept.getType() != ConceptType.PREDICATE) {
-						throw new IllegalStateException(
-								"concept cannot be null or not a predicate for predicate rela = " + rela + " concept:"
-										+ concept);
-					} else {
-						predicateMap.put(rela, concept.getNodeId());
 					}
 				}
 			}
-			uniqueRelaRs.close();
-			tx2.success();
-			tx2.finish();
+			logger.info("predicates created: {}", ctr);
 		} finally {
-			uniqueRelaStmt.close();
-			uniqueRelaConn.close();
+			labelIndex.flush();
+			conceptIndex.flush();
+			csvReader.close();
 		}
+	}
 
+	public void writePubmedRlsps(File file, String encoding) throws IOException {
+		LineIterator iterator = FileUtils.lineIterator(file, encoding);
+		Set<String> missingCuis = new HashSet<String>();
+		Map<String, Object> sources = new HashMap<String, Object>();
+		int ctr = 0;
+		try {
+			while (iterator.hasNext()) {
+				String line = iterator.nextLine();
+				String[] columns = line.split(" ");
+				if (columns.length == 4) {
+					String srcCui = columns[0].trim();
+					String predicateText = columns[1].trim();
+					String tgtCui = columns[2].trim();
+					String pmid = columns[3].trim();
+					if (!ignoredCuiReader.isIgnored(srcCui) && !ignoredCuiReader.isIgnored(tgtCui)) {
+						IndexHits<Long> fromCuiHits = notationIndex.get("code", srcCui);
+						if (fromCuiHits != null && fromCuiHits.size() > 0) {
+							Long srcNodeId = fromCuiHits.getSingle();
+							IndexHits<Long> toCuiHits = notationIndex.get("code", tgtCui);
+							if (toCuiHits != null && toCuiHits.size() > 0) {
+								IndexHits<Long> labelHits = labelIndex.get("text", predicateText);
+								Long labelNode = labelHits.getSingle();
+								Long conceptNode = null;
+								Iterable<BatchRelationship> batchRlsps = inserter.getRelationships(labelNode);
+								for (BatchRelationship batchRelationship : batchRlsps) {
+									if (batchRelationship.getType().name()
+											.equalsIgnoreCase(RlspType.HAS_LABEL.toString())) {
+										conceptNode = batchRelationship.getStartNode();
+										break;
+									}
+								}
+
+								Long tgtNodeId = toCuiHits.getSingle();
+								sources.put("sources", new String[] { pmid });
+								inserter.createRelationship(srcNodeId, tgtNodeId,
+										DynamicRelationshipType.withName(String.valueOf(conceptNode)), sources);
+								sources.clear();
+								ctr++;
+							} else {
+								missingCuis.add(tgtCui);
+							}
+						} else {
+							missingCuis.add(srcCui);
+						}
+
+					}
+				}
+			}
+			//
+			logger.info("pubmed rlsps written {}", ctr);
+			for (String string : missingCuis) {
+				logger.error("{}", string);
+			}
+		} finally {
+			LineIterator.closeQuietly(iterator);
+		}
 	}
 
 	public void destroy() {
@@ -479,6 +651,8 @@ public class ConceptWriter {
 	private DataSource dataSource;
 	@Autowired
 	private IgnoredCuiReader ignoredCuiReader;
+	@Autowired
+	private SemanticTypeConceptPredicateMapper predicateMapper;
 
 	private Map<String, Long> suiMap = new HashMap<String, Long>();
 
@@ -490,12 +664,8 @@ public class ConceptWriter {
 	private static final String GET_ST_PREDICATE_HIERARCHY = "select DISTINCT(UI3), UI2 from SRSTRE1 where UI1 = ? and UI1 != UI3";
 
 	private static final String GET_RLSP_CONCEPT_SCHEME = "select CUI, TUI from MRSTY";// 2,151,295
-	private static final String GET_ALL_REL = "select DISTINCT(REL) from MRREL";// ???
-	private static final String GET_ALL_RELA = "select DISTINCT(RELA) from MRREL";// ???
-	private static final String GET_RLSP_CONCEPTS = "select CUI1, CUI2, REL, RELA from MRREL where CUI1 != CUI2";// ???
+	private static final String GET_NOT_NULL_RELA = "select CUI1, CUI2, RELA from MRREL where CUI1 != CUI2 AND RELA IS NOT NULL";// ???
 	private static final String GET_ALL_RELA_PREDICATES = "select VALUE, EXPL from MRDOC where DOCKEY = \"RELA\" and type = \"rela_inverse\" AND VALUE IS NOT NULL";// 623
-	private static final String GET_ALL_CONCEPT_SCHEME_RLSPS = "SELECT * FROM SRSTRE1 WHERE UI1 != UI3 AND UI1 IN (SELECT UI FROM SRDEF WHERE RT=\"STY\") AND UI3 IN (SELECT UI FROM SRDEF WHERE RT=\"STY\")";// 6371
-	private static final String GET_ALL_ST_PREDICATES = "select STY_RL, RIN, UI from SRDEF where RT=\"RL\"";// 54
 
 	private static final String UMLS_VERSION = "UMLS2012AA";
 	private static final String MRCONSO = UMLS_VERSION + "|MRCONSO";
@@ -504,8 +674,12 @@ public class ConceptWriter {
 	private static final String MRSTY = UMLS_VERSION + "|MRSTY";
 	private static final String MRREL = UMLS_VERSION + "|MRREL";
 	private static final String ENG = "ENG";
+	private static final String ERIK_TSV_FILE = "ERIK_TSV_FILE";
 
 	private static final Logger logger = LoggerFactory.getLogger(ConceptWriter.class);
 	private final RelationshipType hasLabel = DynamicRelationshipType.withName(RlspType.HAS_LABEL.toString());
 	private final RelationshipType hasNotation = DynamicRelationshipType.withName(RlspType.HAS_NOTATION.toString());
+	private final RelationshipType sameAs = DynamicRelationshipType.withName(RlspType.SAME_AS.toString());
+	private final RelationshipType subPropOf = DynamicRelationshipType.withName(RlspType.SUB_PROP_OF.toString());
+	private final RelationshipType inScheme = DynamicRelationshipType.withName(RlspType.IN_SCHEME.toString());
 }

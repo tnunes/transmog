@@ -14,7 +14,13 @@ public class UmlsDbToGraphWriter {
 		applicationContext.registerShutdownHook();
 		ConceptWriter conceptWriter = applicationContext.getBean(ConceptWriter.class);
 		conceptWriter.writeSemanticTypes();
+		conceptWriter.writeRelaPredicates();
+		conceptWriter.writeMissingPubmedPredicates("/Users/bhsingh/code/git/transmog/wsd/umls-datasource-impl/src/main/resources/predicate_pubmed_all.csv");
+		conceptWriter.mapRelaPredicatesToSemanticTypePredicates();
 		conceptWriter.writeConcepts();
+		conceptWriter.writeRlspsBetweenConceptsAndSchemes();
+		conceptWriter.writeNotNullRelaRlsps();
+		conceptWriter.writePubmedRlsps(new File("/Users/bhsingh/code/data/Erik"), "UTF-8");
 	}
 
 }
