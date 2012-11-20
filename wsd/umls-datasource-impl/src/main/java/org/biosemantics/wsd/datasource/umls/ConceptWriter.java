@@ -543,6 +543,7 @@ public class ConceptWriter {
 				}
 				logger.debug("{}", ctr);
 			}
+			logger.info("rela relationships added: {}", ctr);
 			rs.close();
 		} finally {
 			stmt.close();
