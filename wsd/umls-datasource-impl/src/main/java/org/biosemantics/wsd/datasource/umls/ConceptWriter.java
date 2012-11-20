@@ -42,7 +42,6 @@ public class ConceptWriter {
 		Connection conceptSchemeConnection = dataSource.getConnection();
 		Statement conceptSchemeStmt = conceptSchemeConnection.createStatement();
 		ResultSet rs = conceptSchemeStmt.executeQuery(GET_ALL_ST_DEF);
-		int ctr = 0;
 		Map<String, Object> nodeProperties = new HashMap<String, Object>();
 		Map<String, Object> rlspProperties = new HashMap<String, Object>();
 		Map<String, Long> uiNodeMap = new HashMap<String, Long>();
@@ -486,22 +485,63 @@ public class ConceptWriter {
 				java.sql.ResultSet.CONCUR_READ_ONLY);
 		stmt.setFetchSize(Integer.MIN_VALUE);
 		ResultSet rs = stmt.executeQuery(GET_NOT_NULL_RELA);
-		Map<String, Object> rlspProps = new HashMap<String, Object>();
-		rlspProps.put("sources", new String[] { MRREL });
+		Map<String, Object> sourcesMap = new HashMap<String, Object>();
+		sourcesMap.put("sources", new String[] { MRREL });
+		int ctr = 0;
 		try {
 			while (rs.next()) {
 				String cui1 = rs.getString("CUI1");
 				String cui2 = rs.getString("CUI2");
-				String rela = rs.getString("rela");
+				String rela = rs.getString("RELA");
+				if (ignoredCuiReader.isIgnored(cui1) || ignoredCuiReader.isIgnored(cui2)) {
+					continue;
+				}
+				Long srcConceptNode = null;
 				IndexHits<Long> cui1Hits = notationIndex.get("code", cui1);
-				Long cui1Node = cui1Hits.getSingle();
-				IndexHits<Long> cui2Hits = notationIndex.get("code", cui2);
-				Long cui2Node = cui2Hits.getSingle();
-				IndexHits<Long> indexHits = labelIndex.get("text", rela);
-				Long relaNode = indexHits.getSingle();
-				inserter.createRelationship(cui1Node, cui2Node, DynamicRelationshipType.withName(relaNode.toString()),
-						rlspProps);
+				if (cui1Hits != null && cui1Hits.size() == 1) {
+					Long srcNodeId = cui1Hits.getSingle();
+					Iterable<BatchRelationship> batchRlsps = inserter.getRelationships(srcNodeId);
+					for (BatchRelationship batchRelationship : batchRlsps) {
+						if (batchRelationship.getType().name().equalsIgnoreCase(RlspType.HAS_NOTATION.toString())) {
+							srcConceptNode = batchRelationship.getStartNode();
+							break;
+						}
+					}
+				} else {
+					continue;
+				}
 
+				Long tgtConceptNode = null;
+				IndexHits<Long> cui2Hits = notationIndex.get("code", cui2);
+				if (cui2Hits != null && cui2Hits.size() == 1) {
+					Long tgtNodeId = cui2Hits.getSingle();
+					Iterable<BatchRelationship> tgtNotationRlsps = inserter.getRelationships(tgtNodeId);
+					for (BatchRelationship batchRelationship : tgtNotationRlsps) {
+						if (batchRelationship.getType().name().equalsIgnoreCase(RlspType.HAS_NOTATION.toString())) {
+							tgtConceptNode = batchRelationship.getStartNode();
+							break;
+						}
+					}
+				} else {
+					continue;
+				}
+				if (srcConceptNode != null && tgtConceptNode != null) {
+					IndexHits<Long> labelHits = labelIndex.get("text", rela);
+					Long labelNode = labelHits.getSingle();
+					Long predicateConceptNode = null;
+					Iterable<BatchRelationship> batchRlsps = inserter.getRelationships(labelNode);
+					for (BatchRelationship batchRelationship : batchRlsps) {
+						if (batchRelationship.getType().name().equalsIgnoreCase(RlspType.HAS_LABEL.toString())) {
+							predicateConceptNode = batchRelationship.getStartNode();
+							break;
+						}
+					}
+					inserter.createRelationship(srcConceptNode, tgtConceptNode,
+							DynamicRelationshipType.withName(String.valueOf(predicateConceptNode)), sourcesMap);
+					ctr++;
+
+				}
+				logger.debug("{}", ctr);
 			}
 			rs.close();
 		} finally {
@@ -579,40 +619,64 @@ public class ConceptWriter {
 					String tgtCui = columns[2].trim();
 					String pmid = columns[3].trim();
 					if (!ignoredCuiReader.isIgnored(srcCui) && !ignoredCuiReader.isIgnored(tgtCui)) {
+						Long srcConceptNode = null;
 						IndexHits<Long> fromCuiHits = notationIndex.get("code", srcCui);
-						if (fromCuiHits != null && fromCuiHits.size() > 0) {
+						if (fromCuiHits != null && fromCuiHits.size() == 1) {
 							Long srcNodeId = fromCuiHits.getSingle();
-							IndexHits<Long> toCuiHits = notationIndex.get("code", tgtCui);
-							if (toCuiHits != null && toCuiHits.size() > 0) {
-								IndexHits<Long> labelHits = labelIndex.get("text", predicateText);
-								Long labelNode = labelHits.getSingle();
-								Long conceptNode = null;
-								Iterable<BatchRelationship> batchRlsps = inserter.getRelationships(labelNode);
-								for (BatchRelationship batchRelationship : batchRlsps) {
-									if (batchRelationship.getType().name()
-											.equalsIgnoreCase(RlspType.HAS_LABEL.toString())) {
-										conceptNode = batchRelationship.getStartNode();
-										break;
-									}
+							Iterable<BatchRelationship> batchRlsps = inserter.getRelationships(srcNodeId);
+							for (BatchRelationship batchRelationship : batchRlsps) {
+								if (batchRelationship.getType().name()
+										.equalsIgnoreCase(RlspType.HAS_NOTATION.toString())) {
+									srcConceptNode = batchRelationship.getStartNode();
+									break;
 								}
-
-								Long tgtNodeId = toCuiHits.getSingle();
-								sources.put("sources", new String[] { pmid });
-								inserter.createRelationship(srcNodeId, tgtNodeId,
-										DynamicRelationshipType.withName(String.valueOf(conceptNode)), sources);
-								sources.clear();
-								ctr++;
-							} else {
-								missingCuis.add(tgtCui);
 							}
 						} else {
 							missingCuis.add(srcCui);
+							continue;
 						}
 
+						Long tgtConceptNode = null;
+						IndexHits<Long> toCuiHits = notationIndex.get("code", tgtCui);
+						if (toCuiHits != null && toCuiHits.size() == 1) {
+							Long tgtNodeId = toCuiHits.getSingle();
+							Iterable<BatchRelationship> tgtNotationRlsps = inserter.getRelationships(tgtNodeId);
+							for (BatchRelationship batchRelationship : tgtNotationRlsps) {
+								if (batchRelationship.getType().name()
+										.equalsIgnoreCase(RlspType.HAS_NOTATION.toString())) {
+									tgtConceptNode = batchRelationship.getStartNode();
+									break;
+								}
+							}
+						} else {
+							missingCuis.add(tgtCui);
+							continue;
+						}
+						if (srcConceptNode != null && tgtConceptNode != null) {
+							IndexHits<Long> labelHits = labelIndex.get("text", predicateText);
+							Long labelNode = labelHits.getSingle();
+							Long predicateConceptNode = null;
+							Iterable<BatchRelationship> batchRlsps = inserter.getRelationships(labelNode);
+							for (BatchRelationship batchRelationship : batchRlsps) {
+								if (batchRelationship.getType().name().equalsIgnoreCase(RlspType.HAS_LABEL.toString())) {
+									predicateConceptNode = batchRelationship.getStartNode();
+									break;
+								}
+							}
+							sources.put("sources", new String[] { pmid });
+							inserter.createRelationship(srcConceptNode, tgtConceptNode,
+									DynamicRelationshipType.withName(String.valueOf(predicateConceptNode)), sources);
+							sources.clear();
+							ctr++;
+						}
 					} else {
-						logger.error("ignored srccui = {} or tgtcui = {}", new Object[] { srcCui, tgtCui });
+						logger.info("ignored {}  or {}", new Object[] { srcCui, tgtCui });
 					}
+
+				} else {
+					logger.error("length != 4");
 				}
+				logger.debug("{}", ctr);
 			}
 			//
 			logger.info("pubmed rlsps written {}", ctr);
