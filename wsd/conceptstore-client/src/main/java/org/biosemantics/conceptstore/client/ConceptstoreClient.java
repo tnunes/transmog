@@ -7,6 +7,7 @@ import java.util.Map;
 import org.biosemantics.conceptstore.domain.Concept;
 import org.biosemantics.conceptstore.domain.Label;
 import org.biosemantics.conceptstore.domain.Notation;
+import org.biosemantics.conceptstore.domain.impl.ConceptType;
 import org.biosemantics.conceptstore.repository.ConceptRepository;
 import org.biosemantics.conceptstore.repository.LabelRepository;
 import org.biosemantics.conceptstore.repository.NotationRepository;
@@ -15,6 +16,8 @@ import org.biosemantics.conceptstore.repository.impl.LabelRepositoryImpl;
 import org.biosemantics.conceptstore.repository.impl.NotationRepositoryImpl;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConceptstoreClient {
 
@@ -71,6 +74,17 @@ public class ConceptstoreClient {
 				}
 			}
 		}
+		
+	}
+	
+	public void printAllPredicates() {
+		Collection<Concept> concepts = conceptRepository.getByType(ConceptType.PREDICATE);
+		for (Concept concept : concepts) {
+			for (Label label : concept.getLabels()) {
+				logger.debug("{}", label.getText());
+			}
+		}
+		
 	}
 
 	private static void registerShutdownHook(final GraphDatabaseService graphDb) {
@@ -89,6 +103,9 @@ public class ConceptstoreClient {
 		ConceptstoreClient client = new ConceptstoreClient();
 		client.init(DB_PATH);
 		client.doSomething();
+		client.printAllPredicates();
 	}
+	
+	private static final Logger logger = LoggerFactory.getLogger(ConceptstoreClient.class);
 
 }

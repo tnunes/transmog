@@ -64,6 +64,7 @@ public class ConceptWriter {
 		ResultSet rs = conceptSchemeStmt.executeQuery(GET_ALL_ST_DEF);
 		Map<String, Object> nodeProperties = new HashMap<String, Object>();
 		Map<String, Object> rlspProperties = new HashMap<String, Object>();
+		Map<String, Object> indexProperties = new HashMap<String, Object>();
 		Map<String, Long> uiNodeMap = new HashMap<String, Long>();
 		Map<String, Long> exisitingLabelMap = new HashMap<String, Long>();
 		try {
@@ -77,18 +78,20 @@ public class ConceptWriter {
 				} else {
 					nodeProperties.put("language", ENG);
 					nodeProperties.put("text", labelText);
-					nodeProperties.put("id", labelText + ENG);
+					indexProperties.put("text", labelText);
 					labelNode = inserter.createNode(nodeProperties);
-					labelIndex.add(labelNode, nodeProperties);
+					labelIndex.add(labelNode, indexProperties);
+					indexProperties.clear();
 					nodeProperties.clear();
 					exisitingLabelMap.put(labelText, labelNode);
 				}
 				// label done
 				nodeProperties.put("source", NotationSourceConstant.UMLS.toString());
 				nodeProperties.put("code", notationCode);
-				nodeProperties.put("id", NotationSourceConstant.UMLS.toString() + notationCode);
+				indexProperties.put("code", notationCode);
 				Long notationNode = inserter.createNode(nodeProperties);
-				notationIndex.add(notationNode, nodeProperties);
+				notationIndex.add(notationNode, indexProperties);
+				indexProperties.clear();
 				nodeProperties.clear();
 				// notation done
 				if (recordType.equalsIgnoreCase("STY")) {
@@ -115,9 +118,10 @@ public class ConceptWriter {
 					} else {
 						nodeProperties.put("language", ENG);
 						nodeProperties.put("text", invLabelText);
-						nodeProperties.put("id", invLabelText + ENG);
+						indexProperties.put("text", invLabelText);
 						invLabelNode = inserter.createNode(nodeProperties);
 						labelIndex.add(invLabelNode, nodeProperties);
+						indexProperties.clear();
 						nodeProperties.clear();
 						exisitingLabelMap.put(invLabelText, invLabelNode);
 					}
@@ -196,17 +200,18 @@ public class ConceptWriter {
 		int ctr = 0;
 		Map<String, Object> nodeProperties = new HashMap<String, Object>();
 		Map<String, Object> rlspProperties = new HashMap<String, Object>();
-
+		Map<String, Object> indexProperties = new HashMap<String, Object>();
 		try {
 			while (rs.next()) {
 				String cui = rs.getString("CUI");
 				if (!ignoredCuiReader.isIgnored(cui)) {
 					nodeProperties.put("source", NotationSourceConstant.UMLS.toString());
 					nodeProperties.put("code", cui);
-					nodeProperties.put("id", NotationSourceConstant.UMLS.toString() + cui);
 					Long notationNode = inserter.createNode(nodeProperties);
-					notationIndex.add(notationNode, nodeProperties);
+					indexProperties.put("code", cui);
+					notationIndex.add(notationNode, indexProperties);
 					nodeProperties.clear();
+					indexProperties.clear();
 					// notation done
 					nodeProperties.put("type", ConceptType.CONCEPT.toString());
 					Long conceptNode = inserter.createNode(nodeProperties);
@@ -240,6 +245,8 @@ public class ConceptWriter {
 		ResultSet rs = stmt.executeQuery(GET_ALL_DISTINCT_SUIS);
 		int ctr = 0;
 		Map<String, Object> nodeProperties = new HashMap<String, Object>();
+		Map<String, Object> indexProperties = new HashMap<String, Object>();
+
 		try {
 			while (rs.next()) {
 				String str = rs.getString("STR");
@@ -252,9 +259,10 @@ public class ConceptWriter {
 				} else {
 					nodeProperties.put("language", ENG);
 					nodeProperties.put("text", str);
-					nodeProperties.put("id", str + ENG);
 					labelNode = inserter.createNode(nodeProperties);
-					labelIndex.add(labelNode, nodeProperties);
+					indexProperties.put("text", str);
+					labelIndex.add(labelNode, indexProperties);
+					indexProperties.clear();
 					nodeProperties.clear();
 				}
 				suiMap.put(sui, labelNode);
@@ -315,6 +323,7 @@ public class ConceptWriter {
 		Statement getConceptRedicatesStmt = getConceptPredicateConn.createStatement();
 		Map<String, Object> nodeProperties = new HashMap<String, Object>();
 		Map<String, Object> rlspProperties = new HashMap<String, Object>();
+		Map<String, Object> indexProperties = new HashMap<String, Object>();
 		try {
 			ResultSet rs = getConceptRedicatesStmt.executeQuery(GET_ALL_RELA_PREDICATES);
 			while (rs.next()) {
@@ -337,18 +346,21 @@ public class ConceptWriter {
 					// create predicate and labels
 					nodeProperties.put("language", ENG);
 					nodeProperties.put("text", text);
-					nodeProperties.put("id", text + ENG);
+
 					Long newTextNode = inserter.createNode(nodeProperties);
-					labelIndex.add(newTextNode, nodeProperties);
+					indexProperties.put("text", text);
+					labelIndex.add(newTextNode, indexProperties);
+					indexProperties.clear();
 					nodeProperties.clear();
 
 					Long newInvTextNode = null;
 					if (!text.equalsIgnoreCase(invText)) {
 						nodeProperties.put("language", ENG);
 						nodeProperties.put("text", invText);
-						nodeProperties.put("id", invText + ENG);
+						indexProperties.put("text", invText);
 						newInvTextNode = inserter.createNode(nodeProperties);
-						labelIndex.add(newInvTextNode, nodeProperties);
+						labelIndex.add(newInvTextNode, indexProperties);
+						indexProperties.clear();
 						nodeProperties.clear();
 					}
 
@@ -376,10 +388,11 @@ public class ConceptWriter {
 					}
 					nodeProperties.put("language", ENG);
 					nodeProperties.put("text", missingLabelText);
-					nodeProperties.put("id", missingLabelText + ENG);
 					Long newTextNode = inserter.createNode(nodeProperties);
-					labelIndex.add(newTextNode, nodeProperties);
+					indexProperties.put("text", missingLabelText);
+					labelIndex.add(newTextNode, indexProperties);
 					nodeProperties.clear();
+					indexProperties.clear();
 
 					Iterable<BatchRelationship> batchRlsps = inserter.getRelationships(availableNode);
 					Long conceptNode = null;
@@ -418,9 +431,6 @@ public class ConceptWriter {
 			IndexHits<Long> fromHits = labelIndex.get("text", key);
 			Long fromHit = null;
 			if (fromHits != null && fromHits.size() > 0) {
-				if (fromHits.size() > 1) {
-					System.err.println("here");
-				}
 				fromHit = fromHits.getSingle();
 			}
 			if (entry.getValue().getRelatedTo() == null) {
@@ -577,6 +587,7 @@ public class ConceptWriter {
 		List<String[]> lines = csvReader.readAll();
 		Map<String, Object> nodeProperties = new HashMap<String, Object>();
 		Map<String, Object> rlspProperties = new HashMap<String, Object>();
+		Map<String, Object> indexProperties = new HashMap<String, Object>();
 		Map<String, Object> sources = new HashMap<String, Object>();
 		sources.put("sources", new String[] { ERIK_TSV_FILE });
 		logger.info("{} predicates read", lines.size());
@@ -591,10 +602,11 @@ public class ConceptWriter {
 				} else {
 					nodeProperties.put("language", ENG);
 					nodeProperties.put("text", predText);
-					nodeProperties.put("id", predText + ENG);
+					indexProperties.put("text", predText);
 					Long newTextNode = inserter.createNode(nodeProperties);
-					labelIndex.add(newTextNode, nodeProperties);
+					labelIndex.add(newTextNode, indexProperties);
 					nodeProperties.clear();
+					indexProperties.clear();
 
 					nodeProperties.put("type", ConceptType.PREDICATE.toString());
 					Long conceptNode = inserter.createNode(nodeProperties);
