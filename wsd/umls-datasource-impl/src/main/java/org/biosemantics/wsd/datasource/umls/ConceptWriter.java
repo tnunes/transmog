@@ -696,7 +696,7 @@ public class ConceptWriter {
 									break;
 								}
 							}
-							sources.put("sources", new String[] { pmid });
+							sources.put("sources", new String[] { "PMID|"+pmid });
 							inserter.createRelationship(srcConceptNode, tgtConceptNode,
 									DynamicRelationshipType.withName(String.valueOf(predicateConceptNode)), sources);
 							sources.clear();

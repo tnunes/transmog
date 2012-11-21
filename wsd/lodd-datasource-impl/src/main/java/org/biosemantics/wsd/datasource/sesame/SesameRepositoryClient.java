@@ -11,6 +11,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class SesameRepositoryClient {
 
+	public SesameRepositoryClient(String server, String repoId) {
+		this.sesameServer = server;
+		this.repositoryId = repoId;
+	}
+
 	public void init() throws RepositoryException {
 		repository = new HTTPRepository(sesameServer, repositoryId);
 		repository.initialize();
@@ -25,9 +30,7 @@ public class SesameRepositoryClient {
 		return repository;
 	}
 
-	@Value("#{loddProperties['sesame.server.url']}")
 	private String sesameServer;
-	@Value("#{loddProperties['sesame.repo.id']}")
 	private String repositoryId;
 	private Repository repository;
 	private static final Logger logger = LoggerFactory.getLogger(SesameRepositoryClient.class);
