@@ -10,10 +10,6 @@
 	<artifactId>umls-datasource-impl</artifactId>
 	<name>umls-datasource-impl</name>
 	<description>umls-datasource-impl</description>
-	<properties>
-		<slf4j.version>1.6.1</slf4j.version>
-		<logback.version>0.9.26</logback.version>
-	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework</groupId>

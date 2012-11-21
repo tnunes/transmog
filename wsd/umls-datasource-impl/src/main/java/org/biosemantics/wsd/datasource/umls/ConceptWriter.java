@@ -1,25 +1,45 @@
 package org.biosemantics.wsd.datasource.umls;
 
-import java.io.*;
-import java.sql.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
-import javax.sql.*;
+import javax.sql.DataSource;
 
-import org.apache.commons.io.*;
-import org.apache.commons.lang.*;
-import org.biosemantics.conceptstore.domain.*;
-import org.neo4j.graphdb.*;
-import org.neo4j.graphdb.index.*;
-import org.neo4j.helpers.collection.*;
-import org.neo4j.unsafe.batchinsert.*;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.LineIterator;
+import org.apache.commons.lang.StringUtils;
+import org.biosemantics.conceptstore.domain.impl.ConceptType;
+import org.biosemantics.conceptstore.domain.impl.LabelType;
+import org.biosemantics.conceptstore.domain.impl.NotationSourceConstant;
+import org.biosemantics.conceptstore.domain.impl.RlspType;
+import org.neo4j.graphdb.DynamicRelationshipType;
+import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.index.IndexHits;
+import org.neo4j.helpers.collection.MapUtil;
+import org.neo4j.unsafe.batchinsert.BatchInserter;
 import org.neo4j.unsafe.batchinsert.BatchInserterIndex;
 import org.neo4j.unsafe.batchinsert.BatchInserterIndexProvider;
-import org.slf4j.*;
-import org.springframework.beans.factory.annotation.*;
+import org.neo4j.unsafe.batchinsert.BatchInserters;
+import org.neo4j.unsafe.batchinsert.BatchRelationship;
+import org.neo4j.unsafe.batchinsert.LuceneBatchInserterIndexProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Required;
 
-import au.com.bytecode.opencsv.*;
+import au.com.bytecode.opencsv.CSVReader;
 
 public class ConceptWriter {
 

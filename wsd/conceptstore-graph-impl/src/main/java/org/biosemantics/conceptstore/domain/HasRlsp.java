@@ -2,7 +2,7 @@ package org.biosemantics.conceptstore.domain;
 
 import java.util.Collection;
 
-public interface HasNotation {
+public interface HasRlsp {
 
 	public abstract Collection<String> getSources();
 

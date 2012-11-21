@@ -15,15 +15,15 @@
 		</repository>
 	</repositories>
 	<properties>
-		<spring.version>3.1.0.RELEASE</spring.version>
 		<neo4j.version>1.8</neo4j.version>
 		<junit.version>4.8.2</junit.version>
-		<springdata.version>2.1.0.RC4</springdata.version>
+		<slf4j.version>1.7.2</slf4j.version>
+		<logback.version>1.0.7</logback.version>
+		<spring.version>3.1.0.RELEASE</spring.version>
 	</properties>
 	<modules>
 		<module>conceptstore-graph-impl</module>
 		<module>umls-datasource-impl</module>
-		<module>wsd-script-impl</module>
 		<module>lodd-datasource-impl</module>
 		<module>conceptstore-client</module>
 	</modules>
