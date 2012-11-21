@@ -1,41 +1,36 @@
 package org.biosemantics.conceptstore.repository;
 
+import java.util.Collection;
+
 import org.biosemantics.conceptstore.domain.Concept;
-import org.biosemantics.conceptstore.domain.Label;
-import org.biosemantics.conceptstore.domain.Notation;
-import org.springframework.data.neo4j.annotation.Query;
-import org.springframework.data.neo4j.repository.GraphRepository;
+import org.biosemantics.conceptstore.domain.HasLabel;
+import org.biosemantics.conceptstore.domain.HasNotation;
+import org.biosemantics.conceptstore.domain.HasRlsp;
+import org.biosemantics.conceptstore.domain.impl.ConceptType;
+import org.biosemantics.conceptstore.domain.impl.LabelType;
 
-public interface ConceptRepository extends GraphRepository<Concept> {
+public interface ConceptRepository {
 
-	@Query("start concept=node({0}) match concept--otherConcept where otherConcept.type=\"CONCEPT\" return otherConcept")
-	Iterable<Concept> getRelatedConcepts(Concept concept);
+	public abstract Concept create(ConceptType conceptType);
 
-	@Query("start concept=node({0}) match concept-[:CHILD]-otherConcept return otherConcept")
-	Iterable<Concept> getHierarchicalConcepts(Concept concept);
+	public abstract HasLabel hasLabel(long conceptId, long labelId, LabelType labelType, String... sources);
 
-	@Query("start concept=node({0}) match concept<-[:CHILD]-otherConcept return otherConcept")
-	Iterable<Concept> getChildConcepts(Concept concept);
+	public abstract HasLabel hasLabelIfNoneExists(long conceptId, long labelId, LabelType labelType, String... sources);
 
-	@Query("start concept=node({0}) match concept-[:CHILD]->otherConcept return otherConcept")
-	Iterable<Concept> getParentConcepts(Concept concept);
+	public abstract HasNotation hasNotation(long conceptId, long notationId, String... sources);
 
-	@Query("start concept=node({0}) match concept-[r:HAS_LABEL]->label where r.type = \"PREFERRED\" and label.language = {1} return label")
-	Label getPreferredLabel(Concept concept, String language);
+	public abstract HasNotation hasNotationIfNoneExists(long conceptId, long notationId, String... sources);
 
-	@Query("start concept=node({0}) match concept-[r:HAS_LABEL]->label where r.type = \"PREFERRED\" return label")
-	Iterable<Label> getPreferredLabels(Concept concept);
+	public abstract HasRlsp hasRlsp(long fromConceptId, long toConceptId, String relationshipType, String... sources);
 
-	@Query("start concept=node({0}) match concept-[:IN_SCHEME]-otherConcept return otherConcept")
-	Iterable<Concept> getConceptSchemes(Concept concept);
+	public abstract HasRlsp hasRlspIfNoneExists(long fromConceptId, long toConceptId, String relationshipType,
+			String... sources);
 
-	/**
-	 * @deprecated use the getNotations method provided in the concept object
-	 * @param concept
-	 * @return
-	 */
-	@Deprecated
-	@Query("start concept=node({0}) match concept-[r:HAS_NOTATION]->notation  return notation")
-	Iterable<Notation> getNotations(Concept concept);
+	public abstract HasRlsp hasRlspIfNoBidirectionalRlspExists(long fromConceptId, long toConceptId,
+			String relationshipType, String... sources);
+
+	public abstract Concept getById(long id);
+
+	public abstract Collection<Concept> getByType(ConceptType conceptType);
 
 }

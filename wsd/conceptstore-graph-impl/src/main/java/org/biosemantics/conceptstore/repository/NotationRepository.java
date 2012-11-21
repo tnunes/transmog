@@ -1,16 +1,17 @@
 package org.biosemantics.conceptstore.repository;
 
-import org.biosemantics.conceptstore.domain.Concept;
+import java.util.Collection;
+
 import org.biosemantics.conceptstore.domain.Notation;
-import org.springframework.data.neo4j.annotation.Query;
-import org.springframework.data.neo4j.repository.GraphRepository;
 
-public interface NotationRepository extends GraphRepository<Notation> {
+public interface NotationRepository {
 
-	@Query("start notation=node:Notation(code={1}) where notation.source={0} return notation")
-	Notation getNotation(String source, String code);
+	public abstract Notation create(String source, String code);
 
-	@Query("start notation=node:Notation(code={1}) match notation<-[:HAS_NOTATION]-concept where notation.source={0} return concept")
-	Concept getRelatedConcept(String source, String code);
+	public abstract Notation getById(long id);
+
+	public abstract Collection<Notation> getByCode(String code);
+
+	public abstract Notation getOrCreate(String source, String code);
 
 }
