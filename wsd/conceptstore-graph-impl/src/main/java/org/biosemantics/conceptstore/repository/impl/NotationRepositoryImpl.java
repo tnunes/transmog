@@ -4,9 +4,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.biosemantics.conceptstore.domain.Label;
 import org.biosemantics.conceptstore.domain.Notation;
-import org.biosemantics.conceptstore.domain.impl.LabelImpl;
 import org.biosemantics.conceptstore.domain.impl.NotationImpl;
 import org.biosemantics.conceptstore.repository.NotationRepository;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -24,16 +22,24 @@ public class NotationRepositoryImpl implements NotationRepository {
 		notationNodeIndex = this.graphDb.index().forNodes("Notation");
 	}
 
-	/* (non-Javadoc)
-	 * @see org.biosemantics.conceptstore.repository.impl.NotationRepository#create(java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.biosemantics.conceptstore.repository.impl.NotationRepository#create
+	 * (java.lang.String, java.lang.String)
 	 */
 	@Override
 	public Notation create(String source, String code) {
 		return createNewNotation(source, code);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.biosemantics.conceptstore.repository.impl.NotationRepository#getById(long)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.biosemantics.conceptstore.repository.impl.NotationRepository#getById
+	 * (long)
 	 */
 	@Override
 	public Notation getById(long id) {
@@ -45,8 +51,12 @@ public class NotationRepositoryImpl implements NotationRepository {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.biosemantics.conceptstore.repository.impl.NotationRepository#getByCode(java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.biosemantics.conceptstore.repository.impl.NotationRepository#getByCode
+	 * (java.lang.String)
 	 */
 	@Override
 	public Collection<Notation> getByCode(String code) {
@@ -58,8 +68,12 @@ public class NotationRepositoryImpl implements NotationRepository {
 		return notations;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.biosemantics.conceptstore.repository.impl.NotationRepository#getOrCreate(java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.biosemantics.conceptstore.repository.impl.NotationRepository#getOrCreate
+	 * (java.lang.String, java.lang.String)
 	 */
 	@Override
 	public Notation getOrCreate(String source, String code) {

@@ -1,7 +1,6 @@
 package org.biosemantics.conceptstore.domain;
 
-import java.util.*;
-
+import java.util.Collection;
 
 public interface Label {
 

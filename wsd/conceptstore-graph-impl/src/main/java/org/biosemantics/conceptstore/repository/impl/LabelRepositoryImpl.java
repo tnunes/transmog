@@ -21,16 +21,24 @@ public class LabelRepositoryImpl implements LabelRepository {
 		labelNodeIndex = this.graphDb.index().forNodes("Label");
 	}
 
-	/* (non-Javadoc)
-	 * @see org.biosemantics.conceptstore.repository.impl.LabelRepository#create(java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.biosemantics.conceptstore.repository.impl.LabelRepository#create(
+	 * java.lang.String, java.lang.String)
 	 */
 	@Override
 	public Label create(String text, String language) {
 		return createNewlabel(text, language);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.biosemantics.conceptstore.repository.impl.LabelRepository#getById(long)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.biosemantics.conceptstore.repository.impl.LabelRepository#getById
+	 * (long)
 	 */
 	@Override
 	public Label getById(long id) {
@@ -42,8 +50,12 @@ public class LabelRepositoryImpl implements LabelRepository {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.biosemantics.conceptstore.repository.impl.LabelRepository#getOrCreate(java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.biosemantics.conceptstore.repository.impl.LabelRepository#getOrCreate
+	 * (java.lang.String, java.lang.String)
 	 */
 	@Override
 	public Label getOrCreate(String text, String language) {
@@ -65,8 +77,12 @@ public class LabelRepositoryImpl implements LabelRepository {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.biosemantics.conceptstore.repository.impl.LabelRepository#getByText(java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.biosemantics.conceptstore.repository.impl.LabelRepository#getByText
+	 * (java.lang.String)
 	 */
 	@Override
 	public Collection<Label> getByText(String text) {

@@ -10,28 +10,31 @@ import org.neo4j.graphdb.Relationship;
 import com.google.common.base.Objects;
 
 public class HasNotationImpl implements HasNotation {
-	
+
 	public HasNotationImpl(Relationship relationship) {
 		this.relationship = relationship;
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.biosemantics.conceptstore.domain.impl.HasNotation#getSources()
 	 */
 	@Override
 	public Collection<String> getSources() {
 		return new HashSet<String>(Arrays.asList((String[]) relationship.getProperty("sources")));
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.biosemantics.conceptstore.domain.impl.HasNotation#getType()
 	 */
 	@Override
 	public String getType() {
 		return relationship.getType().name();
 	}
-	
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		return obj instanceof HasNotationImpl && relationship.equals(((HasNotationImpl) obj).relationship);

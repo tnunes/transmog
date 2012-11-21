@@ -15,7 +15,9 @@ public class HasRlspImpl implements HasRlsp {
 		this.relationship = relationship;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.biosemantics.conceptstore.domain.impl.HasRlsp#getSources()
 	 */
 	@Override
@@ -23,7 +25,9 @@ public class HasRlspImpl implements HasRlsp {
 		return new HashSet<String>(Arrays.asList((String[]) relationship.getProperty("sources")));
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.biosemantics.conceptstore.domain.impl.HasRlsp#getType()
 	 */
 	@Override

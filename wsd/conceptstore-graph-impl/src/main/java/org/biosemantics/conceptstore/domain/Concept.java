@@ -1,8 +1,8 @@
 package org.biosemantics.conceptstore.domain;
 
-import java.util.*;
+import java.util.Collection;
 
-import org.biosemantics.conceptstore.domain.impl.*;
+import org.biosemantics.conceptstore.domain.impl.ConceptType;
 
 public interface Concept {
 

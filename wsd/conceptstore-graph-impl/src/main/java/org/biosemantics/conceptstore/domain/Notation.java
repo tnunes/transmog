@@ -1,7 +1,6 @@
 package org.biosemantics.conceptstore.domain;
 
-import java.util.*;
-
+import java.util.Collection;
 
 public interface Notation {
 
@@ -10,7 +9,7 @@ public interface Notation {
 	public abstract String getSource();
 
 	public abstract String getCode();
-	
+
 	public abstract long getId();
 
 }

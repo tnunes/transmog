@@ -98,4 +98,4 @@
 //
 //	private static final String DAILYMED_DRUGBANK_ID_SPARQL = "select ?x ?y where {?x <http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/genericDrug> ?y}";
 //
-//}
+// }

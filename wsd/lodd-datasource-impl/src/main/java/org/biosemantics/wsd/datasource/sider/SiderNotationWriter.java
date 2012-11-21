@@ -114,4 +114,4 @@
 //	private static final String DRUGBANK_ID_NAME_SPARQL = "select ?x ?y from <file://C:/fakepath/drugbank_dump.nt> where {?x <http://www.w3.org/2000/01/rdf-schema#label> ?y}";
 //
 //
-//}
+// }

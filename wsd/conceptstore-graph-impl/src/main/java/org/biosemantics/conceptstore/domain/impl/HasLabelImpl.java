@@ -15,7 +15,9 @@ public class HasLabelImpl implements HasLabel {
 		this.relationship = relationship;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.biosemantics.conceptstore.domain.impl.HasLabel#getType()
 	 */
 	@Override
@@ -23,7 +25,9 @@ public class HasLabelImpl implements HasLabel {
 		return relationship.getType().name();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.biosemantics.conceptstore.domain.impl.HasLabel#getLabelType()
 	 */
 	@Override
@@ -31,7 +35,9 @@ public class HasLabelImpl implements HasLabel {
 		return LabelType.valueOf((String) relationship.getProperty("type"));
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.biosemantics.conceptstore.domain.impl.HasLabel#getSources()
 	 */
 	@Override

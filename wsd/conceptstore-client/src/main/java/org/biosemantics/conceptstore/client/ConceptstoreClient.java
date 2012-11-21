@@ -41,7 +41,9 @@ public class ConceptstoreClient {
 	}
 
 	/**
-	 * Initializes the conceptstore project with graph database configuration. For documentation on configuration see
+	 * Initializes the conceptstore project with graph database configuration.
+	 * For documentation on configuration see
+	 * 
 	 * @see http://docs.neo4j.org/chunked/stable/configuration-introduction.html
 	 * @param dbPath
 	 *            Absolute path to the the database folder, generally the

@@ -20,8 +20,10 @@ public class ConceptImpl implements Concept {
 	public ConceptImpl(Node node) {
 		this.node = node;
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.biosemantics.conceptstore.domain.impl.Concept#getLabels()
 	 */
 	@Override
@@ -34,7 +36,9 @@ public class ConceptImpl implements Concept {
 		return labels;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.biosemantics.conceptstore.domain.impl.Concept#getNotations()
 	 */
 	@Override
@@ -48,7 +52,9 @@ public class ConceptImpl implements Concept {
 
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.biosemantics.conceptstore.domain.impl.Concept#getType()
 	 */
 	@Override
@@ -56,7 +62,9 @@ public class ConceptImpl implements Concept {
 		return ConceptType.valueOf((String) node.getProperty("type"));
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.biosemantics.conceptstore.domain.impl.Concept#getId()
 	 */
 	@Override
@@ -84,7 +92,5 @@ public class ConceptImpl implements Concept {
 	}
 
 	private final Node node;
-
-	
 
 }

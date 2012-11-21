@@ -34,8 +34,12 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 		conceptNodeIndex = this.graphDb.index().forNodes("Concept");
 	}
 
-	/* (non-Javadoc)
-	 * @see org.biosemantics.conceptstore.repository.impl.ConceptRepository#create(org.biosemantics.conceptstore.domain.impl.ConceptType)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.biosemantics.conceptstore.repository.impl.ConceptRepository#create
+	 * (org.biosemantics.conceptstore.domain.impl.ConceptType)
 	 */
 	@Override
 	public Concept create(ConceptType conceptType) {
@@ -51,8 +55,13 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.biosemantics.conceptstore.repository.impl.ConceptRepository#hasLabel(long, long, org.biosemantics.conceptstore.domain.impl.LabelType, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.biosemantics.conceptstore.repository.impl.ConceptRepository#hasLabel
+	 * (long, long, org.biosemantics.conceptstore.domain.impl.LabelType,
+	 * java.lang.String)
 	 */
 	@Override
 	public HasLabel hasLabel(long conceptId, long labelId, LabelType labelType, String... sources) {
@@ -70,8 +79,12 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.biosemantics.conceptstore.repository.impl.ConceptRepository#hasLabelIfNoneExists(long, long, org.biosemantics.conceptstore.domain.impl.LabelType, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.biosemantics.conceptstore.repository.impl.ConceptRepository#
+	 * hasLabelIfNoneExists(long, long,
+	 * org.biosemantics.conceptstore.domain.impl.LabelType, java.lang.String)
 	 */
 	@Override
 	public HasLabel hasLabelIfNoneExists(long conceptId, long labelId, LabelType labelType, String... sources) {
@@ -103,8 +116,12 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.biosemantics.conceptstore.repository.impl.ConceptRepository#hasNotation(long, long, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.biosemantics.conceptstore.repository.impl.ConceptRepository#hasNotation
+	 * (long, long, java.lang.String)
 	 */
 	@Override
 	public HasNotation hasNotation(long conceptId, long notationId, String... sources) {
@@ -121,8 +138,11 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.biosemantics.conceptstore.repository.impl.ConceptRepository#hasNotationIfNoneExists(long, long, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.biosemantics.conceptstore.repository.impl.ConceptRepository#
+	 * hasNotationIfNoneExists(long, long, java.lang.String)
 	 */
 	@Override
 	public HasNotation hasNotationIfNoneExists(long conceptId, long notationId, String... sources) {
@@ -153,8 +173,12 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.biosemantics.conceptstore.repository.impl.ConceptRepository#hasRlsp(long, long, java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.biosemantics.conceptstore.repository.impl.ConceptRepository#hasRlsp
+	 * (long, long, java.lang.String, java.lang.String)
 	 */
 	@Override
 	public HasRlsp hasRlsp(long fromConceptId, long toConceptId, String relationshipType, String... sources) {
@@ -172,8 +196,11 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.biosemantics.conceptstore.repository.impl.ConceptRepository#hasRlspIfNoneExists(long, long, java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.biosemantics.conceptstore.repository.impl.ConceptRepository#
+	 * hasRlspIfNoneExists(long, long, java.lang.String, java.lang.String)
 	 */
 	@Override
 	public HasRlsp hasRlspIfNoneExists(long fromConceptId, long toConceptId, String relationshipType, String... sources) {
@@ -205,8 +232,12 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.biosemantics.conceptstore.repository.impl.ConceptRepository#hasRlspIfNoBidirectionalRlspExists(long, long, java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.biosemantics.conceptstore.repository.impl.ConceptRepository#
+	 * hasRlspIfNoBidirectionalRlspExists(long, long, java.lang.String,
+	 * java.lang.String)
 	 */
 	@Override
 	public HasRlsp hasRlspIfNoBidirectionalRlspExists(long fromConceptId, long toConceptId, String relationshipType,
@@ -255,8 +286,12 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.biosemantics.conceptstore.repository.impl.ConceptRepository#getById(long)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.biosemantics.conceptstore.repository.impl.ConceptRepository#getById
+	 * (long)
 	 */
 	@Override
 	public Concept getById(long id) {
@@ -268,8 +303,12 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.biosemantics.conceptstore.repository.impl.ConceptRepository#getByType(org.biosemantics.conceptstore.domain.impl.ConceptType)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.biosemantics.conceptstore.repository.impl.ConceptRepository#getByType
+	 * (org.biosemantics.conceptstore.domain.impl.ConceptType)
 	 */
 	@Override
 	public Collection<Concept> getByType(ConceptType conceptType) {

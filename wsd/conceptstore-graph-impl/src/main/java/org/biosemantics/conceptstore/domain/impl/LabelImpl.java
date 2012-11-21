@@ -1,12 +1,16 @@
 package org.biosemantics.conceptstore.domain.impl;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.biosemantics.conceptstore.domain.Concept;
 import org.biosemantics.conceptstore.domain.Label;
-import org.neo4j.graphdb.*;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 
-import com.google.common.base.*;
+import com.google.common.base.Objects;
 
 public class LabelImpl implements Label {
 

@@ -15,7 +15,8 @@ public class UmlsDbToGraphWriter {
 		ConceptWriter conceptWriter = applicationContext.getBean(ConceptWriter.class);
 		conceptWriter.writeSemanticTypes();
 		conceptWriter.writeRelaPredicates();
-		conceptWriter.writeMissingPubmedPredicates("/Users/bhsingh/code/git/transmog/wsd/umls-datasource-impl/src/main/resources/predicate_pubmed_all.csv");
+		conceptWriter
+				.writeMissingPubmedPredicates("/Users/bhsingh/code/git/transmog/wsd/umls-datasource-impl/src/main/resources/predicate_pubmed_all.csv");
 		conceptWriter.mapRelaPredicatesToSemanticTypePredicates();
 		conceptWriter.writeConcepts();
 		conceptWriter.writeRlspsBetweenConceptsAndSchemes();
