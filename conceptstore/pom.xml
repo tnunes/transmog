@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.biosemantics.conceptstore</groupId>
+	<artifactId>conceptstore</artifactId>
+	<version>1.8-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>conceptstore</name>
+	<description>conceptstore</description>
+	<repositories>
+		<repository>
+			<id>spring-snapshot</id>
+			<name>Spring Maven SNAPSHOT Repository</name>
+			<url>http://repo.springsource.org/libs-milestone</url>
+		</repository>
+	</repositories>
+	<properties>
+		<neo4j.version>1.8</neo4j.version>
+		<junit.version>4.8.2</junit.version>
+		<slf4j.version>1.7.2</slf4j.version>
+		<logback.version>1.0.7</logback.version>
+		<spring.version>3.1.0.RELEASE</spring.version>
+	</properties>
+	<modules>
+		<module>conceptstore-graph-impl</module>
+		<module>conceptstore-dataimport</module>
+		<module>lodd-datasource-impl</module>
+		<module>conceptstore-client</module>
+	</modules>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.0.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<tagBase>https://svn.apache.org/repos/asf/maven/components/releases</tagBase>
+					<goals>install</goals>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<scm>
+		<connection>scm:git:git@github.com:bhsingh/transmog.git</connection>
+		<url>scm:git:git@github.com:bhsingh/transmog.git</url>
+		<developerConnection>scm:git:git@github.com:bhsingh/transmog.git</developerConnection>
+	  <tag>HEAD</tag>
+  </scm>
+	<distributionManagement>
+		<snapshotRepository>
+			<id>nbic-nexus-snapshots</id>
+			<name>Sonatype Nexus snapshot repository</name>
+			<url>https://ci.nbiceng.net/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
+		<repository>
+			<id>nbic-nexus-releases</id>
+			<name>Sonatype Nexus release repository</name>
+			<url>https://ci.nbiceng.net/nexus/content/repositories/releases/</url>
+		</repository>
+	</distributionManagement>
+</project>
