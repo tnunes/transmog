@@ -79,6 +79,10 @@ public class LabelImpl implements Label {
 				.add("language", getLanguage()).toString();
 	}
 
+	public Node getNode() {
+		return node;
+	}
+
 	private Node node;
 
 }

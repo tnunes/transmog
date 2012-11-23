@@ -80,6 +80,10 @@ public class NotationImpl implements Notation {
 				.add("code", getCode()).toString();
 	}
 
+	public Node getNode() {
+		return node;
+	}
+
 	private Node node;
 
 }

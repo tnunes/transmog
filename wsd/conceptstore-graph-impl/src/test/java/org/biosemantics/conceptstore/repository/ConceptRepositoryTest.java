@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.biosemantics.conceptstore.domain.Concept;
 import org.biosemantics.conceptstore.domain.HasRlsp;
+import org.biosemantics.conceptstore.domain.InScheme;
 import org.biosemantics.conceptstore.domain.Label;
 import org.biosemantics.conceptstore.domain.Notation;
 import org.biosemantics.conceptstore.domain.impl.ConceptType;
@@ -197,6 +198,55 @@ public class ConceptRepositoryTest {
 			assertEquals("src", notation2.getSource());
 			assertEquals("code", notation2.getCode());
 		}
+	}
 
+	@Test
+	public void checkHasRlspsDoNotIncludeOtherRlspTypes() {
+		ConceptRepository conceptRepositoryImpl = new ConceptRepositoryImpl(graphDb);
+		NotationRepository notationRepositoryImpl = new NotationRepositoryImpl(graphDb);
+		Concept concept1 = conceptRepositoryImpl.create(ConceptType.CONCEPT);
+		Concept concept2 = conceptRepositoryImpl.create(ConceptType.CONCEPT_SCHEME);
+		Concept concept3 = conceptRepositoryImpl.create(ConceptType.CONCEPT);
+		Notation notation = notationRepositoryImpl.create("src", "code");
+		conceptRepositoryImpl
+				.hasNotationIfNoneExists(concept1.getId(), notation.getId(), new String[] { "one", "two" });
+		conceptRepositoryImpl.hasNotationIfNoneExists(concept2.getId(), notation.getId(), new String[] { "three",
+				"four" });
+		HasRlsp hasRlsp = conceptRepositoryImpl.hasRlspIfNoneExists(concept1.getId(), concept3.getId(), "123456",
+				new String[] { "some1", "some2" });
+		conceptRepositoryImpl.addInScheme(concept1.getId(), concept2.getId(), new String[] { "three", "four" });
+		Collection<HasRlsp> hasRlsps = conceptRepositoryImpl.getAllHasRlspsForConcept(concept1.getId());
+		assertEquals(1, hasRlsps.size());
+		for (HasRlsp foundRlsp : hasRlsps) {
+			assertEquals(hasRlsp, foundRlsp);
+		}
+	}
+
+	@Test
+	public void inSchemeIsAddedAndRetrievable() {
+		ConceptRepository conceptRepositoryImpl = new ConceptRepositoryImpl(graphDb);
+		NotationRepository notationRepositoryImpl = new NotationRepositoryImpl(graphDb);
+		Concept concept1 = conceptRepositoryImpl.create(ConceptType.CONCEPT);
+		Concept concept2 = conceptRepositoryImpl.create(ConceptType.CONCEPT_SCHEME);
+		Notation notation = notationRepositoryImpl.create("src", "code");
+		conceptRepositoryImpl
+				.hasNotationIfNoneExists(concept1.getId(), notation.getId(), new String[] { "one", "two" });
+		conceptRepositoryImpl.hasNotationIfNoneExists(concept2.getId(), notation.getId(), new String[] { "three",
+				"four" });
+		Concept concept3 = conceptRepositoryImpl.create(ConceptType.CONCEPT);
+		conceptRepositoryImpl
+				.hasNotationIfNoneExists(concept1.getId(), notation.getId(), new String[] { "one", "two" });
+		conceptRepositoryImpl.hasNotationIfNoneExists(concept2.getId(), notation.getId(), new String[] { "three",
+				"four" });
+		conceptRepositoryImpl.hasRlspIfNoneExists(concept1.getId(), concept3.getId(), "123456", new String[] { "some1",
+				"some2" });
+		conceptRepositoryImpl.addInScheme(concept1.getId(), concept2.getId(), new String[] { "three", "four" });
+		Collection<Concept> foundConceptSchemes = concept1.getInSchemes();
+		assertEquals(1, foundConceptSchemes.size());
+		for (Concept foundConceptScheme : foundConceptSchemes) {
+			assertEquals(foundConceptScheme, concept2);
+			assertNotSame(foundConceptScheme, concept3);
+			assertNotSame(foundConceptScheme, concept1);
+		}
 	}
 }

@@ -6,6 +6,7 @@ import org.biosemantics.conceptstore.domain.Concept;
 import org.biosemantics.conceptstore.domain.HasLabel;
 import org.biosemantics.conceptstore.domain.HasNotation;
 import org.biosemantics.conceptstore.domain.HasRlsp;
+import org.biosemantics.conceptstore.domain.InScheme;
 import org.biosemantics.conceptstore.domain.impl.ConceptType;
 import org.biosemantics.conceptstore.domain.impl.LabelType;
 
@@ -32,5 +33,11 @@ public interface ConceptRepository {
 	public abstract Concept getById(long id);
 
 	public abstract Collection<Concept> getByType(ConceptType conceptType);
+
+	public abstract Collection<HasRlsp> getAllHasRlspsForConcept(long id);
+
+	public abstract InScheme addInScheme(long conceptId, long conceptSchemeId, String... sources);
+
+	public abstract Collection<Long> getAllChildPredicates(Long predicateConceptId);
 
 }

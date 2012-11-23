@@ -52,6 +52,16 @@ public class ConceptImpl implements Concept {
 
 	}
 
+	@Override
+	public Collection<Concept> getInSchemes() {
+		Iterable<Relationship> relationships = node.getRelationships(RlspType.IN_SCHEME, Direction.OUTGOING);
+		Set<Concept> concepts = new HashSet<Concept>();
+		for (Relationship relationship : relationships) {
+			concepts.add(new ConceptImpl(relationship.getOtherNode(node)));
+		}
+		return concepts;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -89,6 +99,10 @@ public class ConceptImpl implements Concept {
 	@Override
 	public String toString() {
 		return Objects.toStringHelper(this).add("nodeId", node.getId()).add("type", getType()).toString();
+	}
+
+	public Node getNode() {
+		return node;
 	}
 
 	private final Node node;

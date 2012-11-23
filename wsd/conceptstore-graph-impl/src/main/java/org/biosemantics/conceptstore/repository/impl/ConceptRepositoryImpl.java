@@ -8,11 +8,13 @@ import org.biosemantics.conceptstore.domain.Concept;
 import org.biosemantics.conceptstore.domain.HasLabel;
 import org.biosemantics.conceptstore.domain.HasNotation;
 import org.biosemantics.conceptstore.domain.HasRlsp;
+import org.biosemantics.conceptstore.domain.InScheme;
 import org.biosemantics.conceptstore.domain.impl.ConceptImpl;
 import org.biosemantics.conceptstore.domain.impl.ConceptType;
 import org.biosemantics.conceptstore.domain.impl.HasLabelImpl;
 import org.biosemantics.conceptstore.domain.impl.HasNotationImpl;
 import org.biosemantics.conceptstore.domain.impl.HasRlspImpl;
+import org.biosemantics.conceptstore.domain.impl.InSchemeImpl;
 import org.biosemantics.conceptstore.domain.impl.LabelType;
 import org.biosemantics.conceptstore.domain.impl.RlspType;
 import org.biosemantics.conceptstore.repository.ConceptRepository;
@@ -20,10 +22,15 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
+import org.neo4j.graphdb.traversal.Evaluators;
+import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.kernel.Traversal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +39,60 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 	public ConceptRepositoryImpl(GraphDatabaseService graphDatabaseService) {
 		this.graphDb = graphDatabaseService;
 		conceptNodeIndex = this.graphDb.index().forNodes("Concept");
+	}
+
+	// 402 - 410
+	@Override
+	public Collection<Long> getAllChildPredicates(Long predicateConceptId) {
+		Node node = graphDb.getNodeById(predicateConceptId);
+		if (node == null) {
+			throw new IllegalArgumentException("no node found with id " + predicateConceptId);
+		}
+		TraversalDescription td = Traversal.description().depthFirst().relationships(IS_A_RLSP, Direction.INCOMING)
+				.evaluator(Evaluators.excludeStartPosition());
+		Set<Long> ids = new HashSet<Long>();
+		for (Path path : td.traverse(node)) {
+			ids.add(path.endNode().getId());
+		}
+		return ids;
+	}
+
+	@Override
+	public Collection<HasRlsp> getAllHasRlspsForConcept(long id) {
+		Set<HasRlsp> hasRlspsImpls = new HashSet<HasRlsp>();
+		Node node = graphDb.getNodeById(id);
+		if (node == null) {
+			throw new IllegalArgumentException("no node found with id " + id);
+		}
+		Iterable<Relationship> relationships = node.getRelationships();
+		for (Relationship relationship : relationships) {
+			boolean add = true;
+			for (RlspType rlspType : RlspType.values()) {
+				if (rlspType.toString().equals(relationship.getType().name())) {
+					add = false;
+					break;
+				}
+			}
+			if (add) {
+				hasRlspsImpls.add(new HasRlspImpl(relationship));
+			}
+		}
+		return hasRlspsImpls;
+	}
+
+	@Override
+	public InScheme addInScheme(long conceptId, long conceptSchemeId, String... sources) {
+		Transaction tx = graphDb.beginTx();
+		try {
+			Node conceptNode = graphDb.getNodeById(conceptId);
+			Node conceptSchemeNode = graphDb.getNodeById(conceptSchemeId);
+			Relationship relationship = conceptNode.createRelationshipTo(conceptSchemeNode, RlspType.IN_SCHEME);
+			relationship.setProperty("sources", sources);
+			return new InSchemeImpl(relationship);
+		} finally {
+			tx.success();
+			tx.finish();
+		}
 	}
 
 	/*
@@ -323,5 +384,6 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 	private GraphDatabaseService graphDb;
 	private Index<Node> conceptNodeIndex;
 	private static final Logger logger = LoggerFactory.getLogger(ConceptRepositoryImpl.class);
+	private static final RelationshipType IS_A_RLSP = DynamicRelationshipType.withName("578");
 
 }

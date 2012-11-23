@@ -14,4 +14,6 @@ public interface Concept {
 
 	public abstract long getId();
 
+	public abstract Collection<Concept> getInSchemes();
+
 }
