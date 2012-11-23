@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.biosemantics.wsd</groupId>
     <artifactId>wsd</artifactId>
-    <version>1.7</version>
+    <version>1.8-SNAPSHOT</version>
   </parent>
   <artifactId>conceptstore-client</artifactId>
   <name>conceptstore-client</name>
@@ -12,7 +12,7 @@
   	<dependency>
   		<groupId>org.biosemantics.wsd</groupId>
   		<artifactId>conceptstore-graph-impl</artifactId>
-  		<version>1.7</version>
+  		<version>1.8-SNAPSHOT</version>
   	</dependency>
   </dependencies>
 </project>
