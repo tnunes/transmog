@@ -1,4 +1,4 @@
-package org.biosemantics.wsd.datasource.umls;
+package org.biosemantics.conceptstore.dataimport;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,11 +27,11 @@ public class SemanticTypeConceptPredicateMapper {
 				String from = columns[0].trim();
 				String to = columns[4].trim();
 				String related = columns[2].trim();
-				SemanticTypePredicate semanticTypePredicate = null;
+				PredicateMapEntry semanticTypePredicate = null;
 				if (strRelationship.equalsIgnoreCase("subProp")) {
-					semanticTypePredicate = new SemanticTypePredicate(from, SemanticTypePredicate.SUB_PROP, related);
+					semanticTypePredicate = new PredicateMapEntry(from, PredicateMapEntry.SUB_PROP, related);
 				} else if (strRelationship.equalsIgnoreCase("eqProp")) {
-					semanticTypePredicate = new SemanticTypePredicate(from, SemanticTypePredicate.EQ_PROP, related);
+					semanticTypePredicate = new PredicateMapEntry(from, PredicateMapEntry.EQ_PROP, related);
 				}
 				if (semanticTypePredicate != null) {
 					if (!StringUtils.isBlank(from)) {
@@ -49,20 +49,20 @@ public class SemanticTypeConceptPredicateMapper {
 		}
 	}
 
-	public SemanticTypePredicate getMappedSemanticTypePredicate(String conceptPredicate) {
+	public PredicateMapEntry getMappedSemanticTypePredicate(String conceptPredicate) {
 		return mappingMap.get(conceptPredicate);
 	}
 
-	public Map<String, SemanticTypePredicate> getMappingMap() {
+	public Map<String, PredicateMapEntry> getMappingMap() {
 		return mappingMap;
 	}
 
-	private Map<String, SemanticTypePredicate> mappingMap = new HashMap<String, SemanticTypePredicate>();
+	private Map<String, PredicateMapEntry> mappingMap = new HashMap<String, PredicateMapEntry>();
 	private static final Logger logger = LoggerFactory.getLogger(SemanticTypeConceptPredicateMapper.class);
 
 }
 
-class SemanticTypePredicate {
+class PredicateMapEntry {
 	public static final int SUB_PROP = 1;
 	public static final int EQ_PROP = 2;
 
@@ -82,7 +82,7 @@ class SemanticTypePredicate {
 		return from;
 	}
 
-	public SemanticTypePredicate(String from, int relationship, String relatedTo) {
+	public PredicateMapEntry(String from, int relationship, String relatedTo) {
 		super();
 		this.from = from;
 		this.relationship = relationship;

@@ -1,8 +1,10 @@
-package org.biosemantics.wsd.datasource.umls;
+package org.biosemantics.conceptstore.dataimport;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,42 +29,44 @@ import org.biosemantics.conceptstore.domain.impl.RlspType;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.index.IndexHits;
-import org.neo4j.helpers.collection.MapUtil;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
 import org.neo4j.unsafe.batchinsert.BatchInserterIndex;
-import org.neo4j.unsafe.batchinsert.BatchInserterIndexProvider;
-import org.neo4j.unsafe.batchinsert.BatchInserters;
 import org.neo4j.unsafe.batchinsert.BatchRelationship;
-import org.neo4j.unsafe.batchinsert.LuceneBatchInserterIndexProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.com.bytecode.opencsv.CSVReader;
 
-public class UmlsImporter {
+public class UmlsDataImport implements DataImport {
 
-	public void init() {
-		inserter = BatchInserters.inserter(neo4jFolder, config);
-		indexProvider = new LuceneBatchInserterIndexProvider(inserter);
-		labelIndex = indexProvider.nodeIndex("Label", MapUtil.stringMap("type", "exact"));
-		labelIndex.setCacheCapacity("text", 100000);
-		labelIndex.setCacheCapacity("id", 100000);
-		notationIndex = indexProvider.nodeIndex("Notation", MapUtil.stringMap("type", "exact"));
-		notationIndex.setCacheCapacity("id", 100000);
-		notationIndex.setCacheCapacity("code", 100000);
-		conceptIndex = indexProvider.nodeIndex("Concept", MapUtil.stringMap("type", "exact"));
-		notationIndex.setCacheCapacity("type", 100000);
-		relationshipTypeIndex = indexProvider.relationshipIndex("type", MapUtil.stringMap("type", "exact"));
-		relationshipTypeIndex.setCacheCapacity("type", 100000);
+	public UmlsDataImport(BatchInserter batchInserter, BatchInserterIndex labelIndex, BatchInserterIndex notationIndex,
+			BatchInserterIndex conceptIndex, BatchInserterIndex relationshipIndex, DataSource dataSource)
+			throws IOException {
+		this.inserter = batchInserter;
+		this.labelIndex = labelIndex;
+		this.notationIndex = notationIndex;
+		this.conceptIndex = conceptIndex;
+		this.relationshipIndex = relationshipIndex;
+		this.dataSource = dataSource;
+		this.ignoredCuiReader = new IgnoredCuiReader();
+		ignoredCuiReader.init();
 	}
 
-	public void writeSemanticTypes() throws SQLException {
+	@Override
+	public void importData() throws Exception {
+		writeSemanticTypes();
+		mapPredicates();
+		writeRelaPredicates();
+		writeConcepts();
+		writeRlspsBetweenConceptsAndSchemes();
+		writeNotNullRelaRlsps();
+	}
+
+	private void writeSemanticTypes() throws SQLException {
 		Connection conceptSchemeConnection = dataSource.getConnection();
 		Statement conceptSchemeStmt = conceptSchemeConnection.createStatement();
 		ResultSet rs = conceptSchemeStmt.executeQuery(GET_ALL_ST_DEF);
-		Map<String, Object> nodeProperties = new HashMap<String, Object>();
-		Map<String, Object> rlspProperties = new HashMap<String, Object>();
-		Map<String, Object> indexProperties = new HashMap<String, Object>();
+		Map<String, Object> props = new HashMap<String, Object>();
 		Map<String, Long> uiNodeMap = new HashMap<String, Long>();
 		Map<String, Long> exisitingLabelMap = new HashMap<String, Long>();
 		try {
@@ -74,37 +78,17 @@ public class UmlsImporter {
 				if (exisitingLabelMap.containsKey(labelText)) {
 					labelNode = exisitingLabelMap.get(labelText);
 				} else {
-					nodeProperties.put("language", ENG);
-					nodeProperties.put("text", labelText);
-					indexProperties.put("text", labelText);
-					labelNode = inserter.createNode(nodeProperties);
-					labelIndex.add(labelNode, indexProperties);
-					indexProperties.clear();
-					nodeProperties.clear();
+					labelNode = createLabelNode(labelText, ENG, props);
 					exisitingLabelMap.put(labelText, labelNode);
 				}
-				// label done
-				nodeProperties.put("source", NotationSourceConstant.UMLS.toString());
-				nodeProperties.put("code", notationCode);
-				indexProperties.put("code", notationCode);
-				Long notationNode = inserter.createNode(nodeProperties);
-				notationIndex.add(notationNode, indexProperties);
-				indexProperties.clear();
-				nodeProperties.clear();
-				// notation done
+				Long notationNode = createNotationNode(NotationSourceConstant.UMLS.toString(), notationCode, props);
 				if (recordType.equalsIgnoreCase("STY")) {
-					// semantic type
-					nodeProperties.put("type", ConceptType.CONCEPT_SCHEME.toString());
-					Long conceptNode = inserter.createNode(nodeProperties);
-					conceptIndex.add(conceptNode, nodeProperties);
-					nodeProperties.clear();
-					// concept done
-					rlspProperties.put("sources", new String[] { SRDEF });
-					inserter.createRelationship(conceptNode, notationNode, hasNotation, rlspProperties);
-					rlspProperties.put("type", LabelType.ALTERNATE.toString());
-					inserter.createRelationship(conceptNode, labelNode, hasLabel, rlspProperties);
-					rlspProperties.clear();
-					// rlsps done
+					Long conceptNode = createConceptNode(ConceptType.CONCEPT_SCHEME.toString(), props);
+					props.put("sources", new String[] { SRDEF });
+					createRelationship(conceptNode, notationNode, RlspType.HAS_NOTATION, props);
+					props.put("sources", new String[] { SRDEF });
+					props.put("type", LabelType.ALTERNATE.toString());
+					createRelationship(conceptNode, labelNode, RlspType.HAS_LABEL, props);
 					uiNodeMap.put(notationCode, conceptNode);
 
 				} else if (recordType.equalsIgnoreCase("RL")) {
@@ -114,27 +98,23 @@ public class UmlsImporter {
 					if (exisitingLabelMap.containsKey(invLabelText)) {
 						invLabelNode = exisitingLabelMap.get(invLabelText);
 					} else {
-						nodeProperties.put("language", ENG);
-						nodeProperties.put("text", invLabelText);
-						indexProperties.put("text", invLabelText);
-						invLabelNode = inserter.createNode(nodeProperties);
-						labelIndex.add(invLabelNode, nodeProperties);
-						indexProperties.clear();
-						nodeProperties.clear();
+						invLabelNode = createLabelNode(invLabelText, ENG, props);
 						exisitingLabelMap.put(invLabelText, invLabelNode);
 					}
 					// inv label done
-					nodeProperties.put("type", ConceptType.PREDICATE.toString());
-					Long conceptNode = inserter.createNode(nodeProperties);
-					conceptIndex.add(conceptNode, nodeProperties);
-					nodeProperties.clear();
+					Long conceptNode = createConceptNode(ConceptType.PREDICATE.toString(), props);
+					if (notationCode.equalsIgnoreCase("T186")) {
+						IS_A = DynamicRelationshipType.withName(conceptNode.toString());
+					}
 					// concept done
-					rlspProperties.put("sources", new String[] { SRDEF });
-					inserter.createRelationship(conceptNode, notationNode, hasNotation, rlspProperties);
-					rlspProperties.put("type", LabelType.ALTERNATE.toString());
-					inserter.createRelationship(conceptNode, labelNode, hasLabel, rlspProperties);
-					inserter.createRelationship(conceptNode, invLabelNode, hasLabel, rlspProperties);
-					rlspProperties.clear();
+					props.put("sources", new String[] { SRDEF });
+					createRelationship(conceptNode, notationNode, RlspType.HAS_NOTATION, props);
+					props.put("sources", new String[] { SRDEF });
+					props.put("type", LabelType.ALTERNATE.toString());
+					createRelationship(conceptNode, labelNode, RlspType.HAS_LABEL, props);
+					props.put("sources", new String[] { SRDEF });
+					props.put("type", LabelType.ALTERNATE.toString());
+					createRelationship(conceptNode, invLabelNode, RlspType.HAS_LABEL, props);
 					// rlsps done
 					uiNodeMap.put(notationCode, conceptNode);
 				}
@@ -147,7 +127,7 @@ public class UmlsImporter {
 			notationIndex.flush();
 			conceptIndex.flush();
 		}
-		logger.info("187 ui inserted:{}", uiNodeMap.size());
+		logger.info("(187) ui inserted:{}", uiNodeMap.size());
 		// add relationships for predicates and semantic types
 		Connection predicateParentConn = dataSource.getConnection();
 		PreparedStatement predicateParentPstmt = predicateParentConn.prepareStatement(GET_ST_PREDICATE_HIERARCHY);
@@ -161,9 +141,8 @@ public class UmlsImporter {
 					Long parentNode = uiNodeMap.get(parentNotationCode);
 					Long predicateNode = uiNodeMap.get(predicateNotationNode);
 					RelationshipType predicate = DynamicRelationshipType.withName(predicateNode.toString());
-					rlspProperties.put("sources", new String[] { SRSTRE1 });
-					inserter.createRelationship(entry.getValue(), parentNode, predicate, rlspProperties);
-					rlspProperties.clear();
+					props.put("sources", new String[] { SRSTRE1 });
+					createRelationship(entry.getValue(), parentNode, predicate, props);
 				}
 				predicateParentRs.close();
 			}
@@ -173,7 +152,7 @@ public class UmlsImporter {
 		}
 	}
 
-	public void writeConcepts() throws SQLException {
+	private void writeConcepts() throws SQLException {
 		writeCuis();
 		writeSuis();
 		linkSuiAndCui();
@@ -196,33 +175,23 @@ public class UmlsImporter {
 		stmt.setFetchSize(Integer.MIN_VALUE);
 		ResultSet rs = stmt.executeQuery(GET_ALL_DISTINCT_CUIS);
 		int ctr = 0;
-		Map<String, Object> nodeProperties = new HashMap<String, Object>();
-		Map<String, Object> rlspProperties = new HashMap<String, Object>();
-		Map<String, Object> indexProperties = new HashMap<String, Object>();
+		Map<String, Object> props = new HashMap<String, Object>();
 		try {
 			while (rs.next()) {
 				String cui = rs.getString("CUI");
 				if (!ignoredCuiReader.isIgnored(cui)) {
-					nodeProperties.put("source", NotationSourceConstant.UMLS.toString());
-					nodeProperties.put("code", cui);
-					Long notationNode = inserter.createNode(nodeProperties);
-					indexProperties.put("code", cui);
-					notationIndex.add(notationNode, indexProperties);
-					nodeProperties.clear();
-					indexProperties.clear();
+					Long notationNode = createNotationNode(NotationSourceConstant.UMLS.toString(), cui, props);
 					// notation done
-					nodeProperties.put("type", ConceptType.CONCEPT.toString());
-					Long conceptNode = inserter.createNode(nodeProperties);
-					conceptIndex.add(conceptNode, nodeProperties);
-					nodeProperties.clear();
+					Long conceptNode = createConceptNode(ConceptType.CONCEPT.toString(), props);
 					// concept done
-					rlspProperties.put("sources", new String[] { MRCONSO });
-					inserter.createRelationship(conceptNode, notationNode, hasNotation, rlspProperties);
-					rlspProperties.clear();
+					props.put("sources", new String[] { MRCONSO });
+					createRelationship(conceptNode, notationNode, RlspType.HAS_NOTATION, props);
 					// rlsp done
-					logger.debug("{}", ++ctr);
+					if (++ctr % 10000 == 0) {
+						logger.debug("{}", ctr);
+					}
 				} else {
-					logger.info("ignoring cui:{}" + cui);
+					logger.info("ignoring cui:{}", cui);
 				}
 			}
 			rs.close();
@@ -242,9 +211,7 @@ public class UmlsImporter {
 		stmt.setFetchSize(Integer.MIN_VALUE);
 		ResultSet rs = stmt.executeQuery(GET_ALL_DISTINCT_SUIS);
 		int ctr = 0;
-		Map<String, Object> nodeProperties = new HashMap<String, Object>();
-		Map<String, Object> indexProperties = new HashMap<String, Object>();
-
+		Map<String, Object> props = new HashMap<String, Object>();
 		try {
 			while (rs.next()) {
 				String str = rs.getString("STR");
@@ -255,16 +222,12 @@ public class UmlsImporter {
 					labelNode = hits.getSingle();
 					logger.info("{} {}", new Object[] { str, labelNode });
 				} else {
-					nodeProperties.put("language", ENG);
-					nodeProperties.put("text", str);
-					labelNode = inserter.createNode(nodeProperties);
-					indexProperties.put("text", str);
-					labelIndex.add(labelNode, indexProperties);
-					indexProperties.clear();
-					nodeProperties.clear();
+					labelNode = createLabelNode(str, ENG, props);
 				}
 				suiMap.put(sui, labelNode);
-				logger.debug("{}", ++ctr);
+				if (++ctr % 10000 == 0) {
+					logger.debug("{}", ctr);
+				}
 			}
 			rs.close();
 		} finally {
@@ -278,7 +241,7 @@ public class UmlsImporter {
 	private void linkSuiAndCui() throws SQLException {
 		Connection conn = dataSource.getConnection();
 		PreparedStatement pstmt = conn.prepareStatement(SUI_FOR_CUI);
-		Map<String, Object> rlspProperties = new HashMap<String, Object>();
+		Map<String, Object> props = new HashMap<String, Object>();
 		IndexHits<Long> hits = notationIndex.query("code", "C*");
 		logger.info("cuis found:{}", hits.size());
 		int ctr = 0;
@@ -288,22 +251,18 @@ public class UmlsImporter {
 				String cui = (String) cuiNotationProps.get("code");
 				pstmt.setString(1, cui);
 				ResultSet rs = pstmt.executeQuery();
+				Long cuiConceptNode = getConceptNodeForNotationNode(hit);
 				while (rs.next()) {
 					String sui = rs.getString("SUI");
-					rlspProperties.put("type", LabelType.ALTERNATE.toString());
-					Iterable<BatchRelationship> batchRlsps = inserter.getRelationships(hit);
-					Long conceptNode = null;
-					for (BatchRelationship batchRelationship : batchRlsps) {
-						if (batchRelationship.getType().name().equalsIgnoreCase(RlspType.HAS_NOTATION.toString())) {
-							conceptNode = batchRelationship.getStartNode();
-							break;
-						}
-					}
-					inserter.createRelationship(conceptNode, suiMap.get(sui), hasLabel, rlspProperties);
-					rlspProperties.clear();
+					Long suiNode = suiMap.get(sui);
+					props.put("sources", new String[] { MRCONSO });
+					props.put("type", LabelType.ALTERNATE.toString());
+					createRelationship(cuiConceptNode, suiNode, RlspType.HAS_LABEL, props);
 				}
 				rs.close();
-				logger.debug("{}", ++ctr);
+				if (++ctr % 10000 == 0) {
+					logger.debug("{}", ctr);
+				}
 			}
 
 		} finally {
@@ -316,100 +275,52 @@ public class UmlsImporter {
 		logger.info("sui and cui mapped cui:{}", ctr);
 	}
 
-	public void writeRelaPredicates() throws SQLException {
+	private void writeRelaPredicates() throws SQLException {
 		Connection getConceptPredicateConn = dataSource.getConnection();
 		Statement getConceptRedicatesStmt = getConceptPredicateConn.createStatement();
-		Map<String, Object> nodeProperties = new HashMap<String, Object>();
-		Map<String, Object> rlspProperties = new HashMap<String, Object>();
-		Map<String, Object> indexProperties = new HashMap<String, Object>();
+		Map<String, Object> props = new HashMap<String, Object>();
 		try {
 			ResultSet rs = getConceptRedicatesStmt.executeQuery(GET_ALL_RELA_PREDICATES);
 			while (rs.next()) {
 				String text = rs.getString("VALUE");
-
-				Long textNode = null;
-				IndexHits<Long> textHits = labelIndex.get("text", text);
-				if (textHits != null && textHits.size() > 0) {
-					textNode = textHits.getSingle();
-				}
+				Long textNode = getLabelNode(text, ENG);
 				String invText = rs.getString("EXPL");
-
-				Long invTextNode = null;
-				IndexHits<Long> invTextHits = labelIndex.get("text", invText);
-				if (invTextHits != null && invTextHits.size() > 0) {
-					invTextNode = invTextHits.getSingle();
-				}
+				Long invTextNode = getLabelNode(invText, ENG);
 				if (textNode == null && invTextNode == null) {
-
-					// create predicate and labels
-					nodeProperties.put("language", ENG);
-					nodeProperties.put("text", text);
-
-					Long newTextNode = inserter.createNode(nodeProperties);
-					indexProperties.put("text", text);
-					labelIndex.add(newTextNode, indexProperties);
-					indexProperties.clear();
-					nodeProperties.clear();
-
-					Long newInvTextNode = null;
-					if (!text.equalsIgnoreCase(invText)) {
-						nodeProperties.put("language", ENG);
-						nodeProperties.put("text", invText);
-						indexProperties.put("text", invText);
-						newInvTextNode = inserter.createNode(nodeProperties);
-						labelIndex.add(newInvTextNode, indexProperties);
-						indexProperties.clear();
-						nodeProperties.clear();
-					}
-
-					nodeProperties.put("type", ConceptType.PREDICATE.toString());
-					Long conceptNode = inserter.createNode(nodeProperties);
-					conceptIndex.add(conceptNode, nodeProperties);
-					nodeProperties.clear();
-
-					rlspProperties.put("sources", new String[] { SRDEF });
-					rlspProperties.put("type", LabelType.ALTERNATE.toString());
-					inserter.createRelationship(conceptNode, newTextNode, hasLabel, rlspProperties);
-					if (!text.equalsIgnoreCase(invText)) {
-						inserter.createRelationship(conceptNode, newInvTextNode, hasLabel, rlspProperties);
-					}
-					rlspProperties.clear();
+					textNode = createLabelNode(text, ENG, props);
+					invTextNode = createLabelNode(invText, ENG, props);
+					Long conceptNode = createConceptNode(ConceptType.PREDICATE.toString(), props);
+					createRelationship(conceptNode, textNode, RlspType.HAS_LABEL, props);
+					createRelationship(conceptNode, invTextNode, RlspType.HAS_LABEL, props);
 
 				} else if (textNode == null || invTextNode == null) {
-					String missingLabelText = text;
-					if (!StringUtils.isBlank(missingLabelText)) {
-						missingLabelText = invText;
+					String nullLabelNodeText = null;
+					Long notNullLabelNode = null;
+					if (textNode == null) {
+						nullLabelNodeText = text;
+						notNullLabelNode = invTextNode;
+					} else {
+						nullLabelNodeText = invText;
+						notNullLabelNode = textNode;
 					}
-					Long availableNode = textNode;
-					if (availableNode == null) {
-						availableNode = invTextNode;
-					}
-					nodeProperties.put("language", ENG);
-					nodeProperties.put("text", missingLabelText);
-					Long newTextNode = inserter.createNode(nodeProperties);
-					indexProperties.put("text", missingLabelText);
-					labelIndex.add(newTextNode, indexProperties);
-					nodeProperties.clear();
-					indexProperties.clear();
-
-					Iterable<BatchRelationship> batchRlsps = inserter.getRelationships(availableNode);
-					Long conceptNode = null;
-					for (BatchRelationship batchRelationship : batchRlsps) {
-						if (batchRelationship.getType().name().equalsIgnoreCase(RlspType.HAS_LABEL.toString())) {
-							conceptNode = batchRelationship.getStartNode();
-							break;
-						}
-					}
-
-					rlspProperties.put("sources", new String[] { SRDEF });
-					rlspProperties.put("type", LabelType.ALTERNATE.toString());
-					inserter.createRelationship(conceptNode, newTextNode, hasLabel, rlspProperties);
-					rlspProperties.clear();
-
+					Long notNullConcept = getConceptNodeForLabelNode(notNullLabelNode);
+					Long labelNode = createLabelNode(nullLabelNodeText, ENG, props);
+					createRelationship(notNullConcept, labelNode, RlspType.HAS_LABEL, props);
 				} else {
 					// if linked to predicate do nothing
 					// if not linked to predicate - create predicate and link
-
+					long textConceptNode = getConceptNodeForLabelNode(textNode);
+					long invConceptNode = getConceptNodeForLabelNode(invTextNode);
+					if (textConceptNode != invConceptNode) {
+						throw new IllegalStateException("inverse labels point to different concepts " + text + " "
+								+ invText);
+					} else {
+						Map<String, Object> properties = inserter.getNodeProperties(textConceptNode);
+						if (!((String) properties.get("type")).equalsIgnoreCase(ConceptType.PREDICATE.toString())) {
+							throw new IllegalStateException("labels associated with concept that is not a predicate "
+									+ text);
+						}
+					}
 				}
 				labelIndex.flush();
 				notationIndex.flush();
@@ -420,37 +331,189 @@ public class UmlsImporter {
 		}
 	}
 
-	public void mapRelaPredicatesToSemanticTypePredicates() throws SQLException {
-		Map<String, SemanticTypePredicate> mapping = predicateMapper.getMappingMap();
-		Map<String, Object> rlspProps = new HashMap<String, Object>();
-		rlspProps.put("sources", new String[] { ERIK_TSV_FILE });
-		for (Entry<String, SemanticTypePredicate> entry : mapping.entrySet()) {
-			String key = entry.getKey();
-			IndexHits<Long> fromHits = labelIndex.get("text", key);
-			Long fromHit = null;
-			if (fromHits != null && fromHits.size() > 0) {
-				fromHit = fromHits.getSingle();
-			}
-			if (entry.getValue().getRelatedTo() == null) {
-				System.out.println("here");
-			}
-			IndexHits<Long> toHits = labelIndex.get("text", entry.getValue().getRelatedTo());
-			Long toHit = null;
-			if (toHits != null && toHits.size() > 0) {
-				toHit = toHits.getSingle();
-			}
-
-			if (fromHit != null && toHit != null) {
-				if (entry.getValue().getRelationship() == SemanticTypePredicate.EQ_PROP) {
-					inserter.createRelationship(fromHit, toHit, sameAs, rlspProps);
-				} else {
-					inserter.createRelationship(fromHit, toHit, subPropOf, rlspProps);
+	public void mapPredicates() throws SQLException, IOException {
+		Map<String, Object> props = new HashMap<String, Object>();
+		InputStream is = this.getClass().getClassLoader().getResourceAsStream("predicate-mapping.txt");
+		if (is == null) {
+			logger.info("no predicate-mapping.txt file found");
+		} else {
+			CSVReader csvReader = new CSVReader(new InputStreamReader(is), '\t');
+			try {
+				List<String[]> lines = csvReader.readAll();
+				for (String[] columns : lines) {
+					String meta = columns[0].trim();
+					String invMeta = columns[4].trim();
+					String rlsp = columns[1].trim();
+					String semNet = columns[2].trim();
+					if (!StringUtils.isBlank(rlsp) && rlsp.equalsIgnoreCase("eqProp")) {
+						labelIndex.flush();
+						Long semNetLabelNode = getLabelNode(semNet, ENG);
+						if (semNetLabelNode == null) {
+							throw new IllegalStateException("semantic network label node not found for text " + semNet);
+						} else {
+							Long metaNode = getLabelNode(meta, ENG);
+							if (metaNode == null) {
+								metaNode = createLabelNode(meta, ENG, props);
+							}
+							Long invMetaNode = getLabelNode(invMeta, ENG);
+							if (invMetaNode == null) {
+								invMetaNode = createLabelNode(invMeta, ENG, props);
+							}
+							Long semNetConceptNode = getConceptNodeForLabelNode(semNetLabelNode);
+							createRelationship(semNetConceptNode, metaNode, RlspType.HAS_LABEL, props);
+							createRelationship(semNetConceptNode, invMetaNode, RlspType.HAS_LABEL, props);
+						}
+					}
 				}
-			} else {
-				logger.error("{} {}", new Object[] { fromHit, toHit });
-			}
+				for (String[] columns : lines) {
+					String meta = columns[0].trim();
+					String invMeta = columns[4].trim();
+					String rlsp = columns[1].trim();
+					String semNet = columns[2].trim();
+					if (!StringUtils.isBlank(rlsp) && rlsp.equalsIgnoreCase("subProp")) {
+						labelIndex.flush();
+						Long semNetLabelNode = getLabelNode(semNet, ENG);
+						if (semNetLabelNode == null) {
+							throw new IllegalStateException("semantic network label node not found for text " + semNet);
+						} else {
+							Long metaNode = getLabelNode(meta, ENG);
+							Long invMetaNode = getLabelNode(invMeta, ENG);
+							Long semNetConceptNode = getConceptNodeForLabelNode(semNetLabelNode);
+							if (metaNode == null && invMetaNode == null) {
+								// create new concept add as IS_A to the
+								// semnatic
+								// type
+								metaNode = createLabelNode(meta, ENG, props);
+								invMetaNode = createLabelNode(invMeta, ENG, props);
+								Long conceptNode = createConceptNode(ConceptType.PREDICATE.toString(), props);
+								createRelationship(conceptNode, metaNode, RlspType.HAS_LABEL, props);
+								createRelationship(conceptNode, invMetaNode, RlspType.HAS_LABEL, props);
+								createRelationship(conceptNode, semNetConceptNode, IS_A, props);
+							} else if (metaNode == null || invMetaNode == null) {
+								String nullLabelNodeText = null;
+								Long notNullLabelNode = null;
+								if (invMetaNode == null) {
+									nullLabelNodeText = invMeta;
+									notNullLabelNode = metaNode;
+								} else {
+									nullLabelNodeText = meta;
+									notNullLabelNode = invMetaNode;
+								}
+								if (notNullLabelNode == 619) {
+									System.out.println("here");
+								}
+								Long notNullConcept = getConceptNodeForLabelNode(notNullLabelNode);
+								if (notNullConcept == null) {
+									System.out.println(inserter.getNodeProperties(notNullLabelNode));
+								}
+								Long labelNode = createLabelNode(nullLabelNodeText, ENG, props);
+								createRelationship(notNullConcept, labelNode, RlspType.HAS_LABEL, props);
+								createRelationship(notNullConcept, semNetConceptNode, IS_A, props);
 
+							} else if (metaNode != null && invMetaNode != null) {
+								Long metaConceptNode = getConceptNodeForLabelNode(metaNode);
+								Long invMetaConceptNode = getConceptNodeForLabelNode(invMetaNode);
+								if (metaConceptNode != invMetaConceptNode) {
+									throw new IllegalStateException("inverse labels point to different concepts "
+											+ meta + " " + invMeta);
+								} else {
+									createRelationship(metaConceptNode, semNetConceptNode, IS_A, props);
+								}
+							}
+
+						}
+					}
+				}
+			} finally {
+				csvReader.close();
+			}
 		}
+	}
+
+	private Long getConceptNodeForLabelNode(Long labelNode) {
+		Long conceptNode = null;
+		Iterable<BatchRelationship> relationships = inserter.getRelationships(labelNode);
+		for (BatchRelationship batchRelationship : relationships) {
+			if (batchRelationship.getType().name().equals(RlspType.HAS_LABEL.toString())) {
+				conceptNode = batchRelationship.getStartNode();
+				break;
+			}
+		}
+		return conceptNode;
+	}
+
+	private Long getConceptNodeForNotationNode(Long notationNode) {
+		Long conceptNode = null;
+		Iterable<BatchRelationship> relationships = inserter.getRelationships(notationNode);
+		for (BatchRelationship batchRelationship : relationships) {
+			if (batchRelationship.getType().name().equals(RlspType.HAS_NOTATION.toString())) {
+				conceptNode = batchRelationship.getStartNode();
+				break;
+			}
+		}
+		return conceptNode;
+	}
+
+	private Long getLabelNode(String labelText, String language) {
+		Long labelNode = null;
+		IndexHits<Long> hits = labelIndex.get("text", labelText);
+		for (Long hit : hits) {
+			Map<String, Object> props = inserter.getNodeProperties(hit);
+			if (((String) props.get("language")).equalsIgnoreCase(language)) {
+				labelNode = hit;
+			}
+		}
+		return labelNode;
+	}
+
+	private Long createLabelNode(String labelText, String language, Map<String, Object> props) {
+		Long labelNode = null;
+		props.put("text", labelText);
+		props.put("language", language);
+		labelNode = inserter.createNode(props);
+		props.clear();
+		props.put("text", labelText);
+		labelIndex.add(labelNode, props);
+		props.clear();
+		return labelNode;
+	}
+
+	private Long getNotationNode(String code) {
+		Long notationNode = null;
+		IndexHits<Long> hits = notationIndex.get("code", code);
+		for (Long hit : hits) {
+			notationNode = hit;
+		}
+		return notationNode;
+	}
+
+	private Long createRelationship(Long from, Long to, RelationshipType rlspType, Map<String, Object> props) {
+		Long relaNode = inserter.createRelationship(from, to, rlspType, props);
+		props.clear();
+		props.put("rlspType", rlspType.toString());
+		relationshipIndex.add(relaNode, props);
+		props.clear();
+		return relaNode;
+	}
+
+	private Long createNotationNode(String source, String code, Map<String, Object> props) {
+		Long notationNode = null;
+		props.put("source", source);
+		props.put("code", code);
+		notationNode = inserter.createNode(props);
+		props.clear();
+		props.put("code", code);
+		notationIndex.add(notationNode, props);
+		props.clear();
+		return notationNode;
+	}
+
+	private Long createConceptNode(String conceptType, Map<String, Object> props) {
+		props.put("type", conceptType);
+		Long conceptNode = inserter.createNode(props);
+		conceptIndex.add(conceptNode, props);
+		props.clear();
+		return conceptNode;
 	}
 
 	public void writeRlspsBetweenConceptsAndSchemes() throws SQLException {
@@ -458,8 +521,7 @@ public class UmlsImporter {
 		Statement conceptSchemeStmt = conceptSchemeConn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
 				java.sql.ResultSet.CONCUR_READ_ONLY);
 		conceptSchemeStmt.setFetchSize(Integer.MIN_VALUE);
-		Map<String, Object> rlspProps = new HashMap<String, Object>();
-		rlspProps.put("sources", new String[] { MRSTY });
+		Map<String, Object> props = new HashMap<String, Object>();
 		ResultSet rs = conceptSchemeStmt.executeQuery(GET_RLSP_CONCEPT_SCHEME);
 		int ctr = 0;
 		try {
@@ -469,28 +531,15 @@ public class UmlsImporter {
 					continue;
 				}
 				String tui = rs.getString("TUI");
-				IndexHits<Long> cuiHits = notationIndex.get("code", cui);
-				Long cuiNotationNode = cuiHits.getSingle();
-				Long cuiConceptNode = null;
-				Iterable<BatchRelationship> batchRlsps = inserter.getRelationships(cuiNotationNode);
-				for (BatchRelationship batchRelationship : batchRlsps) {
-					if (batchRelationship.getType().name().equalsIgnoreCase(RlspType.HAS_NOTATION.toString())) {
-						cuiConceptNode = batchRelationship.getStartNode();
-						break;
-					}
+				Long cuiNotationNode = getNotationNode(cui);
+				Long cuiConceptNode = getConceptNodeForNotationNode(cuiNotationNode);
+				Long tuiNotationNode = getNotationNode(tui);
+				Long tuiConceptNode = getConceptNodeForNotationNode(tuiNotationNode);
+				props.put("sources", new String[] { MRSTY });
+				createRelationship(cuiConceptNode, tuiConceptNode, RlspType.IN_SCHEME, props);
+				if (++ctr % 10000 == 0) {
+					logger.debug("{}", ctr);
 				}
-				IndexHits<Long> tuiHits = notationIndex.get("code", tui);
-				Long tuiNotationNode = tuiHits.getSingle();
-				Long tuiConceptNode = null;
-				Iterable<BatchRelationship> tuiRlsps = inserter.getRelationships(tuiNotationNode);
-				for (BatchRelationship batchRelationship : tuiRlsps) {
-					if (batchRelationship.getType().name().equalsIgnoreCase(RlspType.HAS_NOTATION.toString())) {
-						tuiConceptNode = batchRelationship.getStartNode();
-						break;
-					}
-				}
-				inserter.createRelationship(cuiConceptNode, tuiConceptNode, inScheme, rlspProps);
-				ctr++;
 			}
 			logger.info("{} concept to concept scheme rlsps created", ctr);
 		} finally {
@@ -505,16 +554,12 @@ public class UmlsImporter {
 	}
 
 	public void writeNotNullRelaRlsps() throws SQLException {
-		// load all predicates in map
-		// Map<String, Long> predicatesMap = new HashMap<String, Long>();
-
 		Connection connection = dataSource.getConnection();
 		Statement stmt = connection.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
 				java.sql.ResultSet.CONCUR_READ_ONLY);
 		stmt.setFetchSize(Integer.MIN_VALUE);
 		ResultSet rs = stmt.executeQuery(GET_NOT_NULL_RELA);
-		Map<String, Object> sourcesMap = new HashMap<String, Object>();
-		sourcesMap.put("sources", new String[] { MRREL });
+		Map<String, Object> props = new HashMap<String, Object>();
 		int ctr = 0;
 		try {
 			while (rs.next()) {
@@ -524,54 +569,23 @@ public class UmlsImporter {
 				if (ignoredCuiReader.isIgnored(cui1) || ignoredCuiReader.isIgnored(cui2)) {
 					continue;
 				}
-				Long srcConceptNode = null;
-				IndexHits<Long> cui1Hits = notationIndex.get("code", cui1);
-				if (cui1Hits != null && cui1Hits.size() == 1) {
-					Long srcNodeId = cui1Hits.getSingle();
-					Iterable<BatchRelationship> batchRlsps = inserter.getRelationships(srcNodeId);
-					for (BatchRelationship batchRelationship : batchRlsps) {
-						if (batchRelationship.getType().name().equalsIgnoreCase(RlspType.HAS_NOTATION.toString())) {
-							srcConceptNode = batchRelationship.getStartNode();
-							break;
-						}
-					}
-				} else {
-					continue;
-				}
 
-				Long tgtConceptNode = null;
-				IndexHits<Long> cui2Hits = notationIndex.get("code", cui2);
-				if (cui2Hits != null && cui2Hits.size() == 1) {
-					Long tgtNodeId = cui2Hits.getSingle();
-					Iterable<BatchRelationship> tgtNotationRlsps = inserter.getRelationships(tgtNodeId);
-					for (BatchRelationship batchRelationship : tgtNotationRlsps) {
-						if (batchRelationship.getType().name().equalsIgnoreCase(RlspType.HAS_NOTATION.toString())) {
-							tgtConceptNode = batchRelationship.getStartNode();
-							break;
-						}
-					}
-				} else {
-					continue;
-				}
+				Long cui1NotationNode = getNotationNode(cui1);
+				Long srcConceptNode = getConceptNodeForNotationNode(cui1NotationNode);
+				Long cui2NotationNode = getNotationNode(cui2);
+				Long tgtConceptNode = getConceptNodeForNotationNode(cui2NotationNode);
 				if (srcConceptNode != null && tgtConceptNode != null) {
-					IndexHits<Long> labelHits = labelIndex.get("text", rela);
-					Long labelNode = labelHits.getSingle();
-					Long predicateConceptNode = null;
-					Iterable<BatchRelationship> batchRlsps = inserter.getRelationships(labelNode);
-					for (BatchRelationship batchRelationship : batchRlsps) {
-						if (batchRelationship.getType().name().equalsIgnoreCase(RlspType.HAS_LABEL.toString())) {
-							predicateConceptNode = batchRelationship.getStartNode();
-							break;
-						}
-					}
-					inserter.createRelationship(srcConceptNode, tgtConceptNode,
-							DynamicRelationshipType.withName(String.valueOf(predicateConceptNode)), sourcesMap);
-					ctr++;
-
+					Long relaLabelNode = getLabelNode(rela, ENG);
+					Long relaConceptNode = getConceptNodeForLabelNode(relaLabelNode);
+					RelationshipType rlsptype = DynamicRelationshipType.withName(relaConceptNode.toString());
+					props.put("sources", new String[] { MRREL });
+					createRelationship(cui2NotationNode, cui1NotationNode, rlsptype, props);
 				}
-				logger.debug("{}", ctr);
+				if (++ctr % 10000 == 0) {
+					logger.debug("{}", ctr);
+				}
 			}
-			logger.info("rela relationships added: {}", ctr);
+			logger.info("all non null rela relationships added: {}", ctr);
 			rs.close();
 		} finally {
 			stmt.close();
@@ -613,7 +627,7 @@ public class UmlsImporter {
 
 					rlspProperties.put("sources", new String[] { ERIK_TSV_FILE });
 					rlspProperties.put("type", LabelType.ALTERNATE.toString());
-					inserter.createRelationship(conceptNode, newTextNode, hasLabel, rlspProperties);
+					inserter.createRelationship(conceptNode, newTextNode, RlspType.HAS_LABEL, rlspProperties);
 					rlspProperties.clear();
 					if (predText.startsWith("neg_")) {
 						predText = predText.substring(4);
@@ -694,7 +708,7 @@ public class UmlsImporter {
 									break;
 								}
 							}
-							sources.put("sources", new String[] { "PMID|"+pmid });
+							sources.put("sources", new String[] { "PMID|" + pmid });
 							inserter.createRelationship(srcConceptNode, tgtConceptNode,
 									DynamicRelationshipType.withName(String.valueOf(predicateConceptNode)), sources);
 							sources.clear();
@@ -719,36 +733,14 @@ public class UmlsImporter {
 		}
 	}
 
-	public void destroy() {
-		logger.debug("shutdown invoked");
-		labelIndex.flush();
-		notationIndex.flush();
-		conceptIndex.flush();
-		indexProvider.shutdown();
-		inserter.shutdown();
-		logger.debug("shutdown complete");
-	}
-
-	public void setNeo4jFolder(String neo4jFolder) {
-		this.neo4jFolder = neo4jFolder;
-	}
-	
-	public void setConfig(Map<String, String> config) {
-		this.config = config;
-	}
-
-	private String neo4jFolder;
-	private Map<String, String> config;
 	private BatchInserter inserter;
-	private BatchInserterIndexProvider indexProvider;
 	private BatchInserterIndex labelIndex;
 	private BatchInserterIndex notationIndex;
 	private BatchInserterIndex conceptIndex;
-	private BatchInserterIndex relationshipTypeIndex;
-	
+	private BatchInserterIndex relationshipIndex;
 	private DataSource dataSource;
 	private IgnoredCuiReader ignoredCuiReader;
-	private SemanticTypeConceptPredicateMapper predicateMapper;
+	private static RelationshipType IS_A = null;
 
 	private Map<String, Long> suiMap = new HashMap<String, Long>();
 
@@ -772,10 +764,6 @@ public class UmlsImporter {
 	private static final String ENG = "ENG";
 	private static final String ERIK_TSV_FILE = "ERIK_TSV_FILE";
 
-	private static final Logger logger = LoggerFactory.getLogger(UmlsImporter.class);
-	private final RelationshipType hasLabel = DynamicRelationshipType.withName(RlspType.HAS_LABEL.toString());
-	private final RelationshipType hasNotation = DynamicRelationshipType.withName(RlspType.HAS_NOTATION.toString());
-	private final RelationshipType sameAs = DynamicRelationshipType.withName(RlspType.SAME_AS.toString());
-	private final RelationshipType subPropOf = DynamicRelationshipType.withName(RlspType.SUB_PROP_OF.toString());
-	private final RelationshipType inScheme = DynamicRelationshipType.withName(RlspType.IN_SCHEME.toString());
+	private static final Logger logger = LoggerFactory.getLogger(UmlsDataImport.class);
+
 }

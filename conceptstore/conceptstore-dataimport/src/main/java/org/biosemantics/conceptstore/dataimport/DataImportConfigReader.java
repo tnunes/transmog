@@ -1,4 +1,4 @@
-package org.biosemantics.wsd.datasource.umls;
+package org.biosemantics.conceptstore.dataimport;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,13 +7,13 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConfigReader {
+public class DataImportConfigReader {
 
 	private Properties properties = new Properties();
 
 	public void init() throws IOException {
 
-		InputStream is = this.getClass().getClassLoader().getResourceAsStream("umls-import-config.properties");
+		InputStream is = this.getClass().getClassLoader().getResourceAsStream("dataimport-config.properties");
 		if (is == null) {
 			logger.info("predicate-mapping.txt file found");
 		} else {
@@ -26,11 +26,14 @@ public class ConfigReader {
 		return properties;
 	}
 
-	private static final Logger logger = LoggerFactory.getLogger(ConfigReader.class);
-	
-	
+	public String getValue(String key) {
+		return properties.getProperty(key);
+	}
+
+	private static final Logger logger = LoggerFactory.getLogger(DataImportConfigReader.class);
+
 	public static void main(String[] args) throws IOException {
-		ConfigReader configReader = new ConfigReader();
+		DataImportConfigReader configReader = new DataImportConfigReader();
 		configReader.init();
 	}
 }
