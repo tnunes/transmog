@@ -43,7 +43,7 @@ public class BatchImportScript {
 			logger.info("no pubmed data file defined in dataimport-config.properties file, will not import pubmed");
 		} else {
 			pubmedImportFile = new File(file);
-			if (pubmedImportFile.exists()) {
+			if (!pubmedImportFile.exists()) {
 				throw new IllegalArgumentException("pubmed import file does not exist " + file);
 			}
 			if (!pubmedImportFile.canRead()) {
