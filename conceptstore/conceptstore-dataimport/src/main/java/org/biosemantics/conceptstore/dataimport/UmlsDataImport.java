@@ -40,8 +40,8 @@ import au.com.bytecode.opencsv.CSVReader;
 public class UmlsDataImport implements DataImport {
 
 	public UmlsDataImport(BatchInserter batchInserter, BatchInserterIndex labelIndex, BatchInserterIndex notationIndex,
-			BatchInserterIndex conceptIndex, BatchInserterIndex relationshipIndex, DataSource dataSource)
-			throws IOException {
+			BatchInserterIndex conceptIndex, BatchInserterIndex relationshipIndex, DataSource dataSource,
+			DataImportUtility dataImportUtility) throws IOException {
 		this.inserter = batchInserter;
 		this.labelIndex = labelIndex;
 		this.notationIndex = notationIndex;
@@ -49,6 +49,7 @@ public class UmlsDataImport implements DataImport {
 		this.relationshipIndex = relationshipIndex;
 		this.dataSource = dataSource;
 		this.ignoredCuiReader = new IgnoredCuiReader();
+		this.dataImportUtility = dataImportUtility;
 		ignoredCuiReader.init();
 	}
 
@@ -78,17 +79,19 @@ public class UmlsDataImport implements DataImport {
 				if (exisitingLabelMap.containsKey(labelText)) {
 					labelNode = exisitingLabelMap.get(labelText);
 				} else {
-					labelNode = createLabelNode(labelText, ENG, props);
+					labelNode = dataImportUtility.createLabelNode(labelText, ENG, props);
 					exisitingLabelMap.put(labelText, labelNode);
 				}
-				Long notationNode = createNotationNode(NotationSourceConstant.UMLS.toString(), notationCode, props);
+				Long notationNode = dataImportUtility.createNotationNode(NotationSourceConstant.UMLS.toString(),
+						notationCode, props);
 				if (recordType.equalsIgnoreCase("STY")) {
-					Long conceptNode = createConceptNode(ConceptType.CONCEPT_SCHEME.toString(), props);
+					Long conceptNode = dataImportUtility
+							.createConceptNode(ConceptType.CONCEPT_SCHEME.toString(), props);
 					props.put("sources", new String[] { SRDEF });
-					createRelationship(conceptNode, notationNode, RlspType.HAS_NOTATION, props);
+					dataImportUtility.createRelationship(conceptNode, notationNode, RlspType.HAS_NOTATION, props);
 					props.put("sources", new String[] { SRDEF });
 					props.put("type", LabelType.ALTERNATE.toString());
-					createRelationship(conceptNode, labelNode, RlspType.HAS_LABEL, props);
+					dataImportUtility.createRelationship(conceptNode, labelNode, RlspType.HAS_LABEL, props);
 					uiNodeMap.put(notationCode, conceptNode);
 
 				} else if (recordType.equalsIgnoreCase("RL")) {
@@ -98,23 +101,23 @@ public class UmlsDataImport implements DataImport {
 					if (exisitingLabelMap.containsKey(invLabelText)) {
 						invLabelNode = exisitingLabelMap.get(invLabelText);
 					} else {
-						invLabelNode = createLabelNode(invLabelText, ENG, props);
+						invLabelNode = dataImportUtility.createLabelNode(invLabelText, ENG, props);
 						exisitingLabelMap.put(invLabelText, invLabelNode);
 					}
 					// inv label done
-					Long conceptNode = createConceptNode(ConceptType.PREDICATE.toString(), props);
+					Long conceptNode = dataImportUtility.createConceptNode(ConceptType.PREDICATE.toString(), props);
 					if (notationCode.equalsIgnoreCase("T186")) {
 						IS_A = DynamicRelationshipType.withName(conceptNode.toString());
 					}
 					// concept done
 					props.put("sources", new String[] { SRDEF });
-					createRelationship(conceptNode, notationNode, RlspType.HAS_NOTATION, props);
+					dataImportUtility.createRelationship(conceptNode, notationNode, RlspType.HAS_NOTATION, props);
 					props.put("sources", new String[] { SRDEF });
 					props.put("type", LabelType.ALTERNATE.toString());
-					createRelationship(conceptNode, labelNode, RlspType.HAS_LABEL, props);
+					dataImportUtility.createRelationship(conceptNode, labelNode, RlspType.HAS_LABEL, props);
 					props.put("sources", new String[] { SRDEF });
 					props.put("type", LabelType.ALTERNATE.toString());
-					createRelationship(conceptNode, invLabelNode, RlspType.HAS_LABEL, props);
+					dataImportUtility.createRelationship(conceptNode, invLabelNode, RlspType.HAS_LABEL, props);
 					// rlsps done
 					uiNodeMap.put(notationCode, conceptNode);
 				}
@@ -142,7 +145,7 @@ public class UmlsDataImport implements DataImport {
 					Long predicateNode = uiNodeMap.get(predicateNotationNode);
 					RelationshipType predicate = DynamicRelationshipType.withName(predicateNode.toString());
 					props.put("sources", new String[] { SRSTRE1 });
-					createRelationship(entry.getValue(), parentNode, predicate, props);
+					dataImportUtility.createRelationship(entry.getValue(), parentNode, predicate, props);
 				}
 				predicateParentRs.close();
 			}
@@ -180,12 +183,13 @@ public class UmlsDataImport implements DataImport {
 			while (rs.next()) {
 				String cui = rs.getString("CUI");
 				if (!ignoredCuiReader.isIgnored(cui)) {
-					Long notationNode = createNotationNode(NotationSourceConstant.UMLS.toString(), cui, props);
+					Long notationNode = dataImportUtility.createNotationNode(NotationSourceConstant.UMLS.toString(),
+							cui, props);
 					// notation done
-					Long conceptNode = createConceptNode(ConceptType.CONCEPT.toString(), props);
+					Long conceptNode = dataImportUtility.createConceptNode(ConceptType.CONCEPT.toString(), props);
 					// concept done
 					props.put("sources", new String[] { MRCONSO });
-					createRelationship(conceptNode, notationNode, RlspType.HAS_NOTATION, props);
+					dataImportUtility.createRelationship(conceptNode, notationNode, RlspType.HAS_NOTATION, props);
 					// rlsp done
 					if (++ctr % 10000 == 0) {
 						logger.debug("{}", ctr);
@@ -222,7 +226,7 @@ public class UmlsDataImport implements DataImport {
 					labelNode = hits.getSingle();
 					logger.info("{} {}", new Object[] { str, labelNode });
 				} else {
-					labelNode = createLabelNode(str, ENG, props);
+					labelNode = dataImportUtility.createLabelNode(str, ENG, props);
 				}
 				suiMap.put(sui, labelNode);
 				if (++ctr % 10000 == 0) {
@@ -251,13 +255,13 @@ public class UmlsDataImport implements DataImport {
 				String cui = (String) cuiNotationProps.get("code");
 				pstmt.setString(1, cui);
 				ResultSet rs = pstmt.executeQuery();
-				Long cuiConceptNode = getConceptNodeForNotationNode(hit);
+				Long cuiConceptNode = dataImportUtility.getConceptNodeForNotationNode(hit);
 				while (rs.next()) {
 					String sui = rs.getString("SUI");
 					Long suiNode = suiMap.get(sui);
 					props.put("sources", new String[] { MRCONSO });
 					props.put("type", LabelType.ALTERNATE.toString());
-					createRelationship(cuiConceptNode, suiNode, RlspType.HAS_LABEL, props);
+					dataImportUtility.createRelationship(cuiConceptNode, suiNode, RlspType.HAS_LABEL, props);
 				}
 				rs.close();
 				if (++ctr % 10000 == 0) {
@@ -283,15 +287,15 @@ public class UmlsDataImport implements DataImport {
 			ResultSet rs = getConceptRedicatesStmt.executeQuery(GET_ALL_RELA_PREDICATES);
 			while (rs.next()) {
 				String text = rs.getString("VALUE");
-				Long textNode = getLabelNode(text, ENG);
+				Long textNode = dataImportUtility.getLabelNode(text, ENG);
 				String invText = rs.getString("EXPL");
-				Long invTextNode = getLabelNode(invText, ENG);
+				Long invTextNode = dataImportUtility.getLabelNode(invText, ENG);
 				if (textNode == null && invTextNode == null) {
-					textNode = createLabelNode(text, ENG, props);
-					invTextNode = createLabelNode(invText, ENG, props);
-					Long conceptNode = createConceptNode(ConceptType.PREDICATE.toString(), props);
-					createRelationship(conceptNode, textNode, RlspType.HAS_LABEL, props);
-					createRelationship(conceptNode, invTextNode, RlspType.HAS_LABEL, props);
+					textNode = dataImportUtility.createLabelNode(text, ENG, props);
+					invTextNode = dataImportUtility.createLabelNode(invText, ENG, props);
+					Long conceptNode = dataImportUtility.createConceptNode(ConceptType.PREDICATE.toString(), props);
+					dataImportUtility.createRelationship(conceptNode, textNode, RlspType.HAS_LABEL, props);
+					dataImportUtility.createRelationship(conceptNode, invTextNode, RlspType.HAS_LABEL, props);
 
 				} else if (textNode == null || invTextNode == null) {
 					String nullLabelNodeText = null;
@@ -303,14 +307,14 @@ public class UmlsDataImport implements DataImport {
 						nullLabelNodeText = invText;
 						notNullLabelNode = textNode;
 					}
-					Long notNullConcept = getConceptNodeForLabelNode(notNullLabelNode);
-					Long labelNode = createLabelNode(nullLabelNodeText, ENG, props);
-					createRelationship(notNullConcept, labelNode, RlspType.HAS_LABEL, props);
+					Long notNullConcept = dataImportUtility.getConceptNodeForLabelNode(notNullLabelNode);
+					Long labelNode = dataImportUtility.createLabelNode(nullLabelNodeText, ENG, props);
+					dataImportUtility.createRelationship(notNullConcept, labelNode, RlspType.HAS_LABEL, props);
 				} else {
 					// if linked to predicate do nothing
 					// if not linked to predicate - create predicate and link
-					long textConceptNode = getConceptNodeForLabelNode(textNode);
-					long invConceptNode = getConceptNodeForLabelNode(invTextNode);
+					long textConceptNode = dataImportUtility.getConceptNodeForLabelNode(textNode);
+					long invConceptNode = dataImportUtility.getConceptNodeForLabelNode(invTextNode);
 					if (textConceptNode != invConceptNode) {
 						throw new IllegalStateException("inverse labels point to different concepts " + text + " "
 								+ invText);
@@ -347,21 +351,23 @@ public class UmlsDataImport implements DataImport {
 					String semNet = columns[2].trim();
 					if (!StringUtils.isBlank(rlsp) && rlsp.equalsIgnoreCase("eqProp")) {
 						labelIndex.flush();
-						Long semNetLabelNode = getLabelNode(semNet, ENG);
+						Long semNetLabelNode = dataImportUtility.getLabelNode(semNet, ENG);
 						if (semNetLabelNode == null) {
 							throw new IllegalStateException("semantic network label node not found for text " + semNet);
 						} else {
-							Long metaNode = getLabelNode(meta, ENG);
+							Long metaNode = dataImportUtility.getLabelNode(meta, ENG);
 							if (metaNode == null) {
-								metaNode = createLabelNode(meta, ENG, props);
+								metaNode = dataImportUtility.createLabelNode(meta, ENG, props);
 							}
-							Long invMetaNode = getLabelNode(invMeta, ENG);
+							Long invMetaNode = dataImportUtility.getLabelNode(invMeta, ENG);
 							if (invMetaNode == null) {
-								invMetaNode = createLabelNode(invMeta, ENG, props);
+								invMetaNode = dataImportUtility.createLabelNode(invMeta, ENG, props);
 							}
-							Long semNetConceptNode = getConceptNodeForLabelNode(semNetLabelNode);
-							createRelationship(semNetConceptNode, metaNode, RlspType.HAS_LABEL, props);
-							createRelationship(semNetConceptNode, invMetaNode, RlspType.HAS_LABEL, props);
+							Long semNetConceptNode = dataImportUtility.getConceptNodeForLabelNode(semNetLabelNode);
+							dataImportUtility
+									.createRelationship(semNetConceptNode, metaNode, RlspType.HAS_LABEL, props);
+							dataImportUtility.createRelationship(semNetConceptNode, invMetaNode, RlspType.HAS_LABEL,
+									props);
 						}
 					}
 				}
@@ -372,23 +378,25 @@ public class UmlsDataImport implements DataImport {
 					String semNet = columns[2].trim();
 					if (!StringUtils.isBlank(rlsp) && rlsp.equalsIgnoreCase("subProp")) {
 						labelIndex.flush();
-						Long semNetLabelNode = getLabelNode(semNet, ENG);
+						Long semNetLabelNode = dataImportUtility.getLabelNode(semNet, ENG);
 						if (semNetLabelNode == null) {
 							throw new IllegalStateException("semantic network label node not found for text " + semNet);
 						} else {
-							Long metaNode = getLabelNode(meta, ENG);
-							Long invMetaNode = getLabelNode(invMeta, ENG);
-							Long semNetConceptNode = getConceptNodeForLabelNode(semNetLabelNode);
+							Long metaNode = dataImportUtility.getLabelNode(meta, ENG);
+							Long invMetaNode = dataImportUtility.getLabelNode(invMeta, ENG);
+							Long semNetConceptNode = dataImportUtility.getConceptNodeForLabelNode(semNetLabelNode);
 							if (metaNode == null && invMetaNode == null) {
 								// create new concept add as IS_A to the
 								// semnatic
 								// type
-								metaNode = createLabelNode(meta, ENG, props);
-								invMetaNode = createLabelNode(invMeta, ENG, props);
-								Long conceptNode = createConceptNode(ConceptType.PREDICATE.toString(), props);
-								createRelationship(conceptNode, metaNode, RlspType.HAS_LABEL, props);
-								createRelationship(conceptNode, invMetaNode, RlspType.HAS_LABEL, props);
-								createRelationship(conceptNode, semNetConceptNode, IS_A, props);
+								metaNode = dataImportUtility.createLabelNode(meta, ENG, props);
+								invMetaNode = dataImportUtility.createLabelNode(invMeta, ENG, props);
+								Long conceptNode = dataImportUtility.createConceptNode(
+										ConceptType.PREDICATE.toString(), props);
+								dataImportUtility.createRelationship(conceptNode, metaNode, RlspType.HAS_LABEL, props);
+								dataImportUtility.createRelationship(conceptNode, invMetaNode, RlspType.HAS_LABEL,
+										props);
+								dataImportUtility.createRelationship(conceptNode, semNetConceptNode, IS_A, props);
 							} else if (metaNode == null || invMetaNode == null) {
 								String nullLabelNodeText = null;
 								Long notNullLabelNode = null;
@@ -402,22 +410,24 @@ public class UmlsDataImport implements DataImport {
 								if (notNullLabelNode == 619) {
 									System.out.println("here");
 								}
-								Long notNullConcept = getConceptNodeForLabelNode(notNullLabelNode);
+								Long notNullConcept = dataImportUtility.getConceptNodeForLabelNode(notNullLabelNode);
 								if (notNullConcept == null) {
 									System.out.println(inserter.getNodeProperties(notNullLabelNode));
 								}
-								Long labelNode = createLabelNode(nullLabelNodeText, ENG, props);
-								createRelationship(notNullConcept, labelNode, RlspType.HAS_LABEL, props);
-								createRelationship(notNullConcept, semNetConceptNode, IS_A, props);
+								Long labelNode = dataImportUtility.createLabelNode(nullLabelNodeText, ENG, props);
+								dataImportUtility.createRelationship(notNullConcept, labelNode, RlspType.HAS_LABEL,
+										props);
+								dataImportUtility.createRelationship(notNullConcept, semNetConceptNode, IS_A, props);
 
 							} else if (metaNode != null && invMetaNode != null) {
-								Long metaConceptNode = getConceptNodeForLabelNode(metaNode);
-								Long invMetaConceptNode = getConceptNodeForLabelNode(invMetaNode);
+								Long metaConceptNode = dataImportUtility.getConceptNodeForLabelNode(metaNode);
+								Long invMetaConceptNode = dataImportUtility.getConceptNodeForLabelNode(invMetaNode);
 								if (metaConceptNode != invMetaConceptNode) {
 									throw new IllegalStateException("inverse labels point to different concepts "
 											+ meta + " " + invMeta);
 								} else {
-									createRelationship(metaConceptNode, semNetConceptNode, IS_A, props);
+									dataImportUtility.createRelationship(metaConceptNode, semNetConceptNode, IS_A,
+											props);
 								}
 							}
 
@@ -428,92 +438,6 @@ public class UmlsDataImport implements DataImport {
 				csvReader.close();
 			}
 		}
-	}
-
-	private Long getConceptNodeForLabelNode(Long labelNode) {
-		Long conceptNode = null;
-		Iterable<BatchRelationship> relationships = inserter.getRelationships(labelNode);
-		for (BatchRelationship batchRelationship : relationships) {
-			if (batchRelationship.getType().name().equals(RlspType.HAS_LABEL.toString())) {
-				conceptNode = batchRelationship.getStartNode();
-				break;
-			}
-		}
-		return conceptNode;
-	}
-
-	private Long getConceptNodeForNotationNode(Long notationNode) {
-		Long conceptNode = null;
-		Iterable<BatchRelationship> relationships = inserter.getRelationships(notationNode);
-		for (BatchRelationship batchRelationship : relationships) {
-			if (batchRelationship.getType().name().equals(RlspType.HAS_NOTATION.toString())) {
-				conceptNode = batchRelationship.getStartNode();
-				break;
-			}
-		}
-		return conceptNode;
-	}
-
-	private Long getLabelNode(String labelText, String language) {
-		Long labelNode = null;
-		IndexHits<Long> hits = labelIndex.get("text", labelText);
-		for (Long hit : hits) {
-			Map<String, Object> props = inserter.getNodeProperties(hit);
-			if (((String) props.get("language")).equalsIgnoreCase(language)) {
-				labelNode = hit;
-			}
-		}
-		return labelNode;
-	}
-
-	private Long createLabelNode(String labelText, String language, Map<String, Object> props) {
-		Long labelNode = null;
-		props.put("text", labelText);
-		props.put("language", language);
-		labelNode = inserter.createNode(props);
-		props.clear();
-		props.put("text", labelText);
-		labelIndex.add(labelNode, props);
-		props.clear();
-		return labelNode;
-	}
-
-	private Long getNotationNode(String code) {
-		Long notationNode = null;
-		IndexHits<Long> hits = notationIndex.get("code", code);
-		for (Long hit : hits) {
-			notationNode = hit;
-		}
-		return notationNode;
-	}
-
-	private Long createRelationship(Long from, Long to, RelationshipType rlspType, Map<String, Object> props) {
-		Long relaNode = inserter.createRelationship(from, to, rlspType, props);
-		props.clear();
-		props.put("rlspType", rlspType.toString());
-		relationshipIndex.add(relaNode, props);
-		props.clear();
-		return relaNode;
-	}
-
-	private Long createNotationNode(String source, String code, Map<String, Object> props) {
-		Long notationNode = null;
-		props.put("source", source);
-		props.put("code", code);
-		notationNode = inserter.createNode(props);
-		props.clear();
-		props.put("code", code);
-		notationIndex.add(notationNode, props);
-		props.clear();
-		return notationNode;
-	}
-
-	private Long createConceptNode(String conceptType, Map<String, Object> props) {
-		props.put("type", conceptType);
-		Long conceptNode = inserter.createNode(props);
-		conceptIndex.add(conceptNode, props);
-		props.clear();
-		return conceptNode;
 	}
 
 	public void writeRlspsBetweenConceptsAndSchemes() throws SQLException {
@@ -531,12 +455,12 @@ public class UmlsDataImport implements DataImport {
 					continue;
 				}
 				String tui = rs.getString("TUI");
-				Long cuiNotationNode = getNotationNode(cui);
-				Long cuiConceptNode = getConceptNodeForNotationNode(cuiNotationNode);
-				Long tuiNotationNode = getNotationNode(tui);
-				Long tuiConceptNode = getConceptNodeForNotationNode(tuiNotationNode);
+				Long cuiNotationNode = dataImportUtility.getNotationNode(cui);
+				Long cuiConceptNode = dataImportUtility.getConceptNodeForNotationNode(cuiNotationNode);
+				Long tuiNotationNode = dataImportUtility.getNotationNode(tui);
+				Long tuiConceptNode = dataImportUtility.getConceptNodeForNotationNode(tuiNotationNode);
 				props.put("sources", new String[] { MRSTY });
-				createRelationship(cuiConceptNode, tuiConceptNode, RlspType.IN_SCHEME, props);
+				dataImportUtility.createRelationship(cuiConceptNode, tuiConceptNode, RlspType.IN_SCHEME, props);
 				if (++ctr % 10000 == 0) {
 					logger.debug("{}", ctr);
 				}
@@ -570,16 +494,16 @@ public class UmlsDataImport implements DataImport {
 					continue;
 				}
 
-				Long cui1NotationNode = getNotationNode(cui1);
-				Long srcConceptNode = getConceptNodeForNotationNode(cui1NotationNode);
-				Long cui2NotationNode = getNotationNode(cui2);
-				Long tgtConceptNode = getConceptNodeForNotationNode(cui2NotationNode);
+				Long cui1NotationNode = dataImportUtility.getNotationNode(cui1);
+				Long srcConceptNode = dataImportUtility.getConceptNodeForNotationNode(cui1NotationNode);
+				Long cui2NotationNode = dataImportUtility.getNotationNode(cui2);
+				Long tgtConceptNode = dataImportUtility.getConceptNodeForNotationNode(cui2NotationNode);
 				if (srcConceptNode != null && tgtConceptNode != null) {
-					Long relaLabelNode = getLabelNode(rela, ENG);
-					Long relaConceptNode = getConceptNodeForLabelNode(relaLabelNode);
+					Long relaLabelNode = dataImportUtility.getLabelNode(rela, ENG);
+					Long relaConceptNode = dataImportUtility.getConceptNodeForLabelNode(relaLabelNode);
 					RelationshipType rlsptype = DynamicRelationshipType.withName(relaConceptNode.toString());
 					props.put("sources", new String[] { MRREL });
-					createRelationship(cui2NotationNode, cui1NotationNode, rlsptype, props);
+					dataImportUtility.createRelationship(cui2NotationNode, cui1NotationNode, rlsptype, props);
 				}
 				if (++ctr % 10000 == 0) {
 					logger.debug("{}", ctr);
@@ -738,6 +662,7 @@ public class UmlsDataImport implements DataImport {
 	private BatchInserterIndex notationIndex;
 	private BatchInserterIndex conceptIndex;
 	private BatchInserterIndex relationshipIndex;
+	private DataImportUtility dataImportUtility;
 	private DataSource dataSource;
 	private IgnoredCuiReader ignoredCuiReader;
 	private static RelationshipType IS_A = null;
