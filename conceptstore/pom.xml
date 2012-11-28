@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.biosemantics.conceptstore</groupId>
 	<artifactId>conceptstore</artifactId>
-	<version>1.8-SNAPSHOT</version>
+	<version>1.8</version>
 	<packaging>pom</packaging>
 	<name>conceptstore</name>
 	<description>conceptstore</description>
@@ -53,7 +53,7 @@
 		<connection>scm:git:git@github.com:bhsingh/transmog.git</connection>
 		<url>scm:git:git@github.com:bhsingh/transmog.git</url>
 		<developerConnection>scm:git:git@github.com:bhsingh/transmog.git</developerConnection>
-	  <tag>HEAD</tag>
+	  <tag>conceptstore-1.8</tag>
   </scm>
 	<distributionManagement>
 		<snapshotRepository>
