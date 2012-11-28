@@ -24,7 +24,7 @@
 	<modules>
 		<module>conceptstore-graph-impl</module>
 		<module>conceptstore-dataimport</module>
-		<module>lodd-datasource-impl</module>
+<!-- 		<module>lodd-datasource-impl</module> -->
 		<module>conceptstore-client</module>
 	</modules>
 	<build>
