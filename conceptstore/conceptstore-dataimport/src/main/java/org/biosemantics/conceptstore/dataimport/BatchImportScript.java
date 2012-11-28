@@ -44,6 +44,7 @@ public class BatchImportScript {
 		labelIndex.flush();
 		notationIndex.flush();
 		conceptIndex.flush();
+		relationshipTypeIndex.flush();
 		indexProvider.shutdown();
 		batchInserter.shutdown();
 		logger.info("shutdown complete");

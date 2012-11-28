@@ -125,14 +125,10 @@ public class ConceptstoreClient {
 				}
 			}
 		}
-		Collection<Long> ids = null;
-		if (concepts.size() == 1) {
-			for (Concept concept : concepts) {
-				ids = conceptRepository.getAllChildPredicates(concept.getId());
-			}
-		} else {
-			throw new IllegalStateException(
-					"cannot have multiple predicate concepts for the same label text, graph is in incorrect state");
+		logger.debug("{} predicate concepts found for label '{}' concept are {}", new Object[] { concepts.size(), text, concepts });
+		Collection<Long> ids = new HashSet<Long>();
+		for (Concept concept : concepts) {
+			ids.addAll(conceptRepository.getAllChildPredicates(concept.getId()));
 		}
 		logger.debug("{} are children for {} ", new Object[] { ids, text });
 		return ids;
@@ -196,7 +192,7 @@ public class ConceptstoreClient {
 	public static void main(String[] args) {
 		ConceptstoreClient client = new ConceptstoreClient();
 		client.init(DB_PATH);
-		// client.printAllPredicates();
+		client.printAllPredicates();
 		client.doSomething();
 		client.getAllRelationshipsForNotationCode("C0234192");
 		Collection<Long> predicateIds = client.getPredicateChildren("associated_with");
