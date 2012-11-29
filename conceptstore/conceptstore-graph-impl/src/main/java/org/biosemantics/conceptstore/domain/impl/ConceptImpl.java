@@ -78,7 +78,7 @@ public class ConceptImpl implements Concept {
 	 * @see org.biosemantics.conceptstore.domain.impl.Concept#getId()
 	 */
 	@Override
-	public long getId() {
+	public Long getId() {
 		return node.getId();
 	}
 

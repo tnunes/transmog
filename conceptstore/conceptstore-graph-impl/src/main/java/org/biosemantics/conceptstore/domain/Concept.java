@@ -44,7 +44,7 @@ public interface Concept {
 	 * 
 	 * @return the id associated with this concept
 	 */
-	public abstract long getId();
+	public abstract Long getId();
 
 	/**
 	 * retrieves the concept schemes this concept may be a part of. Concept
