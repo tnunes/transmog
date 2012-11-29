@@ -48,7 +48,7 @@ public class ConceptstoreClient {
 		this.conceptRepository = new ConceptRepositoryImpl(graphDb);
 		this.labelRepository = new LabelRepositoryImpl(graphDb);
 		this.notationRepository = new NotationRepositoryImpl(graphDb);
-		this.traversalRepository = new TraversalRepositoryImpl(graphDb);
+		this.traversalRepository = new TraversalRepositoryImpl(graphDb, this.conceptRepository);
 	}
 
 	/**
@@ -72,7 +72,7 @@ public class ConceptstoreClient {
 		this.notationRepository = new NotationRepositoryImpl(graphDb);
 	}
 
-	public void doSomething() {
+	public void getNotationsForLabel() {
 		Collection<Label> labels = labelRepository.getByText("cold");
 		for (Label label : labels) {
 			Collection<Concept> concepts = label.getRelatedConcepts();
@@ -115,7 +115,7 @@ public class ConceptstoreClient {
 	 * @param text
 	 * @return
 	 */
-	public Collection<Long> getPredicateChildren(String text) {
+	public void printPredicateChildren(String text) {
 		Collection<Label> labels = labelRepository.getByText(text);
 		Set<Concept> concepts = new HashSet<Concept>();
 		for (Label label : labels) {
@@ -125,13 +125,13 @@ public class ConceptstoreClient {
 				}
 			}
 		}
-		logger.debug("{} predicate concepts found for label '{}' concept are {}", new Object[] { concepts.size(), text, concepts });
+		logger.debug("{} predicate concepts found for label '{}' concept are {}", new Object[] { concepts.size(), text,
+				concepts });
 		Collection<Long> ids = new HashSet<Long>();
 		for (Concept concept : concepts) {
 			ids.addAll(conceptRepository.getAllChildPredicates(concept.getId()));
 		}
 		logger.debug("{} are children for {} ", new Object[] { ids, text });
-		return ids;
 	}
 
 	/**
@@ -167,6 +167,43 @@ public class ConceptstoreClient {
 		return traversalRepository.findShortestPath(startConceptId, endConceptId, predicatesToFollow, maxDepth);
 	}
 
+	/**
+	 * Requested by Kang in 1.9
+	 * 
+	 * @param cui1
+	 * @param cui2
+	 * @param maxDepth
+	 * @return
+	 */
+	public Iterable<Path> getAllShortestPaths(String cui1, String cui2, int maxDepth) {
+		Long startConceptId = null;
+		Collection<Notation> startNotations = notationRepository.getByCode(cui1);
+		for (Notation notation : startNotations) {
+			for (Concept concept : notation.getRelatedConcepts()) {
+				if (concept.getType() != ConceptType.PREDICATE) {
+					startConceptId = concept.getId();
+					break;
+				}
+			}
+		}
+		Long endConceptId = null;
+		Collection<Notation> endNotations = notationRepository.getByCode(cui2);
+		for (Notation notation : endNotations) {
+			for (Concept concept : notation.getRelatedConcepts()) {
+				if (concept.getType() != ConceptType.PREDICATE) {
+					endConceptId = concept.getId();
+					break;
+				}
+			}
+		}
+
+		return traversalRepository.findShortestPath(startConceptId, endConceptId, maxDepth);
+
+	}
+
+	/**
+	 * 
+	 */
 	public void printAllPredicates() {
 		Collection<Concept> concepts = conceptRepository.getByType(ConceptType.PREDICATE);
 		for (Concept concept : concepts) {
@@ -177,10 +214,15 @@ public class ConceptstoreClient {
 
 	}
 
+	/**
+	 * Registers a shutdown hook for the Neo4j instance so that it shuts down
+	 * nicely when the VM exits (even if you "Ctrl-C" the running example before
+	 * it's completed)
+	 * 
+	 * @param graphDb
+	 */
 	private static void registerShutdownHook(final GraphDatabaseService graphDb) {
-		// Registers a shutdown hook for the Neo4j instance so that it
-		// shuts down nicely when the VM exits (even if you "Ctrl-C" the
-		// running example before it's completed)
+
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
@@ -193,13 +235,20 @@ public class ConceptstoreClient {
 		ConceptstoreClient client = new ConceptstoreClient();
 		client.init(DB_PATH);
 		client.printAllPredicates();
-		client.doSomething();
+		client.getNotationsForLabel();
 		client.getAllRelationshipsForNotationCode("C0234192");
-		Collection<Long> predicateIds = client.getPredicateChildren("associated_with");
-		// 11088-474-35906-431-11624
-		// C0009450-474-C0032961-431-C0009932
-		Iterable<Path> paths = client.getShortestPaths("C0009450", "C0009932", predicateIds, 2);
+		client.printPredicateChildren("associated_with");
+		// C0009450 (11032) -- occures_before (424) (417/532) --c1998063
+		// (2966926) -- finding_site_of (978) -- C0039493 (43008)
+		Set<Long> predicateIds = new HashSet<Long>();
+		predicateIds.add(424L);
+		predicateIds.add(978L);
+		Iterable<Path> paths = client.getShortestPaths("C0009450", "C0039493", predicateIds, 3);
 		for (Path path : paths) {
+			logger.debug("{} | {}", new Object[] { path.length(), path.toString() });
+		}
+		Iterable<Path> paths2 = client.getAllShortestPaths("C0009450", "C0039493", 3);
+		for (Path path : paths2) {
 			logger.debug("{} | {}", new Object[] { path.length(), path.toString() });
 		}
 

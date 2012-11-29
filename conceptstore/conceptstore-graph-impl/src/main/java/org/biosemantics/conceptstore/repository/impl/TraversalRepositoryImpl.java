@@ -46,7 +46,8 @@ public class TraversalRepositoryImpl implements TraversalRepository {
 		Node start = graphDb.getNodeById(startConceptId);
 		Node end = graphDb.getNodeById(endConceptId);
 		Iterable<Path> paths = pathFinder.findAllPaths(start, end);
-		logger.debug("time taken for calculating shortest paths: {} (millisec)", (System.currentTimeMillis() - startTime));
+		logger.trace("time taken for calculating shortest paths: {} (millisec)",
+				(System.currentTimeMillis() - startTime));
 		return paths;
 	}
 
@@ -57,7 +58,8 @@ public class TraversalRepositoryImpl implements TraversalRepository {
 		Node start = graphDb.getNodeById(startConceptId);
 		Node end = graphDb.getNodeById(endConceptId);
 		Iterable<Path> paths = pathFinder.findAllPaths(start, end);
-		logger.debug("time taken for calculating shortest paths: {} (millisec)", (System.currentTimeMillis() - startTime));
+		logger.trace("time taken for calculating shortest paths: {} (millisec)",
+				(System.currentTimeMillis() - startTime));
 		return paths;
 	}
 
