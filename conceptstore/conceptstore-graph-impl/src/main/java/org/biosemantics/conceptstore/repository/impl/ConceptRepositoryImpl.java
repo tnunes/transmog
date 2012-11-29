@@ -9,12 +9,14 @@ import org.biosemantics.conceptstore.domain.HasLabel;
 import org.biosemantics.conceptstore.domain.HasNotation;
 import org.biosemantics.conceptstore.domain.HasRlsp;
 import org.biosemantics.conceptstore.domain.InScheme;
+import org.biosemantics.conceptstore.domain.Label;
 import org.biosemantics.conceptstore.domain.impl.ConceptImpl;
 import org.biosemantics.conceptstore.domain.impl.ConceptType;
 import org.biosemantics.conceptstore.domain.impl.HasLabelImpl;
 import org.biosemantics.conceptstore.domain.impl.HasNotationImpl;
 import org.biosemantics.conceptstore.domain.impl.HasRlspImpl;
 import org.biosemantics.conceptstore.domain.impl.InSchemeImpl;
+import org.biosemantics.conceptstore.domain.impl.LabelImpl;
 import org.biosemantics.conceptstore.domain.impl.LabelType;
 import org.biosemantics.conceptstore.domain.impl.RlspType;
 import org.biosemantics.conceptstore.repository.ConceptRepository;
@@ -39,6 +41,7 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 	public ConceptRepositoryImpl(GraphDatabaseService graphDatabaseService) {
 		this.graphDb = graphDatabaseService;
 		conceptNodeIndex = this.graphDb.index().forNodes("Concept");
+		labelNodeIndex = this.graphDb.index().forNodes("Label");
 	}
 
 	// 402 - 410
@@ -48,11 +51,23 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 		if (node == null) {
 			throw new IllegalArgumentException("no node found with id " + predicateConceptId);
 		}
-		TraversalDescription td = Traversal.description().depthFirst().relationships(IS_A_RLSP, Direction.INCOMING)
-				.evaluator(Evaluators.excludeStartPosition());
 		Set<Long> ids = new HashSet<Long>();
-		for (Path path : td.traverse(node)) {
-			ids.add(path.endNode().getId());
+		IndexHits<Node> hits = labelNodeIndex.get("text", "isa");
+		if (hits != null && hits.size() == 1) {
+			Label label = new LabelImpl(hits.getSingle());
+			RelationshipType isA = null;
+			for (Concept concept : label.getRelatedConcepts()) {
+				if (concept.getType() == ConceptType.PREDICATE) {
+					isA = DynamicRelationshipType.withName(concept.getId().toString());
+				}
+			}
+			if (isA != null) {
+				TraversalDescription td = Traversal.description().depthFirst().relationships(isA, Direction.INCOMING)
+						.evaluator(Evaluators.excludeStartPosition());
+				for (Path path : td.traverse(node)) {
+					ids.add(path.endNode().getId());
+				}
+			}
 		}
 		return ids;
 	}
@@ -383,7 +398,7 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 
 	private GraphDatabaseService graphDb;
 	private Index<Node> conceptNodeIndex;
+	private Index<Node> labelNodeIndex;
 	private static final Logger logger = LoggerFactory.getLogger(ConceptRepositoryImpl.class);
-	private static final RelationshipType IS_A_RLSP = DynamicRelationshipType.withName("578");
 
 }
