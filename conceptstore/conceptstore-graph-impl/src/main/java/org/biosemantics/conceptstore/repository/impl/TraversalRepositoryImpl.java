@@ -30,7 +30,7 @@ public class TraversalRepositoryImpl implements TraversalRepository {
 			RelationshipType rlspType = DynamicRelationshipType.withName(concept.getId().toString());
 			predicateExpander = predicateExpander.add(rlspType, Direction.BOTH);
 		}
-		logger.info("predicate expander created and cached");
+		logger.debug("predicate expander created and cached");
 	}
 
 	@Override

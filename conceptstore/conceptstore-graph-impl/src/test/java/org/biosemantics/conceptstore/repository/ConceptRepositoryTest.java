@@ -8,7 +8,6 @@ import java.util.Map;
 
 import org.biosemantics.conceptstore.domain.Concept;
 import org.biosemantics.conceptstore.domain.HasRlsp;
-import org.biosemantics.conceptstore.domain.InScheme;
 import org.biosemantics.conceptstore.domain.Label;
 import org.biosemantics.conceptstore.domain.Notation;
 import org.biosemantics.conceptstore.domain.impl.ConceptType;
@@ -248,5 +247,52 @@ public class ConceptRepositoryTest {
 			assertNotSame(foundConceptScheme, concept3);
 			assertNotSame(foundConceptScheme, concept1);
 		}
+	}
+	
+	@Test
+	public void getbyTypeShouldBeRetrievable() {
+		ConceptRepository conceptRepositoryImpl = new ConceptRepositoryImpl(graphDb);
+		
+		Concept concept1 = conceptRepositoryImpl.create(ConceptType.CONCEPT);
+		Concept concept2 = conceptRepositoryImpl.create(ConceptType.CONCEPT_SCHEME);
+		Concept concept3 = conceptRepositoryImpl.create(ConceptType.CONCEPT_SCHEME);
+		Concept concept4 = conceptRepositoryImpl.create(ConceptType.PREDICATE);
+		assertEquals(1, conceptRepositoryImpl.getByType(ConceptType.PREDICATE).size());
+		assertEquals(2, conceptRepositoryImpl.getByType(ConceptType.CONCEPT_SCHEME).size());
+		assertEquals(1, conceptRepositoryImpl.getByType(ConceptType.CONCEPT).size());
+		
+	}
+	
+	@Test
+	public void childPredicatesShouldBeRetrievable() {
+		ConceptRepository conceptRepositoryImpl = new ConceptRepositoryImpl(graphDb);
+		LabelRepository labelRepositoryImpl = new LabelRepositoryImpl(graphDb);
+		Concept concept = conceptRepositoryImpl.create(ConceptType.PREDICATE);
+		Label label = labelRepositoryImpl.create("isa", "lang");
+		conceptRepositoryImpl.hasLabelIfNoneExists(concept.getId(), label.getId(), LabelType.PREFERRED, new String[] {
+				"one", "two" });
+		Concept concept2 = conceptRepositoryImpl.create(ConceptType.PREDICATE);
+		Concept concept3 = conceptRepositoryImpl.create(ConceptType.PREDICATE);
+		Concept concept4 = conceptRepositoryImpl.create(ConceptType.PREDICATE);
+		conceptRepositoryImpl.hasRlsp(concept3.getId(), concept2.getId(), concept.getId().toString(), "");
+		conceptRepositoryImpl.hasRlsp(concept4.getId(), concept2.getId(), concept.getId().toString(), "");
+		assertEquals(2, conceptRepositoryImpl.getAllChildPredicates(concept2.getId()).size());
+	}
+	
+	@Test
+	public void childPredicatesShouldNotBeRetrievable() {
+		ConceptRepository conceptRepositoryImpl = new ConceptRepositoryImpl(graphDb);
+		LabelRepository labelRepositoryImpl = new LabelRepositoryImpl(graphDb);
+		// not a predicate hence nothing should be retrieved
+		Concept concept = conceptRepositoryImpl.create(ConceptType.CONCEPT);
+		Label label = labelRepositoryImpl.create("isa", "lang");
+		conceptRepositoryImpl.hasLabelIfNoneExists(concept.getId(), label.getId(), LabelType.PREFERRED, new String[] {
+				"one", "two" });
+		Concept concept2 = conceptRepositoryImpl.create(ConceptType.PREDICATE);
+		Concept concept3 = conceptRepositoryImpl.create(ConceptType.PREDICATE);
+		Concept concept4 = conceptRepositoryImpl.create(ConceptType.PREDICATE);
+		conceptRepositoryImpl.hasRlsp(concept3.getId(), concept2.getId(), concept.getId().toString(), "");
+		conceptRepositoryImpl.hasRlsp(concept4.getId(), concept2.getId(), concept.getId().toString(), "");
+		assertEquals(0, conceptRepositoryImpl.getAllChildPredicates(concept2.getId()).size());
 	}
 }
