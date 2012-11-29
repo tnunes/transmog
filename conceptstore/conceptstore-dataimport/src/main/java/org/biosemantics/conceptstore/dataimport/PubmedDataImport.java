@@ -29,7 +29,7 @@ public class PubmedDataImport implements DataImport {
 		importRelationships();
 	}
 
-	private void importRelationships() throws IOException {
+	private void importPredicates() throws IOException {
 		LineIterator iterator = FileUtils.lineIterator(inputFile, "UTF-8");
 		try {
 			Map<String, Object> props = new HashMap<String, Object>();
@@ -64,7 +64,7 @@ public class PubmedDataImport implements DataImport {
 
 	}
 
-	private void importPredicates() throws IOException {
+	private void importRelationships() throws IOException {
 		LineIterator iterator = FileUtils.lineIterator(inputFile, "UTF-8");
 		Set<String> missingCuis = new HashSet<String>();
 		int ctr = 0;
