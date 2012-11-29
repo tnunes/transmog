@@ -97,6 +97,31 @@
 					</execution>
 				</executions>
 			</plugin>
+<!-- 			<plugin> -->
+<!-- 				<groupId>org.jvnet.jaxb2.maven2</groupId> -->
+<!-- 				<artifactId>maven-jaxb2-plugin</artifactId> -->
+<!-- 				<version>0.7.2</version> -->
+<!-- 				<executions> -->
+<!-- 					<execution> -->
+<!-- 						<id>drugbank</id> -->
+<!-- 						<goals> -->
+<!-- 							<goal>generate</goal> -->
+<!-- 						</goals> -->
+<!-- 						<configuration> -->
+<!-- 							<verbose>true</verbose> -->
+<!-- 							<generateDirectory>${project.build.sourceDirectory}</generateDirectory> -->
+<!-- 							<generatePackage>ca.drugbank.generated</generatePackage> -->
+<!-- 							<schemaDirectory>xsd</schemaDirectory> -->
+<!-- 							<bindingDirectory>xsd</bindingDirectory> -->
+<!-- 							<schemaIncludes> -->
+<!-- 								<schemaInclude>drugbank.xsd</schemaInclude> -->
+<!-- 							</schemaIncludes> -->
+<!-- 							<removeOldOutput>false</removeOldOutput> -->
+<!-- 							<extension>true</extension> -->
+<!-- 						</configuration> -->
+<!-- 					</execution> -->
+<!-- 				</executions> -->
+<!-- 			</plugin> -->
 		</plugins>
 	</build>
 </project>
