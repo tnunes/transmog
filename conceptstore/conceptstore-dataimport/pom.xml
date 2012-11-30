@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<artifactId>conceptstore</artifactId>
@@ -96,31 +97,26 @@
 					</execution>
 				</executions>
 			</plugin>
-<!-- 			<plugin> -->
-<!-- 				<groupId>org.jvnet.jaxb2.maven2</groupId> -->
-<!-- 				<artifactId>maven-jaxb2-plugin</artifactId> -->
-<!-- 				<version>0.7.2</version> -->
-<!-- 				<executions> -->
-<!-- 					<execution> -->
-<!-- 						<id>drugbank</id> -->
-<!-- 						<goals> -->
-<!-- 							<goal>generate</goal> -->
-<!-- 						</goals> -->
-<!-- 						<configuration> -->
-<!-- 							<verbose>true</verbose> -->
-<!-- 							<generateDirectory>${project.build.sourceDirectory}</generateDirectory> -->
-<!-- 							<generatePackage>ca.drugbank.generated</generatePackage> -->
-<!-- 							<schemaDirectory>xsd</schemaDirectory> -->
-<!-- 							<bindingDirectory>xsd</bindingDirectory> -->
-<!-- 							<schemaIncludes> -->
-<!-- 								<schemaInclude>drugbank.xsd</schemaInclude> -->
-<!-- 							</schemaIncludes> -->
-<!-- 							<removeOldOutput>false</removeOldOutput> -->
-<!-- 							<extension>true</extension> -->
-<!-- 						</configuration> -->
-<!-- 					</execution> -->
-<!-- 				</executions> -->
-<!-- 			</plugin> -->
+			<plugin>
+				<groupId>org.jvnet.jaxb2.maven2</groupId>
+				<artifactId>maven-jaxb2-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+<!-- 					<forceRegenerate>true</forceRegenerate> -->
+					<schemas>
+						<schema>
+							<url>http://www.drugbank.ca/docs/drugbank.xsd</url>
+						</schema>
+					</schemas>
+					<generatePackage>ca.drugbank.generated</generatePackage>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 </project>
