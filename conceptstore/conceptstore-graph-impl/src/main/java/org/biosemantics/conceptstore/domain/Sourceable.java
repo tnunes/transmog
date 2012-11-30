@@ -1,7 +1,9 @@
 package org.biosemantics.conceptstore.domain;
 
+import java.util.Collection;
+
 public interface Sourceable {
 
-	public String[] getSources();
+	public Collection<String> getSources();
 
 }

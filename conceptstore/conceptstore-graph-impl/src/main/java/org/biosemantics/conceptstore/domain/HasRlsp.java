@@ -2,9 +2,7 @@ package org.biosemantics.conceptstore.domain;
 
 import java.util.Collection;
 
-public interface HasRlsp {
-
-	public abstract Collection<String> getSources();
+public interface HasRlsp extends Sourceable {
 
 	public abstract String getType();
 
