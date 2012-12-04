@@ -37,7 +37,7 @@ public class PerformanceTest {
 		graphDb.shutdown();
 	}
 
-	@Test
+	@Test(timeout=20000)
 	public void retrieveLabelsForLargeNoOfConnections() {
 		ConceptRepository conceptRepositoryImpl = new ConceptRepositoryImpl(graphDb);
 		Concept rootConcept = conceptRepositoryImpl.create(ConceptType.CONCEPT);
@@ -45,10 +45,9 @@ public class PerformanceTest {
 		Label label = labelRepositoryImpl.create("text", "lang");
 		conceptRepositoryImpl.hasLabel(rootConcept.getId(), label.getId(), LabelType.PREFERRED, new String[] { "one",
 				"two" });
-		for (int i = 0; i < 30000; i++) {
+		for (int i = 0; i < 1000; i++) {
 			Concept concept = conceptRepositoryImpl.create(ConceptType.CONCEPT);
 			conceptRepositoryImpl.hasRlsp(rootConcept.getId(), concept.getId(), String.valueOf(i), String.valueOf(i));
-			logger.debug("{}", i);
 		}
 		long start = System.currentTimeMillis();
 		Collection<Label> labels = rootConcept.getLabels();
@@ -57,7 +56,6 @@ public class PerformanceTest {
 		}
 		long end = System.currentTimeMillis();
 		logger.info("{} (ms)", end-start);
-
 	}
 
 }
