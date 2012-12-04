@@ -30,6 +30,7 @@ import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
+import org.neo4j.graphdb.index.RelationshipIndex;
 import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.kernel.Traversal;
@@ -42,9 +43,9 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 		this.graphDb = graphDatabaseService;
 		conceptNodeIndex = this.graphDb.index().forNodes("Concept");
 		labelNodeIndex = this.graphDb.index().forNodes("Label");
+		relationshipIndex = this.graphDb.index().forRelationships("Rlsp");
 	}
 
-	
 	@Override
 	public Collection<Long> getAllChildPredicates(Long predicateConceptId) {
 		Node node = graphDb.getNodeById(predicateConceptId);
@@ -71,7 +72,7 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 		}
 		return ids;
 	}
-	
+
 	@Override
 	public Collection<Long> getAllParentPredicates(Long predicateConceptId) {
 		Node node = graphDb.getNodeById(predicateConceptId);
@@ -130,6 +131,7 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 			Node conceptSchemeNode = graphDb.getNodeById(conceptSchemeId);
 			Relationship relationship = conceptNode.createRelationshipTo(conceptSchemeNode, RlspType.IN_SCHEME);
 			relationship.setProperty("sources", sources);
+			relationshipIndex.add(relationship, "rlspType", RlspType.IN_SCHEME.toString());
 			return new InSchemeImpl(relationship);
 		} finally {
 			tx.success();
@@ -175,6 +177,7 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 			Relationship relationship = conceptNode.createRelationshipTo(labelNode, RlspType.HAS_LABEL);
 			relationship.setProperty("type", labelType.toString());
 			relationship.setProperty("sources", sources);
+			relationshipIndex.add(relationship, "rlspType", RlspType.HAS_LABEL.toString());
 			return new HasLabelImpl(relationship);
 		} finally {
 			tx.success();
@@ -209,6 +212,7 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 				Relationship relationship = conceptNode.createRelationshipTo(labelNode, RlspType.HAS_LABEL);
 				relationship.setProperty("type", labelType.toString());
 				relationship.setProperty("sources", sources);
+				relationshipIndex.add(relationship, "rlspType", RlspType.HAS_LABEL.toString());
 				return new HasLabelImpl(relationship);
 			} finally {
 				tx.success();
@@ -234,6 +238,7 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 			Node notationNode = graphDb.getNodeById(notationId);
 			Relationship relationship = conceptNode.createRelationshipTo(notationNode, RlspType.HAS_NOTATION);
 			relationship.setProperty("sources", sources);
+			relationshipIndex.add(relationship, "rlspType", RlspType.HAS_NOTATION.toString());
 			return new HasNotationImpl(relationship);
 		} finally {
 			tx.success();
@@ -266,6 +271,7 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 			try {
 				Relationship relationship = conceptNode.createRelationshipTo(notationNode, RlspType.HAS_NOTATION);
 				relationship.setProperty("sources", sources);
+				relationshipIndex.add(relationship, "rlspType", RlspType.HAS_NOTATION.toString());
 				return new HasNotationImpl(relationship);
 			} finally {
 				tx.success();
@@ -289,9 +295,10 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 		try {
 			Node fromNode = graphDb.getNodeById(fromConceptId);
 			Node toNode = graphDb.getNodeById(toConceptId);
-			Relationship relationship = fromNode.createRelationshipTo(toNode,
-					DynamicRelationshipType.withName(relationshipType));
+			RelationshipType rlspType = DynamicRelationshipType.withName(relationshipType);
+			Relationship relationship = fromNode.createRelationshipTo(toNode, rlspType);
 			relationship.setProperty("sources", sources);
+			relationshipIndex.add(relationship, "rlspType", rlspType.name());
 			return new HasRlspImpl(relationship);
 		} finally {
 			tx.success();
@@ -310,8 +317,8 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 		Node fromNode = graphDb.getNodeById(fromConceptId);
 		Node toNode = graphDb.getNodeById(toConceptId);
 		Relationship foundRelationship = null;
-		Iterable<Relationship> foundRelationships = fromNode.getRelationships(
-				DynamicRelationshipType.withName(relationshipType), Direction.OUTGOING);
+		RelationshipType rlspType = DynamicRelationshipType.withName(relationshipType);
+		Iterable<Relationship> foundRelationships = fromNode.getRelationships(rlspType, Direction.OUTGOING);
 		for (Relationship relationship : foundRelationships) {
 			Node endNode = relationship.getEndNode();
 			if (endNode.equals(toNode)) {
@@ -322,9 +329,9 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 		if (foundRelationship == null) {
 			Transaction tx = graphDb.beginTx();
 			try {
-				Relationship relationship = fromNode.createRelationshipTo(toNode,
-						DynamicRelationshipType.withName(relationshipType));
+				Relationship relationship = fromNode.createRelationshipTo(toNode, rlspType);
 				relationship.setProperty("sources", sources);
+				relationshipIndex.add(relationship, "rlspType", rlspType.name());
 				return new HasRlspImpl(relationship);
 			} finally {
 				tx.success();
@@ -348,8 +355,8 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 		Node fromNode = graphDb.getNodeById(fromConceptId);
 		Node toNode = graphDb.getNodeById(toConceptId);
 		Relationship foundOneDirectionRelationship = null;
-		Iterable<Relationship> foundRelationships = fromNode.getRelationships(
-				DynamicRelationshipType.withName(relationshipType), Direction.OUTGOING);
+		RelationshipType rlspType = DynamicRelationshipType.withName(relationshipType);
+		Iterable<Relationship> foundRelationships = fromNode.getRelationships(rlspType, Direction.OUTGOING);
 		for (Relationship relationship : foundRelationships) {
 			Node endNode = relationship.getEndNode();
 			if (endNode.equals(toNode)) {
@@ -359,8 +366,7 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 		}
 		Relationship foundOtherDirectionRelationship = null;
 		if (foundOneDirectionRelationship == null) {
-			Iterable<Relationship> foundOtherDirRelationships = toNode.getRelationships(
-					DynamicRelationshipType.withName(relationshipType), Direction.OUTGOING);
+			Iterable<Relationship> foundOtherDirRelationships = toNode.getRelationships(rlspType, Direction.OUTGOING);
 			for (Relationship relationship : foundOtherDirRelationships) {
 				Node endNode = relationship.getEndNode();
 				if (endNode.equals(fromNode)) {
@@ -372,9 +378,9 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 		if (foundOneDirectionRelationship == null && foundOtherDirectionRelationship == null) {
 			Transaction tx = graphDb.beginTx();
 			try {
-				Relationship relationship = fromNode.createRelationshipTo(toNode,
-						DynamicRelationshipType.withName(relationshipType));
+				Relationship relationship = fromNode.createRelationshipTo(toNode, rlspType);
 				relationship.setProperty("sources", sources);
+				relationshipIndex.add(relationship, "rlspType", rlspType.name());
 				return new HasRlspImpl(relationship);
 			} finally {
 				tx.success();
@@ -426,6 +432,7 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 	private GraphDatabaseService graphDb;
 	private Index<Node> conceptNodeIndex;
 	private Index<Node> labelNodeIndex;
+	private RelationshipIndex relationshipIndex;
 	private static final Logger logger = LoggerFactory.getLogger(ConceptRepositoryImpl.class);
 
 }
