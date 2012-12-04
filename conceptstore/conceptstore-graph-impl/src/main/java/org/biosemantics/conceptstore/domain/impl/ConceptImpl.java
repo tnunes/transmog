@@ -12,6 +12,11 @@ import org.biosemantics.conceptstore.domain.Notation;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.index.Index;
+import org.neo4j.graphdb.index.IndexHits;
+import org.neo4j.graphdb.index.RelationshipIndex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Objects;
 
@@ -19,6 +24,7 @@ public class ConceptImpl implements Concept {
 
 	public ConceptImpl(Node node) {
 		this.node = node;
+		relationshipIndex = node.getGraphDatabase().index().forRelationships("Rlsp");
 	}
 
 	/*
@@ -28,11 +34,14 @@ public class ConceptImpl implements Concept {
 	 */
 	@Override
 	public Collection<Label> getLabels() {
-		Iterable<Relationship> relationships = node.getRelationships(Direction.OUTGOING, RlspType.HAS_LABEL);
+		long start = System.currentTimeMillis();
 		Set<Label> labels = new HashSet<Label>();
+		IndexHits<Relationship> relationships = relationshipIndex.get("rlspType", RlspType.HAS_LABEL.toString(),
+				this.node, null);
 		for (Relationship relationship : relationships) {
 			labels.add(new LabelImpl(relationship.getEndNode()));
 		}
+		logger.trace("time taken: {} ()", System.currentTimeMillis() - start);
 		return labels;
 	}
 
@@ -43,23 +52,29 @@ public class ConceptImpl implements Concept {
 	 */
 	@Override
 	public Collection<Notation> getNotations() {
-		Iterable<Relationship> relationships = node.getRelationships(Direction.OUTGOING, RlspType.HAS_NOTATION);
-		List<Notation> notations = new ArrayList<Notation>();
+		long start = System.currentTimeMillis();
+		Set<Notation> notations = new HashSet<Notation>();
+		IndexHits<Relationship> relationships = relationshipIndex.get("rlspType", RlspType.HAS_NOTATION.toString(),
+				this.node, null);
 		for (Relationship relationship : relationships) {
 			notations.add(new NotationImpl(relationship.getEndNode()));
 		}
+		logger.trace("time taken: {} ()", System.currentTimeMillis() - start);
 		return notations;
 
 	}
 
 	@Override
 	public Collection<Concept> getInSchemes() {
-		Iterable<Relationship> relationships = node.getRelationships(RlspType.IN_SCHEME, Direction.OUTGOING);
-		Set<Concept> concepts = new HashSet<Concept>();
+		long start = System.currentTimeMillis();
+		Set<Concept> schemes = new HashSet<Concept>();
+		IndexHits<Relationship> relationships = relationshipIndex.get("rlspType", RlspType.IN_SCHEME.toString(),
+				this.node, null);
 		for (Relationship relationship : relationships) {
-			concepts.add(new ConceptImpl(relationship.getOtherNode(node)));
+			schemes.add(new ConceptImpl(relationship.getEndNode()));
 		}
-		return concepts;
+		logger.trace("time taken: {} ()", System.currentTimeMillis() - start);
+		return schemes;
 	}
 
 	/*
@@ -106,5 +121,6 @@ public class ConceptImpl implements Concept {
 	}
 
 	private final Node node;
-
+	private RelationshipIndex relationshipIndex;
+	private static final Logger logger = LoggerFactory.getLogger(ConceptImpl.class);
 }

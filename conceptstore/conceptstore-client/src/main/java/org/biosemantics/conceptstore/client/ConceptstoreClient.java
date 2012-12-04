@@ -1,7 +1,6 @@
 package org.biosemantics.conceptstore.client;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -22,13 +21,15 @@ import org.biosemantics.conceptstore.repository.impl.TraversalRepositoryImpl;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.helpers.collection.MapUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ConceptstoreClient {
 
-	private static final String DB_PATH = "/Users/bhsingh/code/neo4j-community-1.8/data/graph.db";
-
+	// private static final String DB_PATH =
+	// "/Users/bhsingh/code/neo4j-community-1.8/data/graph.db";
+	private static final String DB_PATH = "/Users/bhsingh/Desktop/graph.db";
 	private GraphDatabaseService graphDb;
 	private ConceptRepository conceptRepository;
 	private LabelRepository labelRepository;
@@ -61,19 +62,20 @@ public class ConceptstoreClient {
 	 *            "graph.db" folder. e.g. /Users/bhsingh/graph.db
 	 */
 	public void initWithConfig(String dbPath) {
-		Map<String, String> config = new HashMap<String, String>();
-		config.put("neostore.nodestore.db.mapped_memory", "10M");
-		config.put("string_block_size", "60");
-		config.put("array_block_size", "300");
+		Map<String, String> config = MapUtil.stringMap("neostore.propertystore.db.index.keys.mapped_memory", "5M",
+				"neostore.propertystore.db.index.mapped_memory", "5M", "neostore.nodestore.db.mapped_memory", "200M",
+				"neostore.relationshipstore.db.mapped_memory", "1000M", "neostore.propertystore.db.mapped_memory",
+				"1000M", "neostore.propertystore.db.strings.mapped_memory", "200M");
 		graphDb = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(dbPath).setConfig(config).newGraphDatabase();
 		registerShutdownHook(graphDb);
 		this.conceptRepository = new ConceptRepositoryImpl(graphDb);
 		this.labelRepository = new LabelRepositoryImpl(graphDb);
 		this.notationRepository = new NotationRepositoryImpl(graphDb);
+		this.traversalRepository = new TraversalRepositoryImpl(graphDb, this.conceptRepository);
 	}
 
-	public void getNotationsForLabel() {
-		Collection<Label> labels = labelRepository.getByText("cold");
+	public void printNotationsForLabel(String labelText) {
+		Collection<Label> labels = labelRepository.getByText(labelText);
 		for (Label label : labels) {
 			Collection<Concept> concepts = label.getRelatedConcepts();
 			for (Concept concept : concepts) {
@@ -89,7 +91,7 @@ public class ConceptstoreClient {
 	 * 
 	 * @param umlsCui
 	 */
-	public void getAllRelationshipsForNotationCode(String umlsCui) {
+	public void printAllRelationshipsForNotationCode(String umlsCui) {
 		Collection<Notation> notations = notationRepository.getByCode(umlsCui);
 		for (Notation notation : notations) {
 			Collection<Concept> concepts = notation.getRelatedConcepts();
@@ -97,13 +99,13 @@ public class ConceptstoreClient {
 				Collection<HasRlsp> hasRlsps = conceptRepository.getAllHasRlspsForConcept(concept.getId());
 				logger.debug("{} relationships found for cui: {}", new Object[] { hasRlsps.size(), umlsCui });
 				for (HasRlsp hasRlsp : hasRlsps) {
-					logger.debug("text representation of relationship: {}", hasRlsp);
-					Label rlspLabel = null;
-					for (Label label : hasRlsp.getLabels()) {
-						rlspLabel = label;
-					}
+					// logger.debug("text representation of relationship: {}",
+					// hasRlsp);
 					Concept otherConcept = hasRlsp.getOtherConcept(concept.getId());
-					logger.debug("{}-{}-{}", new Object[] { umlsCui, rlspLabel.getText(), otherConcept.getId() });
+					long start = System.currentTimeMillis();
+					logger.debug("{}-{}-{}",
+							new Object[] { concept.getLabels(), hasRlsp.getLabels(), otherConcept.getLabels() });
+					logger.info("{}", (System.currentTimeMillis() - start));
 				}
 			}
 		}
@@ -233,10 +235,10 @@ public class ConceptstoreClient {
 
 	public static void main(String[] args) {
 		ConceptstoreClient client = new ConceptstoreClient();
-		client.init(DB_PATH);
+		client.initWithConfig(DB_PATH);
 		client.printAllPredicates();
-		client.getNotationsForLabel();
-		client.getAllRelationshipsForNotationCode("C0234192");
+		client.printNotationsForLabel("cold");
+		client.printAllRelationshipsForNotationCode("C0234192");
 		client.printPredicateChildren("associated_with");
 		// C0009450 (11032) -- occures_before (424) (417/532) --c1998063
 		// (2966926) -- finding_site_of (978) -- C0039493 (43008)
