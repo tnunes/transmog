@@ -27,9 +27,7 @@ import org.slf4j.LoggerFactory;
 
 public class ConceptstoreClient {
 
-	// private static final String DB_PATH =
-	// "/Users/bhsingh/code/neo4j-community-1.8/data/graph.db";
-	private static final String DB_PATH = "/Users/bhsingh/Desktop/graph.db";
+	private static final String DB_PATH = "/Users/bhsingh/code/neo4j-community-1.8/data/graph.db";
 	private GraphDatabaseService graphDb;
 	private ConceptRepository conceptRepository;
 	private LabelRepository labelRepository;
