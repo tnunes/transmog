@@ -24,3 +24,5 @@ utility/misc-utility/misc.log
 wsd/.settings/org.eclipse.m2e.core.prefs
 
 wsd/release.properties
+
+*.ucls

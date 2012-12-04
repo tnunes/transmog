@@ -26,7 +26,7 @@ public class BatchImportScript {
 		conceptIndex = indexProvider.nodeIndex("Concept", MapUtil.stringMap("type", "exact"));
 		conceptIndex.setCacheCapacity("type", INDEX_CACHE);
 		relationshipTypeIndex = indexProvider.relationshipIndex("Rlsp", MapUtil.stringMap("type", "exact"));
-		relationshipTypeIndex.setCacheCapacity("type", INDEX_CACHE);
+		relationshipTypeIndex.setCacheCapacity("rlspType", INDEX_CACHE);
 		umlsDataSource = new BasicDataSource();
 		umlsDataSource.setDriverClassName(configReader.getValue("jdbc.driverClassName"));
 		umlsDataSource.setUrl(configReader.getValue("jdbc.url"));
@@ -73,7 +73,7 @@ public class BatchImportScript {
 	public static void main(String[] args) throws Exception {
 		configReader.init();
 		BatchImportScript batchImportScript = new BatchImportScript();
-		batchImportScript.init(configReader.getValue("graph.db"), getGraphConfig());
+		batchImportScript.init(configReader.getValue("graph.db"), getGraphConfigForLargeMachine());
 		batchImportScript.batchImport();
 		batchImportScript.destroy();
 
@@ -84,6 +84,14 @@ public class BatchImportScript {
 				"neostore.propertystore.db.index.mapped_memory", "5M", "neostore.nodestore.db.mapped_memory", "200M",
 				"neostore.relationshipstore.db.mapped_memory", "1000M", "neostore.propertystore.db.mapped_memory",
 				"1000M", "neostore.propertystore.db.strings.mapped_memory", "200M");
+	}
+
+	private static final Map<String, String> getGraphConfigForLargeMachine() {
+		return MapUtil.stringMap("neostore.propertystore.db.index.keys.mapped_memory", "5000M",
+				"neostore.propertystore.db.index.mapped_memory", "5000M", "neostore.nodestore.db.mapped_memory",
+				"2000M", "neostore.relationshipstore.db.mapped_memory", "5000M",
+				"neostore.propertystore.db.mapped_memory", "5000M", "neostore.propertystore.db.strings.mapped_memory",
+				"2000M");
 	}
 
 	private static final int INDEX_CACHE = 100000;
