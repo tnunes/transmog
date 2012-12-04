@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>conceptstore</artifactId>
 		<groupId>org.biosemantics.conceptstore</groupId>
-		<version>1.10</version>
+		<version>1.11-SNAPSHOT</version>
 	</parent>
 	<artifactId>conceptstore-dataimport</artifactId>
 	<name>conceptstore-dataimport</name>
@@ -22,7 +22,7 @@
 		<dependency>
 			<groupId>org.biosemantics.conceptstore</groupId>
 			<artifactId>conceptstore-graph-impl</artifactId>
-			<version>1.10</version>
+			<version>1.11-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
