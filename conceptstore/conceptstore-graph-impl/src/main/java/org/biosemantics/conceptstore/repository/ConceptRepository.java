@@ -40,4 +40,6 @@ public interface ConceptRepository {
 
 	public abstract Collection<Long> getAllChildPredicates(Long predicateConceptId);
 
+	public abstract Collection<Long> getAllParentPredicates(Long predicateConceptId);
+
 }

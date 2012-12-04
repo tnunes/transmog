@@ -44,7 +44,7 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 		labelNodeIndex = this.graphDb.index().forNodes("Label");
 	}
 
-	// 402 - 410
+	
 	@Override
 	public Collection<Long> getAllChildPredicates(Long predicateConceptId) {
 		Node node = graphDb.getNodeById(predicateConceptId);
@@ -63,6 +63,33 @@ public class ConceptRepositoryImpl implements ConceptRepository {
 			}
 			if (isA != null) {
 				TraversalDescription td = Traversal.description().depthFirst().relationships(isA, Direction.INCOMING)
+						.evaluator(Evaluators.excludeStartPosition());
+				for (Path path : td.traverse(node)) {
+					ids.add(path.endNode().getId());
+				}
+			}
+		}
+		return ids;
+	}
+	
+	@Override
+	public Collection<Long> getAllParentPredicates(Long predicateConceptId) {
+		Node node = graphDb.getNodeById(predicateConceptId);
+		if (node == null) {
+			throw new IllegalArgumentException("no node found with id " + predicateConceptId);
+		}
+		Set<Long> ids = new HashSet<Long>();
+		IndexHits<Node> hits = labelNodeIndex.get("text", "isa");
+		if (hits != null && hits.size() == 1) {
+			Label label = new LabelImpl(hits.getSingle());
+			RelationshipType isA = null;
+			for (Concept concept : label.getRelatedConcepts()) {
+				if (concept.getType() == ConceptType.PREDICATE) {
+					isA = DynamicRelationshipType.withName(concept.getId().toString());
+				}
+			}
+			if (isA != null) {
+				TraversalDescription td = Traversal.description().depthFirst().relationships(isA, Direction.OUTGOING)
 						.evaluator(Evaluators.excludeStartPosition());
 				for (Path path : td.traverse(node)) {
 					ids.add(path.endNode().getId());
