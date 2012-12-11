@@ -1,6 +1,6 @@
 The conceptstore project allows you to store and retrive concepts and their relationships from a graph database.
 The project has 3 modules:
-	1. conceptstore-graph-impl: actual implementation of the conceptstore
+	1. conceptstore-graph-impl: implementation of the conceptstore
 	2. conceptstore-dataimport: batch import script for importing data into the conceptstore
 	3. conceptstore-client: client code with examples on how to access the conceptstore.
 
